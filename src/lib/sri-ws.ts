@@ -21,6 +21,8 @@ export const cabecerasSoap = { 'Content-Type': 'text/xml;charset=UTF-8', SOAPAct
 
 export interface Autorizacion {
   estado: string;
+  /** Texto plano de <mensajes> (motivos del SRI cuando no está AUTORIZADO). */
+  mensajes: string;
   numeroAutorizacion: string;
   fechaAutorizacion: string;
   ambiente: string;
@@ -59,9 +61,19 @@ export function parseRespuestaAutorizacion(xml: string): RespuestaAutorizacion |
       fechaAutorizacion: etiqueta(a, 'fechaAutorizacion').trim(),
       ambiente: desescapar(etiqueta(a, 'ambiente').trim()),
       comprobante: desescapar(etiqueta(a, 'comprobante')).trim(),
+      mensajes: desescapar(/<mensajes>([\s\S]*?)<\/mensajes>/.exec(a)?.[1] ?? '')
+        .replace(/<[^>]+>/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim(),
     };
   });
   return { claveConsultada: etiqueta(xml, 'claveAccesoConsultada').trim(), autorizaciones };
+}
+
+/** Resumen corto para el registro: estados recibidos y motivos del SRI. */
+export function resumenRespuesta(r: RespuestaAutorizacion): string {
+  if (!r.autorizaciones.length) return 'el SRI no tiene la clave';
+  return r.autorizaciones.map((a) => `${a.estado || '(sin estado)'}${a.mensajes ? `: ${a.mensajes.slice(0, 160)}` : ''}`).join(' | ');
 }
 
 /** La primera autorización en estado AUTORIZADO, si existe. */

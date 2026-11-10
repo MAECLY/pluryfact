@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { autorizada, parseRespuestaAutorizacion, sobreSoap, xmlAutorizado } from '../src/lib/sri-ws';
+import { autorizada, parseRespuestaAutorizacion, resumenRespuesta, sobreSoap, xmlAutorizado } from '../src/lib/sri-ws';
 
 const fx = (n: string) => readFileSync(resolve(process.cwd(), 'test/fixtures', n), 'utf8');
 
@@ -23,6 +23,16 @@ describe('servicio de autorización', () => {
     const r = parseRespuestaAutorizacion(fx('ws-no-encontrado.xml'))!;
     expect(r.autorizaciones).toHaveLength(0);
     expect(autorizada(r)).toBeNull();
+  });
+
+  it('resume estados y motivos cuando no está autorizado', () => {
+    const xml = fx('ws-autorizado.xml')
+      .replace('<estado>AUTORIZADO</estado>', '<estado>EN PROCESO</estado>')
+      .replace('<mensajes/>', '<mensajes><mensaje><identificador>70</identificador><mensaje>CLAVE DE ACCESO EN PROCESAMIENTO</mensaje></mensaje></mensajes>');
+    const r = parseRespuestaAutorizacion(xml)!;
+    expect(autorizada(r)).toBeNull();
+    expect(resumenRespuesta(r)).toBe('EN PROCESO: 70 CLAVE DE ACCESO EN PROCESAMIENTO');
+    expect(resumenRespuesta(parseRespuestaAutorizacion(fx('ws-no-encontrado.xml'))!)).toBe('el SRI no tiene la clave');
   });
 
   it('rechaza la página de redirección que sale sin SOAPAction', () => {

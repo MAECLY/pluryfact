@@ -1,4 +1,4 @@
-import { autorizada, cabecerasSoap, parseRespuestaAutorizacion, sobreSoap, WS_AUTORIZACION, xmlAutorizado } from './sri-ws';
+import { autorizada, cabecerasSoap, parseRespuestaAutorizacion, resumenRespuesta, sobreSoap, WS_AUTORIZACION, xmlAutorizado } from './sri-ws';
 
 /**
  * XML autorizado de una clave, con reintentos ante fallos de red (en vivo hubo
@@ -25,7 +25,7 @@ export async function xmlPorClave(
       const resp = parseRespuestaAutorizacion(await r.text());
       if (!resp) throw new Error(`Respuesta inesperada del servicio (${r.status})`);
       const a = autorizada(resp);
-      alIntento(n + 1, a ? 'AUTORIZADO' : `sin autorización (${resp.autorizaciones.length})`, Date.now() - t0);
+      alIntento(n + 1, a ? 'AUTORIZADO' : `sin autorización · ${resumenRespuesta(resp)}`, Date.now() - t0);
       return a ? xmlAutorizado(a) : null;
     } catch (e) {
       ultimo = e;
