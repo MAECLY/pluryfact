@@ -4,6 +4,8 @@ import { parseTabla } from '@/lib/extract';
 import { cuerpoDescarga, esAdjunto } from '@/lib/jsf';
 import { CLAVE_PROGRESO, type EstadoPagina, type EstadoTrabajo, type Peticion } from '@/lib/mensajeria';
 import { etiquetaPeriodo } from '@/lib/periodo-etiqueta';
+import { CLAVE_AJUSTES, factorRitmo, normalizarAjustes } from '@/lib/ajustes';
+import { agregar, CLAVE_HISTORIAL, type EntradaHistorial } from '@/lib/historial';
 import { crearRegistro } from '@/lib/registro';
 import { byId, LINK_REPORTE } from '@/lib/selectors';
 import { hoyEcuador } from '@/entrypoints/popup/estado';
@@ -114,7 +116,17 @@ export default defineContentScript({
       setTimeout(() => URL.revokeObjectURL(url), 60_000);
     }
 
+    /** Guarda el trabajo terminado en Descargas (historial). */
+    async function archivar(estado: EstadoTrabajo, diasMax: number) {
+      const leido = await browser.storage.local.get(CLAVE_HISTORIAL);
+      const actual = (leido[CLAVE_HISTORIAL] as EntradaHistorial[] | undefined) ?? [];
+      const entrada: EntradaHistorial = { ...estado, id: String(estado.inicio), terminado: Date.now() };
+      await browser.storage.local.set({ [CLAVE_HISTORIAL]: agregar(actual, entrada, diasMax, Date.now()) });
+    }
+
     async function correr(t: Trabajo) {
+      const ajustes = normalizarAjustes((await browser.storage.local.get(CLAVE_AJUSTES))[CLAVE_AJUSTES]);
+      const factor = factorRitmo(ajustes);
       ocupado = true;
       cancelar = false;
       verificacion = false;
@@ -159,7 +171,8 @@ export default defineContentScript({
           if (!r?.ok) throw new Error(r?.error ?? 'Sin respuesta del servicio web');
           return r.xml ?? null;
         },
-        esperar: (ms) => new Promise((r) => setTimeout(r, ms)),
+        // Ritmo "amable" (Avanzado): pausas el doble de largas.
+        esperar: (ms) => new Promise((r) => setTimeout(r, ms * factor)),
         azar: Math.random,
         progreso: (p) => {
           ultimo = p;
@@ -203,7 +216,9 @@ export default defineContentScript({
               ? `Sin comprobantes descargados; ${r.consultasFallidas.length} consultas fallaron`
               : 'El SRI no tiene comprobantes para ese periodo y filtro';
         const actividad = [...r.progreso.actividad, { t: Date.now(), texto: mensaje, nivel: fase === 'listo' ? ('info' as const) : ('aviso' as const) }].slice(-40);
-        await guardar({ ...r.progreso, ...base, fase, mensaje, actividad, esperaHasta: null, verificacion: false, actualizado: Date.now() });
+        const final: EstadoTrabajo = { ...r.progreso, ...base, fase, mensaje, actividad, esperaHasta: null, verificacion: false, actualizado: Date.now() };
+        await guardar(final);
+        await archivar(final, ajustes.diasHistorial).catch((e) => log.error(`No se pudo guardar el historial: ${String(e)}`));
       } catch (e) {
         log.error(`Trabajo interrumpido: ${e instanceof Error ? e.stack ?? e.message : String(e)}`);
         if (!(e instanceof Cancelado)) {
