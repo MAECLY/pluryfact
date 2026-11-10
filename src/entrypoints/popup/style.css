@@ -1,105 +1,395 @@
 @import 'tailwindcss';
 @import '../../ui/tokens.css';
 
-@theme inline {
-  --color-bg: var(--lg-bg);
-  --color-surface: var(--lg-surface);
-  --color-ink: var(--lg-ink);
-  --color-muted: var(--lg-muted);
-  --color-line: var(--lg-line);
-  --color-accent: var(--lg-accent);
-  --color-accent-ink: var(--lg-accent-ink);
-  --color-manila: var(--lg-manila);
-  --color-ok: var(--lg-ok);
-  --color-warn: var(--lg-warn);
-  --color-err: var(--lg-err);
-  --font-display: var(--lg-font-display);
-  --font-sans: var(--lg-font-body);
-  --font-mono: var(--lg-font-mono);
-  --radius-lg: var(--lg-radius);
-  --radius-xl: var(--lg-radius-lg);
-}
+/*
+ * Popup de Legajo. Concepto: un archivador.
+ * Lo único llamativo es el fichero de periodos (una casilla por mes o día) que
+ * se rellena de manila. Todo lo demás es tipografía sobria, sin cajas, sin
+ * etiquetas en mayúsculas ni monoespaciadas.
+ */
 
 @layer base {
   html,
   body {
-    background: var(--lg-bg);
+    background: var(--lg-surface);
     color: var(--lg-ink);
     font-family: var(--lg-font-body);
     font-size: 13px;
+    line-height: 1.45;
     margin: 0;
   }
   body {
-    width: 380px;
+    width: 360px;
+    font-variant-numeric: tabular-nums;
   }
   :focus-visible {
     outline: 2px solid var(--lg-accent);
     outline-offset: 2px;
   }
-}
-
-@layer components {
-  .etiqueta {
-    @apply font-mono text-[10.5px] font-medium tracking-[0.08em] text-muted uppercase;
-  }
-  .chip {
-    @apply cursor-pointer rounded-full border border-line px-2.5 py-1 text-[12px];
-  }
-  .chip[aria-pressed='true'] {
-    @apply border-accent bg-accent font-semibold text-accent-ink;
-  }
-  .campo {
-    @apply w-full rounded-lg border border-line bg-bg px-2.5 py-2 font-mono text-[12px] text-ink;
-  }
-  .btn {
-    @apply cursor-pointer rounded-lg px-3.5 py-2 text-[13px] font-semibold disabled:cursor-not-allowed disabled:opacity-50;
-  }
-  .btn-p {
-    @apply bg-accent text-accent-ink;
-  }
-  .btn-s {
-    @apply border border-line text-ink;
-  }
-  .pill {
-    @apply inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 font-mono text-[11px] font-medium;
-  }
-  .pestana {
-    @apply -mb-px flex cursor-pointer items-center gap-1.5 border-b-2 border-transparent px-3 py-2 text-[12.5px] font-semibold text-muted disabled:cursor-not-allowed disabled:opacity-40;
-  }
-  .pestana[aria-selected='true'] {
-    @apply border-accent text-ink;
-  }
-  .indicador {
-    @apply inline-block size-1.5 rounded-full bg-accent;
-  }
-  .indicador[data-estado='listo'] {
-    @apply bg-ok;
-  }
-  .indicador[data-estado='error'] {
-    @apply bg-err;
-  }
-  .latido {
-    @apply inline-block size-2 rounded-full bg-ok;
-  }
-  .paso {
-    @apply flex items-center justify-between gap-2 rounded px-1.5 py-0.5;
-  }
-  .paso[data-estado='consultando'],
-  .paso[data-estado='descargando'] {
-    @apply bg-bg font-semibold;
+  button {
+    font: inherit;
+    color: inherit;
   }
 }
 
+/* ---- Cabecera y pestañas ---- */
+.cabecera {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px 8px;
+}
+.marca {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--lg-font-display);
+  font-weight: 700;
+  font-size: 17px;
+  letter-spacing: -0.015em;
+}
+.pantalla {
+  font-size: 12px;
+  color: var(--lg-muted);
+}
+.pantalla[data-conectado='true'] {
+  color: var(--lg-ink);
+}
+
+.pestanas {
+  display: flex;
+  gap: 18px;
+  padding: 0 16px;
+  border-bottom: 1px solid var(--lg-line);
+}
+.pestana {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 0 9px;
+  margin-bottom: -1px;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  background: none;
+  cursor: pointer;
+  font-weight: 600;
+  color: var(--lg-muted);
+}
+.pestana[aria-selected='true'] {
+  color: var(--lg-ink);
+  border-bottom-color: var(--lg-accent);
+}
+.pestana:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+.indicador {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--lg-accent);
+}
+.indicador[data-estado='listo'] {
+  background: var(--lg-manila);
+}
+.indicador[data-estado='error'] {
+  background: var(--lg-err);
+}
+
+/* ---- Formulario ---- */
+.panel {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  padding: 16px;
+}
+.grupo {
+  border: 0;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+}
+.grupo legend {
+  padding: 0;
+  margin-bottom: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--lg-muted);
+}
+.opciones {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.opcion {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  padding: 5px 10px;
+  border: 1px solid var(--lg-line);
+  border-radius: var(--lg-radius);
+  cursor: pointer;
+  user-select: none;
+}
+.opcion input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+.opcion:has(input:checked) {
+  background: var(--lg-accent);
+  border-color: var(--lg-accent);
+  color: var(--lg-accent-ink);
+}
+.opcion:has(input:focus-visible) {
+  outline: 2px solid var(--lg-accent);
+  outline-offset: 2px;
+}
+
+.modos {
+  display: flex;
+  gap: 14px;
+}
+.modos button {
+  padding: 0 0 2px;
+  border: 0;
+  border-bottom: 1.5px solid transparent;
+  background: none;
+  cursor: pointer;
+  color: var(--lg-muted);
+}
+.modos button[aria-pressed='true'] {
+  color: var(--lg-ink);
+  font-weight: 600;
+  border-bottom-color: var(--lg-ink);
+}
+.campos {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+.campos label {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  font-size: 12px;
+  color: var(--lg-muted);
+}
+.campo {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 7px 9px;
+  border: 1px solid var(--lg-line);
+  border-radius: var(--lg-radius);
+  background: var(--lg-surface);
+  color: var(--lg-ink);
+  font: inherit;
+}
+.campo::placeholder {
+  color: var(--lg-muted);
+}
+.casillas {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 16px;
+}
+.casillas label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+}
+.casillas input {
+  accent-color: var(--lg-accent);
+  margin: 0;
+}
+.plan {
+  margin: -4px 0 0;
+  color: var(--lg-muted);
+}
+.plan[data-error='true'] {
+  color: var(--lg-err);
+}
+
+/* ---- Descargas ---- */
+.vacio {
+  margin: 28px 8px;
+  text-align: center;
+  color: var(--lg-muted);
+}
+.progreso {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.titulo {
+  margin: 0;
+  font-family: var(--lg-font-display);
+  font-size: 17px;
+  font-weight: 700;
+  letter-spacing: -0.015em;
+  line-height: 1.25;
+  text-wrap: balance;
+}
+
+/* El fichero: una pestaña de archivador por periodo. */
+.fichero {
+  list-style: none;
+  margin: 4px 0 2px;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(var(--columnas, 12), minmax(0, 1fr));
+  gap: 3px;
+}
+.ficha {
+  position: relative;
+  height: 30px;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--lg-line);
+  border-radius: var(--lg-radius) var(--lg-radius) 0 0;
+  font-size: 10.5px;
+  color: var(--lg-muted);
+}
+.fichero[data-denso='true'] .ficha {
+  height: 18px;
+  font-size: 0;
+}
+.ficha[data-estado='ok'] {
+  background: var(--lg-manila);
+  border-color: var(--lg-manila);
+  color: var(--lg-ink);
+}
+.ficha[data-estado='sin-datos'] {
+  background: var(--lg-bg);
+  border-style: dashed;
+}
+.ficha[data-estado='consultando'],
+.ficha[data-estado='descargando'] {
+  border-color: var(--lg-accent);
+  border-width: 1.5px;
+  color: var(--lg-ink);
+  font-weight: 600;
+}
+.ficha[data-estado='fallida'],
+.ficha[data-problema='true'] {
+  border-color: var(--lg-err);
+}
+/* La cinta roja: marca diagonal en la esquina de una ficha con problemas. */
+.ficha[data-estado='fallida']::after,
+.ficha[data-problema='true']::after {
+  content: '';
+  position: absolute;
+  top: -1px;
+  right: -1px;
+  width: 0;
+  height: 0;
+  border-top: 9px solid var(--lg-err);
+  border-left: 9px solid transparent;
+}
+
+.estado-frase {
+  margin: 4px 0 0;
+  font-size: 14px;
+  line-height: 1.4;
+  text-wrap: pretty;
+}
+.cifras {
+  margin: 0;
+  color: var(--lg-muted);
+}
+.problema {
+  margin: 2px 0 0;
+  color: var(--lg-err);
+  text-wrap: pretty;
+}
+.problema strong {
+  font-weight: 600;
+}
+.detalle summary {
+  cursor: pointer;
+  color: var(--lg-muted);
+  font-size: 12px;
+  width: fit-content;
+}
+.actividad,
+.fallidas {
+  margin: 8px 0 0;
+  padding: 0;
+  list-style: none;
+  max-height: 150px;
+  overflow-y: auto;
+  font-size: 11.5px;
+  color: var(--lg-muted);
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.actividad time {
+  color: var(--lg-ink);
+  margin-right: 6px;
+}
+.fallidas {
+  color: var(--lg-err);
+}
+
+/* ---- Pie ---- */
+.pie {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px 16px 14px;
+  border-top: 1px solid var(--lg-line);
+}
+.aviso {
+  margin: 0;
+  font-size: 12px;
+  color: var(--lg-warn);
+}
+.boton {
+  width: 100%;
+  padding: 9px 14px;
+  border-radius: var(--lg-radius);
+  border: 1px solid transparent;
+  cursor: pointer;
+  font-weight: 600;
+}
+.boton:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+.boton-principal {
+  background: var(--lg-accent);
+  color: var(--lg-accent-ink);
+}
+.boton-secundario {
+  background: transparent;
+  border-color: var(--lg-line);
+  color: var(--lg-ink);
+}
+.enlace {
+  align-self: center;
+  border: 0;
+  background: none;
+  cursor: pointer;
+  color: var(--lg-accent);
+  font-size: 12px;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
 
 @media (prefers-reduced-motion: no-preference) {
-  .latido[data-vivo='true'],
+  .ficha[data-estado='consultando'],
+  .ficha[data-estado='descargando'],
   .indicador[data-estado='activo'] {
-    animation: latir 1.2s ease-in-out infinite;
+    animation: latir 1.4s ease-in-out infinite;
   }
   @keyframes latir {
     50% {
-      opacity: 0.25;
-      transform: scale(0.7);
+      opacity: 0.45;
     }
   }
 }

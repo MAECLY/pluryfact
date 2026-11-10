@@ -6,89 +6,76 @@
     <title>Legajo</title>
   </head>
   <body>
-    <header class="flex items-center justify-between border-b border-line bg-surface px-3.5 py-3">
-      <div class="flex items-center gap-2">
-        <img src="/icon/32.png" width="22" height="22" alt="" />
-        <span class="font-display text-[17px] font-bold tracking-[-0.015em]">Legajo</span>
+    <header class="cabecera">
+      <div class="marca">
+        <img src="/icon/32.png" width="20" height="20" alt="" />
+        <span>Legajo</span>
       </div>
-      <div class="flex gap-0.5 rounded-lg bg-bg p-[3px]" role="group" aria-label="Bandeja">
-        <button type="button" class="chip border-0" data-bandeja="recibidos" aria-pressed="true">Recibidos</button>
-        <button type="button" class="chip border-0" data-bandeja="emitidos" aria-pressed="false">Emitidos</button>
-      </div>
+      <span id="pantalla" class="pantalla"></span>
     </header>
 
-    <nav class="flex border-b border-line bg-surface px-2" role="tablist" aria-label="Secciones">
+    <nav class="pestanas" role="tablist" aria-label="Secciones">
       <button type="button" id="tab-form" class="pestana" role="tab" aria-selected="true" aria-controls="panel-form">Nueva descarga</button>
       <button type="button" id="tab-descargas" class="pestana" role="tab" aria-selected="false" aria-controls="panel-descargas">
-        Descargas <i id="tab-indicador" class="indicador" hidden></i>
+        Descargas<i id="tab-indicador" class="indicador" hidden></i>
       </button>
     </nav>
 
-    <main id="panel-form" class="flex flex-col gap-3.5 bg-surface p-3.5" role="tabpanel" aria-labelledby="tab-form">
-      <section class="form-seccion flex flex-col gap-2">
-        <span class="etiqueta">Periodo</span>
-        <div class="flex flex-wrap gap-1.5" role="group" aria-label="Tipo de periodo">
-          <button type="button" class="chip" data-periodo="dia" aria-pressed="false">Día</button>
-          <button type="button" class="chip" data-periodo="rango" aria-pressed="false">Rango</button>
-          <button type="button" class="chip" data-periodo="mes" aria-pressed="true">Mes</button>
-          <button type="button" class="chip" data-periodo="anio" aria-pressed="false">Año</button>
+    <main id="panel-form" class="panel" role="tabpanel" aria-labelledby="tab-form">
+      <fieldset class="grupo">
+        <legend>Qué</legend>
+        <div id="tipos" class="opciones"></div>
+      </fieldset>
+
+      <fieldset class="grupo">
+        <legend>Cuándo</legend>
+        <div class="modos" role="group" aria-label="Tipo de periodo">
+          <button type="button" data-periodo="mes" aria-pressed="true">Mes</button>
+          <button type="button" data-periodo="anio" aria-pressed="false">Año</button>
+          <button type="button" data-periodo="dia" aria-pressed="false">Día</button>
+          <button type="button" data-periodo="rango" aria-pressed="false">Rango</button>
         </div>
-        <div id="campos-periodo" class="grid grid-cols-2 gap-2"></div>
-      </section>
+        <div id="campos-periodo" class="campos"></div>
+      </fieldset>
 
-      <section class="form-seccion flex flex-col gap-2">
-        <span class="etiqueta">Tipos de comprobante</span>
-        <div id="tipos" class="grid grid-cols-2 gap-x-3 gap-y-1.5"></div>
-      </section>
+      <fieldset id="sec-emisor" class="grupo">
+        <legend><label for="emisor">De quién</label></legend>
+        <input id="emisor" class="campo" type="text" placeholder="Todos los emisores, o un RUC o nombre" autocomplete="off" />
+      </fieldset>
 
-      <section id="sec-emisor" class="form-seccion flex flex-col gap-2">
-        <label class="etiqueta" for="emisor">Emisor (RUC o razón social)</label>
-        <input id="emisor" class="campo" type="text" placeholder="Todos los emisores" autocomplete="off" />
-      </section>
-
-      <section class="form-seccion flex flex-col gap-2">
-        <span class="etiqueta">Formatos</span>
-        <div class="flex gap-4">
-          <label class="flex items-center gap-1.5"><input id="f-xml" type="checkbox" checked class="accent-accent" />XML</label>
-          <label class="flex items-center gap-1.5"><input id="f-pdf" type="checkbox" checked class="accent-accent" />PDF (RIDE)</label>
-          <label class="flex items-center gap-1.5"><input id="f-txt" type="checkbox" class="accent-accent" />Reporte TXT</label>
+      <fieldset class="grupo">
+        <legend>Archivos</legend>
+        <div class="casillas">
+          <label><input id="f-xml" type="checkbox" checked />XML</label>
+          <label><input id="f-pdf" type="checkbox" checked />RIDE en PDF</label>
+          <label><input id="f-txt" type="checkbox" />Reporte del SRI</label>
         </div>
-      </section>
+      </fieldset>
 
-      <p id="plan" class="form-seccion rounded-lg border border-line bg-bg px-2.5 py-2 font-mono text-[11.5px] text-muted tabular-nums" aria-live="polite"></p>
+      <p id="plan" class="plan" aria-live="polite"></p>
     </main>
 
-    <main id="panel-descargas" class="flex flex-col gap-3.5 bg-surface p-3.5" role="tabpanel" aria-labelledby="tab-descargas" hidden>
-      <p id="sin-descargas" class="py-8 text-center text-[12.5px] text-muted">Aquí verás el avance de tus descargas: cada consulta al SRI, los archivos y cualquier aviso.</p>
-      <section id="progreso" class="flex flex-col gap-2.5 rounded-lg border border-line p-2.5" hidden aria-live="polite">
-        <div class="flex items-center justify-between gap-2">
-          <span id="prog-fase" class="pill"></span>
-          <span id="prog-pulso" class="flex items-center gap-1.5 font-mono text-[11px] text-muted tabular-nums">
-            <i id="prog-latido" class="latido"></i><span id="prog-pulso-texto"></span>
-          </span>
-        </div>
-        <div class="h-1.5 overflow-hidden rounded-full bg-bg"><i id="prog-barra" class="block h-full w-0 bg-gradient-to-r from-accent to-manila transition-[width] duration-500"></i></div>
-        <div class="flex flex-col gap-0.5 font-mono text-[11px] text-muted tabular-nums">
-          <span id="prog-consultas"></span><span id="prog-tiempo"></span>
-        </div>
-        <p id="prog-cifras" class="font-mono text-[11.5px] tabular-nums"></p>
-        <p id="prog-mensaje" class="text-[12.5px] font-semibold"></p>
-        <ol id="prog-pasos" class="flex max-h-[132px] flex-col gap-0.5 overflow-y-auto pr-1 text-[11.5px]" aria-label="Consultas"></ol>
-        <details id="prog-detalle" class="text-[11.5px]" open>
-          <summary class="etiqueta cursor-pointer">Actividad</summary>
-          <ol id="prog-actividad" class="mt-1.5 flex max-h-[120px] flex-col gap-0.5 overflow-y-auto pr-1 font-mono text-[10.5px]"></ol>
+    <main id="panel-descargas" class="panel" role="tabpanel" aria-labelledby="tab-descargas" hidden>
+      <p id="sin-descargas" class="vacio">Todavía no hay descargas. Elige qué bajar en «Nueva descarga».</p>
+
+      <section id="progreso" class="progreso" hidden aria-live="polite">
+        <h1 id="prog-titulo" class="titulo"></h1>
+        <ol id="prog-pasos" class="fichero" aria-label="Avance por periodo"></ol>
+        <p id="prog-mensaje" class="estado-frase"></p>
+        <p id="prog-cifras" class="cifras"></p>
+        <p id="prog-problema" class="problema" hidden></p>
+        <details id="prog-detalle" class="detalle">
+          <summary>Ver detalle</summary>
+          <ol id="prog-actividad" class="actividad"></ol>
+          <ul id="prog-fallidas" class="fallidas"></ul>
         </details>
-        <ul id="prog-fallidas" class="list-disc pl-4 text-[11.5px] text-err"></ul>
       </section>
-
     </main>
 
-    <footer class="flex flex-col gap-2 border-t border-line bg-bg px-3.5 py-3">
-      <p id="estado" class="text-[12px] text-muted">Buscando la pestaña de SRI en Línea…</p>
-      <div class="flex gap-2">
-        <button id="descargar" type="button" class="btn btn-p flex-1" disabled>Descargar ZIP</button>
-      </div>
-      <p class="text-center font-mono text-[10px] text-muted">by MAECLY · AGPL-3.0</p>
+    <footer class="pie">
+      <p id="estado" class="aviso" hidden></p>
+      <button id="descargar" type="button" class="boton boton-principal" disabled>Descargar</button>
+      <button id="secundario" type="button" class="enlace" hidden>Nueva descarga</button>
     </footer>
     <script type="module" src="./main.ts"></script>
   </body>
