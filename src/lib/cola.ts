@@ -129,6 +129,12 @@ export const RITMO = {
 } as const;
 
 const XML_EN_PARALELO = 4;
+/**
+ * El servicio web rechaza claves con fecha de emisión antigua ("80 … fecha de
+ * emision esta fuera del rango permitido", visto en vivo con enero 2025). Tras
+ * este número de rechazos seguidos en un mes, el resto va directo al portal.
+ */
+export const RECHAZOS_PARA_PORTAL = 5;
 /** Ninguna descarga puede colgar la cola: pasado el límite cuenta como fallida. */
 export const LIMITE_XML_MS = 45_000;
 export const LIMITE_PDF_MS = 60_000;
@@ -321,8 +327,16 @@ export async function ejecutar(t: Trabajo, d: Dependencias): Promise<Resumen> {
         let hechos = 0;
         let fallidosAqui = 0;
         const conRespaldo = t.bandeja === 'recibidos' && !!d.xmlPortal;
+        let rechazosSeguidos = 0;
+        let soloPortal = false;
         await enParalelo(filas, XML_EN_PARALELO, async (f) => {
           revisar();
+          if (soloPortal) {
+            sinXml.set(f.clave.clave, f);
+            hechos++;
+            avisar({ mensaje: `XML ${hechos} de ${filas.length} · ${etiqueta}` });
+            return;
+          }
           let xml: string | null = null;
           const tx = Date.now();
           try {
@@ -332,6 +346,11 @@ export async function ejecutar(t: Trabajo, d: Dependencias): Promise<Resumen> {
             log?.aviso(`Servicio web falló para ${f.serie || f.clave.secuencial}: ${e instanceof Error ? e.message : String(e)}`);
           }
           hechos++;
+          rechazosSeguidos = xml ? 0 : rechazosSeguidos + 1;
+          if (conRespaldo && !soloPortal && rechazosSeguidos >= RECHAZOS_PARA_PORTAL) {
+            soloPortal = true;
+            contar(`El servicio web no da XML de ${nombre} (fecha fuera de su rango); se bajarán desde el portal`, 'aviso');
+          }
           if (xml) log?.info(`XML ${f.clave.secuencial} ok en ${Date.now() - tx} ms`);
           const mensaje = `XML ${hechos} de ${filas.length} · ${etiqueta}`;
           if (xml) {

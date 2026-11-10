@@ -151,6 +151,25 @@ describe('ejecutar', () => {
     expect(progresos.at(-1)!.actividad.map((a) => a.texto)).toContain('XML de noviembre 2026: 0 por servicio web, 2 se bajarán desde el portal');
   });
 
+  it('tras varios rechazos seguidos del servicio web, el resto del mes va directo al portal', async () => {
+    const doc = document.implementation.createHTMLDocument('sri');
+    doc.body.innerHTML = fx('recibidos-tabla.html').toString('utf8');
+    // Reporte con 20 claves válidas del mismo mes (mismo formato que el fixture).
+    const { construirClave } = await import('../src/lib/clave');
+    const claves = Array.from({ length: 20 }, (_, i) =>
+      construirClave({ fecha: { dia: 8, mes: 11, anio: 2026 }, tipoCodigo: '01', ruc: '0990000001001', serie: '001001', secuencial: String(i + 1).padStart(9, '0'), codigoNumerico: '12345678' }),
+    );
+    const cab = 'RUC_EMISOR\tRAZON_SOCIAL_EMISOR\tTIPO_COMPROBANTE\tSERIE_COMPROBANTE\tCLAVE_ACCESO\tFECHA_AUTORIZACION\tFECHA_EMISION\tIDENTIFICACION_RECEPTOR\tVALOR_SIN_IMPUESTOS\tIVA\tIMPORTE_TOTAL\tNUMERO_DOCUMENTO_MODIFICADO';
+    const filas = claves.map((c, i) => `0990000001001\tX\tFactura\t001-001-${String(i + 1).padStart(9, '0')}\t${c}\t08/11/2026 10:00:00\t08/11/2026\t1\t1\t0\t1\t`);
+    const xml = vi.fn(async () => null);
+    const { d } = deps({ xml, xmlPortal: vi.fn(async () => '<autorizacion/>'), reporte: vi.fn(async () => new TextEncoder().encode([cab, ...filas].join('\n'))) });
+    await ejecutar({ ...base, formatos: { xml: true, pdf: false, txt: false } }, d);
+    // 4 en paralelo: como mucho RECHAZOS_PARA_PORTAL + 3 llamadas en vuelo, no las 20.
+    expect(xml.mock.calls.length).toBeLessThanOrEqual(8);
+    expect(xml.mock.calls.length).toBeGreaterThanOrEqual(5);
+    expect(d.xmlPortal).not.toHaveBeenCalled(); // la tabla del fixture no tiene estas claves: quedan como no encontradas
+  });
+
   it('cuenta como fallido un XML que el SRI no tiene autorizado', async () => {
     const { d } = deps({ xml: vi.fn(async () => null) });
     const r = await ejecutar({ ...base, formatos: { xml: true, pdf: false, txt: false } }, d);
