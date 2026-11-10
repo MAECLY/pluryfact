@@ -17,6 +17,9 @@
     "icons": "bun scripts/icons.ts"
   },
   "devDependencies": {
+    "@fontsource/ibm-plex-mono": "5",
+    "@fontsource/ibm-plex-sans": "5",
+    "@fontsource/ibm-plex-serif": "5",
     "@tailwindcss/vite": "4.3.3",
     "@types/node": "^26.6.5",
     "happy-dom": "^21.0.4",
