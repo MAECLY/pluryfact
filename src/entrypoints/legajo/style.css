@@ -167,6 +167,31 @@ body {
   margin: 8px 0;
 }
 
+/* Aviso de descarga incompleta, con su Reanudar. */
+.reanudar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 14px 16px;
+  border-left: 3px solid var(--lg-warn);
+  background: var(--lg-bg);
+  border-radius: 0 var(--lg-radius-lg) var(--lg-radius-lg) 0;
+}
+.reanudar p {
+  margin: 0;
+}
+.reanudar-titulo {
+  font-weight: 600;
+}
+.reanudar-detalle {
+  font-size: 13px;
+  color: var(--lg-muted);
+}
+.reanudar .boton {
+  flex: none;
+}
+
 /* Nueva descarga: formulario y resumen. */
 .nueva {
   display: grid;

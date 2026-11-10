@@ -1,7 +1,7 @@
 import './style.css';
 import { AJUSTES_POR_DEFECTO, CLAVE_AJUSTES, normalizarAjustes, type Ajustes } from '@/lib/ajustes';
 import type { Trabajo } from '@/lib/cola';
-import { agrupar, CLAVE_HISTORIAL, textoBuscable, tieneProblemas, type EntradaHistorial, type FiltroEstado } from '@/lib/historial';
+import { agregar, agrupar, CLAVE_HISTORIAL, textoBuscable, tieneProblemas, type EntradaHistorial, type FiltroEstado } from '@/lib/historial';
 import { CLAVE_PROGRESO, type EstadoTrabajo } from '@/lib/mensajeria';
 import { PREFIJO_REGISTRO, type Entrada } from '@/lib/registro';
 import { pintarFichero } from '@/ui/fichero';
@@ -58,6 +58,8 @@ async function reconectar() {
   pintarConexion();
   if (conexion.pagina?.bandeja) formulario.ponerBandeja(conexion.pagina.bandeja);
   pintarResumen();
+  pintarReanudar();
+  pintarHistorial();
 }
 // La página puede quedar abierta mucho tiempo: se reconecta al volver a ella.
 document.addEventListener('visibilitychange', () => document.visibilityState === 'visible' && void reconectar());
@@ -93,6 +95,50 @@ async function lanzar(t: Trabajo) {
 }
 $('#descargar').addEventListener('click', () => lanzar(formulario.leerTrabajo()));
 
+// ---------------------------------------------------------- reanudar
+
+/** Periodos que faltan de la última descarga, si quedó incompleta y no hay otra en curso. */
+function pendientesDe(e: EstadoTrabajo | undefined): number[] {
+  if (!e || enMarcha(e) || !e.trabajo || !e.pendientes?.length) return [];
+  return ['error', 'cancelado', 'listo'].includes(e.fase) ? e.pendientes : [];
+}
+
+function unidad(e: EstadoTrabajo, n: number) {
+  if ((e.trabajo?.tipos.length ?? 1) > 1) return n === 1 ? 'consulta' : 'consultas';
+  const porDia = e.trabajo?.bandeja === 'emitidos' || e.trabajo?.periodo.tipo === 'dia';
+  return porDia ? (n === 1 ? 'día' : 'días') : n === 1 ? 'mes' : 'meses';
+}
+
+/** Aviso en Nueva descarga y Descargas cuando la última descarga quedó incompleta. */
+function pintarReanudar() {
+  const e = actual;
+  const pendientes = pendientesDe(e);
+  document.querySelectorAll<HTMLElement>('[data-reanudar]').forEach((caja) => {
+    caja.hidden = !pendientes.length || !e;
+    if (!pendientes.length || !e) return;
+    const n = pendientes.length;
+    caja.querySelector('.reanudar-titulo')!.textContent = `${tituloTrabajo(e.trabajo)} quedó incompleta.`;
+    const listo = conexion.pagina?.bandeja === e.trabajo?.bandeja;
+    caja.querySelector('.reanudar-detalle')!.textContent = listo
+      ? `Faltan ${n} ${unidad(e, n)}. Reanudar baja solo eso y arma otro ZIP.`
+      : `Faltan ${n} ${unidad(e, n)}. Para reanudar, inicia sesión en el SRI y entra a Comprobantes ${e.trabajo?.bandeja}.`;
+    const b = caja.querySelector<HTMLButtonElement>('button')!;
+    b.textContent = `Reanudar ${n} ${unidad(e, n)}`;
+    b.disabled = !listo;
+    b.onclick = () => e.trabajo && lanzar({ ...e.trabajo, soloIndices: pendientes });
+  });
+}
+
+/**
+ * La última descarga entra al historial aunque la haya hecho una versión
+ * anterior de Legajo (que no guardaba historial).
+ */
+async function archivarUltima() {
+  const e = actual;
+  if (!e || enMarcha(e) || !e.inicio || historial.some((h) => h.id === String(e.inicio))) return;
+  await guardarHistorial(agregar(historial, { ...e, id: String(e.inicio), terminado: e.actualizado || Date.now() }, ajustes.diasHistorial, Date.now()));
+}
+
 // --------------------------------------------------------------- descargas
 
 function pintarActiva() {
@@ -102,6 +148,7 @@ function pintarActiva() {
   if (actual) $('#nav-indicador').dataset.estado = activa ? 'activo' : tieneProblemas(actual) ? 'error' : 'listo';
   if (activa && actual) pintarTarjeta($('#tarjeta-activa'), actual, true);
   pintarResumen();
+  pintarReanudar();
 }
 $('#cancelar').addEventListener('click', async () => {
   await cancelar(conexion);
@@ -151,7 +198,8 @@ function filaHistorial(e: EntradaHistorial): HTMLElement {
   const pendientes = e.pendientes ?? [];
   const mismaPantalla = conexion.pagina?.bandeja === e.trabajo?.bandeja;
   const ocupado = !!actual && enMarcha(actual);
-  if (pendientes.length && e.trabajo && !ocupado) {
+  const esLaUltima = !!actual && String(actual.inicio) === e.id;
+  if (pendientes.length && e.trabajo && !ocupado && !esLaUltima) {
     const r = boton(`Reanudar lo que faltó (${pendientes.length})`, 'boton boton-principal boton-chico', () => e.trabajo && lanzar({ ...e.trabajo, soloIndices: pendientes }));
     r.disabled = !mismaPantalla;
     if (!mismaPantalla) r.title = `Entra a Comprobantes ${e.trabajo.bandeja} en el portal para reanudar`;
@@ -349,5 +397,6 @@ void (async () => {
   pintarAjustes();
   pintarActiva();
   pintarHistorial();
+  await archivarUltima();
   await reconectar();
 })();
