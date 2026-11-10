@@ -126,10 +126,14 @@ async function ronda(sri: Page): Promise<string> {
   const popup = await ctx.newPage();
   await popup.setViewportSize({ width: 380, height: 760 });
   await popup.goto(`chrome-extension://${extId}/popup.html`);
-  await popup.waitForFunction(() => /Conectado|Abre SRI/.test(document.querySelector('#estado')?.textContent ?? ''), null, { timeout: 15_000 });
-  const estado = (await popup.textContent('#estado')) ?? '';
-  comprobar(estado.startsWith('Conectado'), 'el popup encuentra la pestaña del portal', estado.replace(/\d{10,13}/, '<RUC>'));
-  comprobar(estado.includes(bandeja === 'recibidos' ? 'recibidos' : 'emitidos'), 'el popup toma la bandeja de la pantalla abierta');
+  await popup.waitForFunction(
+    () => document.querySelector('#pantalla')?.getAttribute('data-conectado') === 'true' || !!document.querySelector('#estado:not([hidden])')?.textContent,
+    null,
+    { timeout: 15_000 },
+  );
+  const pantalla = (await popup.textContent('#pantalla')) ?? '';
+  comprobar(!!pantalla, 'el popup encuentra la pestaña del portal', (await popup.textContent('#estado')) ?? '');
+  comprobar(pantalla.toLowerCase() === bandeja, 'el popup toma la bandeja de la pantalla abierta', pantalla);
 
   const [tipoPeriodo, ...valores] = (periodoForzado || process.env[`E2E_PERIODO_${bandeja.toUpperCase()}`] || process.env.E2E_PERIODO || (bandeja === 'emitidos' ? 'dia:2026-11-06' : 'mes:2026-10')).split(':');
   await popup.click(`[data-periodo="${tipoPeriodo}"]`);
@@ -148,7 +152,7 @@ async function ronda(sri: Page): Promise<string> {
 
   const tipos = (process.env.E2E_TIPOS ?? 'factura').split(',');
   await popup.$$eval('#tipos input', (els, ts) => els.forEach((e) => ((e as HTMLInputElement).checked = ts.includes((e as HTMLInputElement).dataset.tipo!)) || e.dispatchEvent(new Event('change'))), tipos);
-  for (const t of tipos) await popup.check(`#tipos input[data-tipo="${t}"]`);
+  for (const t of tipos) await popup.check(`#tipos input[data-tipo="${t}"]`, { force: true });
   const formatos = (process.env.E2E_FORMATOS ?? 'xml,pdf').split(',');
   for (const f of ['xml', 'pdf', 'txt']) await popup.setChecked(`#f-${f}`, formatos.includes(f));
   if (process.env.E2E_EMISOR && bandeja === 'recibidos') await popup.fill('#emisor', process.env.E2E_EMISOR);
@@ -161,7 +165,7 @@ async function ronda(sri: Page): Promise<string> {
   // Progreso en consola mientras corre.
   let ultimo = '';
   const reloj = setInterval(async () => {
-    const txt = [await popup.textContent('#prog-consultas'), await popup.textContent('#prog-cifras'), await popup.textContent('#prog-mensaje')].join(' · ');
+    const txt = [await popup.textContent('#prog-mensaje'), await popup.textContent('#prog-cifras')].join(' ');
     if (txt !== ultimo) console.log(`  ${txt}`);
     ultimo = txt;
   }, 2000);
