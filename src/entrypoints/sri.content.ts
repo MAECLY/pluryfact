@@ -34,7 +34,7 @@ export default defineContentScript({
       const m = ev.data;
       if (ev.source !== window || m?.canal !== CANAL) return;
       if (m.tipo === 'hola' && m.conductor) {
-        if (conductor !== m.conductor) logConductor.info(`Conductor activo: ${m.conductor.split(':')[0]}`);
+        if (conductor !== m.conductor) logConductor.info(`Conductor activo: ${m.conductor.slice(0, 8)}`);
         conductor = m.conductor;
       } else if (m.tipo === 'respuesta' && m.id && m.respuesta) {
         if (m.conductor && conductor && m.conductor !== conductor) return; // respuesta de un conductor viejo

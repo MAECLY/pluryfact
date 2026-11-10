@@ -6,16 +6,11 @@ export default defineContentScript({
   world: 'MAIN',
   runAt: 'document_idle',
   main() {
-    // Cada instalación tiene identidad propia; el content script le habla solo
-    // al conductor más reciente. Reinyectar la misma versión no duplica nada.
-    const w = window as unknown as { __legajoConductor?: string };
-    const version = browser.runtime.getManifest().version;
-    if (w.__legajoConductor?.startsWith(`${version}:`)) {
-      window.postMessage({ canal: 'legajo-conductor', tipo: 'quien' }, location.origin);
-      return;
-    }
-    const yo = `${version}:${crypto.randomUUID()}`;
-    w.__legajoConductor = yo;
+    // OJO: mundo MAIN = sin APIs de extensión (browser/chrome.runtime no existen).
+    // Cada instalación tiene identidad propia y el content script le habla solo
+    // al conductor más reciente, así que reinyectar no produce dobles clics.
+    const yo = crypto.randomUUID();
+    (window as unknown as { __legajoConductor?: string }).__legajoConductor = yo;
     instalarConductor(window, yo);
   },
 });
