@@ -24,7 +24,8 @@ export type Respuesta = ResultadoConsulta | { hay: boolean };
 
 export interface MensajeCanal {
   canal: typeof CANAL;
-  tipo: 'orden' | 'respuesta' | 'evento';
+  tipo: 'orden' | 'respuesta' | 'evento' | 'log';
+  log?: string;
   id?: number | undefined;
   orden?: Orden;
   respuesta?: Respuesta;
@@ -199,6 +200,10 @@ export async function consultar(win: Window, c: ConsultaPortal, alVerificar: () 
   const mensaje = textoMensajes(doc);
   const tipo = clasificarMensaje(mensaje);
   const filas = filasVisibles(doc, c.bandeja);
+  registrar(
+    win,
+    `consultar ${c.bandeja} → ${r} en ${Date.now() - t0} ms; ajax=${diag.ajax} listado=${diag.listado} botón=${btn.disabled ? 'deshabilitado' : 'habilitado'} filas=${filas} mensaje="${mensaje.slice(0, 80)}"`,
+  );
   if (tipo === 'sin-datos') return { estado: 'sin-datos', mensaje };
   if (tipo === 'fecha-actual') return { estado: 'rechazada', mensaje };
   if (tipo === 'captcha') return { estado: 'captcha', mensaje };
@@ -210,6 +215,10 @@ export async function consultar(win: Window, c: ConsultaPortal, alVerificar: () 
     estado: 'error',
     mensaje: `Sin filas ni mensaje del portal tras ${Date.now() - t0} ms (${diag.ajax} respuestas, ${diag.listado} del listado, botón ${btn.disabled ? 'deshabilitado' : 'habilitado'})`,
   };
+}
+
+function registrar(win: Window, log: string) {
+  win.postMessage({ canal: CANAL, tipo: 'log', log } satisfies MensajeCanal, win.location.origin);
 }
 
 function controlPaginador(doc: Document, b: Bandeja, clase: string): HTMLElement | null {
