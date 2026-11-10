@@ -24,8 +24,11 @@ export type Respuesta = ResultadoConsulta | { hay: boolean };
 
 export interface MensajeCanal {
   canal: typeof CANAL;
-  tipo: 'orden' | 'respuesta' | 'evento' | 'log';
+  tipo: 'orden' | 'respuesta' | 'evento' | 'log' | 'hola' | 'quien';
   log?: string;
+  /** Identidad del conductor que se presenta (hola) o al que va la orden. */
+  conductor?: string;
+  para?: string;
   id?: number | undefined;
   orden?: Orden;
   respuesta?: Respuesta;
@@ -274,11 +277,20 @@ export function atender(win: Window, orden: Orden, alVerificar: () => void): Pro
   }
 }
 
-/** Instala el oyente en la página. Solo acepta mensajes de la propia ventana. */
-export function instalarConductor(win: Window): void {
+/**
+ * Instala el oyente en la página. Solo acepta mensajes de la propia ventana y
+ * solo las órdenes dirigidas a SU identidad: al recargar la extensión, el
+ * conductor viejo sigue vivo en el mundo MAIN y no debe pulsar nada (visto en
+ * vivo: dos conductores respondiendo la misma orden).
+ */
+export function instalarConductor(win: Window, yo: string): void {
+  const presentarse = () =>
+    win.postMessage({ canal: CANAL, tipo: 'hola', conductor: yo } satisfies MensajeCanal, win.location.origin);
   win.addEventListener('message', async (ev: MessageEvent<MensajeCanal>) => {
     const m = ev.data;
-    if (ev.source !== win || m?.canal !== CANAL || m.tipo !== 'orden' || !m.orden) return;
+    if (ev.source !== win || m?.canal !== CANAL) return;
+    if (m.tipo === 'quien') return presentarse();
+    if (m.tipo !== 'orden' || !m.orden || m.para !== yo) return;
     const avisar = () => win.postMessage({ canal: CANAL, tipo: 'evento', evento: 'verificacion' } satisfies MensajeCanal, win.location.origin);
     let respuesta: Respuesta;
     try {
@@ -286,6 +298,7 @@ export function instalarConductor(win: Window): void {
     } catch (e) {
       respuesta = { estado: 'error', mensaje: e instanceof Error ? e.message : String(e) };
     }
-    win.postMessage({ canal: CANAL, tipo: 'respuesta', id: m.id, respuesta } satisfies MensajeCanal, win.location.origin);
+    win.postMessage({ canal: CANAL, tipo: 'respuesta', id: m.id, conductor: yo, respuesta } satisfies MensajeCanal, win.location.origin);
   });
+  presentarse();
 }

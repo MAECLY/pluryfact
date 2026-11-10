@@ -6,10 +6,16 @@ export default defineContentScript({
   world: 'MAIN',
   runAt: 'document_idle',
   main() {
-    // El popup puede reinyectar este script: se instala una sola vez por página.
-    const w = window as unknown as { __legajoConductor?: boolean };
-    if (w.__legajoConductor) return;
-    w.__legajoConductor = true;
-    instalarConductor(window);
+    // Cada instalación tiene identidad propia; el content script le habla solo
+    // al conductor más reciente. Reinyectar la misma versión no duplica nada.
+    const w = window as unknown as { __legajoConductor?: string };
+    const version = browser.runtime.getManifest().version;
+    if (w.__legajoConductor?.startsWith(`${version}:`)) {
+      window.postMessage({ canal: 'legajo-conductor', tipo: 'quien' }, location.origin);
+      return;
+    }
+    const yo = `${version}:${crypto.randomUUID()}`;
+    w.__legajoConductor = yo;
+    instalarConductor(window, yo);
   },
 });
