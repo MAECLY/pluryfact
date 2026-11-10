@@ -18,7 +18,7 @@
     </header>
 
     <main class="flex flex-col gap-3.5 bg-surface p-3.5">
-      <section class="flex flex-col gap-2">
+      <section class="form-seccion flex flex-col gap-2">
         <span class="etiqueta">Periodo</span>
         <div class="flex flex-wrap gap-1.5" role="group" aria-label="Tipo de periodo">
           <button type="button" class="chip" data-periodo="dia" aria-pressed="false">Día</button>
@@ -29,17 +29,17 @@
         <div id="campos-periodo" class="grid grid-cols-2 gap-2"></div>
       </section>
 
-      <section class="flex flex-col gap-2">
+      <section class="form-seccion flex flex-col gap-2">
         <span class="etiqueta">Tipos de comprobante</span>
         <div id="tipos" class="grid grid-cols-2 gap-x-3 gap-y-1.5"></div>
       </section>
 
-      <section id="sec-emisor" class="flex flex-col gap-2">
+      <section id="sec-emisor" class="form-seccion flex flex-col gap-2">
         <label class="etiqueta" for="emisor">Emisor (RUC o razón social)</label>
         <input id="emisor" class="campo" type="text" placeholder="Todos los emisores" autocomplete="off" />
       </section>
 
-      <section class="flex flex-col gap-2">
+      <section class="form-seccion flex flex-col gap-2">
         <span class="etiqueta">Formatos</span>
         <div class="flex gap-4">
           <label class="flex items-center gap-1.5"><input id="f-xml" type="checkbox" checked class="accent-accent" />XML</label>
@@ -48,17 +48,28 @@
         </div>
       </section>
 
-      <section id="progreso" class="flex flex-col gap-2 rounded-lg border border-line p-2.5" hidden aria-live="polite">
-        <div class="flex justify-between font-mono text-[11.5px] text-muted tabular-nums">
-          <span id="prog-consultas"></span><span id="prog-pct"></span>
+      <section id="progreso" class="flex flex-col gap-2.5 rounded-lg border border-line p-2.5" hidden aria-live="polite">
+        <div class="flex items-center justify-between gap-2">
+          <span id="prog-fase" class="pill"></span>
+          <span id="prog-pulso" class="flex items-center gap-1.5 font-mono text-[11px] text-muted tabular-nums">
+            <i id="prog-latido" class="latido"></i><span id="prog-pulso-texto"></span>
+          </span>
         </div>
-        <div class="h-1.5 overflow-hidden rounded-full bg-bg"><i id="prog-barra" class="block h-full w-0 bg-gradient-to-r from-accent to-manila transition-[width]"></i></div>
+        <div class="h-1.5 overflow-hidden rounded-full bg-bg"><i id="prog-barra" class="block h-full w-0 bg-gradient-to-r from-accent to-manila transition-[width] duration-500"></i></div>
+        <div class="flex flex-col gap-0.5 font-mono text-[11px] text-muted tabular-nums">
+          <span id="prog-consultas"></span><span id="prog-tiempo"></span>
+        </div>
         <p id="prog-cifras" class="font-mono text-[11.5px] tabular-nums"></p>
-        <p id="prog-mensaje" class="text-[12px] text-muted"></p>
+        <p id="prog-mensaje" class="text-[12.5px] font-semibold"></p>
+        <ol id="prog-pasos" class="flex max-h-[132px] flex-col gap-0.5 overflow-y-auto pr-1 text-[11.5px]" aria-label="Consultas"></ol>
+        <details id="prog-detalle" class="text-[11.5px]" open>
+          <summary class="etiqueta cursor-pointer">Actividad</summary>
+          <ol id="prog-actividad" class="mt-1.5 flex max-h-[120px] flex-col gap-0.5 overflow-y-auto pr-1 font-mono text-[10.5px]"></ol>
+        </details>
         <ul id="prog-fallidas" class="list-disc pl-4 text-[11.5px] text-err"></ul>
       </section>
 
-      <p id="plan" class="rounded-lg border border-line bg-bg px-2.5 py-2 font-mono text-[11.5px] text-muted tabular-nums" aria-live="polite"></p>
+      <p id="plan" class="form-seccion rounded-lg border border-line bg-bg px-2.5 py-2 font-mono text-[11.5px] text-muted tabular-nums" aria-live="polite"></p>
     </main>
 
     <footer class="flex flex-col gap-2 border-t border-line bg-bg px-3.5 py-3">

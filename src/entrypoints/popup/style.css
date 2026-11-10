@@ -60,4 +60,34 @@
   .btn-s {
     @apply border border-line text-ink;
   }
+  .pill {
+    @apply inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 font-mono text-[11px] font-medium;
+  }
+  .latido {
+    @apply inline-block size-2 rounded-full bg-ok;
+  }
+  .paso {
+    @apply flex items-center justify-between gap-2 rounded px-1.5 py-0.5;
+  }
+  .paso[data-estado='consultando'],
+  .paso[data-estado='descargando'] {
+    @apply bg-bg font-semibold;
+  }
+}
+
+/* Mientras descarga, el formulario se oculta y el progreso queda arriba. */
+body[data-en-curso='true'] .form-seccion {
+  display: none;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .latido[data-vivo='true'] {
+    animation: latir 1.2s ease-in-out infinite;
+  }
+  @keyframes latir {
+    50% {
+      opacity: 0.25;
+      transform: scale(0.7);
+    }
+  }
 }

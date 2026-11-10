@@ -133,6 +133,7 @@ function estado(texto: string, tono: 'muted' | 'warn' | 'err' | 'ok' = 'muted') 
 }
 
 function actualizarBoton() {
+  document.body.dataset.enCurso = String(enCurso);
   const b = $<HTMLButtonElement>('#descargar');
   b.textContent = enCurso ? 'Cancelar' : 'Descargar ZIP';
   b.className = `btn ${enCurso ? 'btn-s' : 'btn-p'} flex-1`;
@@ -170,7 +171,84 @@ async function conectar() {
   actualizarBoton();
 }
 
+const FASE: Record<string, { texto: string; tono: string }> = {
+  consultando: { texto: 'Consultando', tono: 'accent' },
+  descargando: { texto: 'Descargando', tono: 'accent' },
+  empaquetando: { texto: 'Armando ZIP', tono: 'accent' },
+  listo: { texto: 'Listo', tono: 'ok' },
+  cancelado: { texto: 'Cancelado', tono: 'warn' },
+  error: { texto: 'Detenido', tono: 'err' },
+};
+const ICONO_PASO: Record<string, string> = {
+  pendiente: '·',
+  consultando: '⟳',
+  descargando: '↓',
+  'sin-datos': '–',
+  ok: '✓',
+  fallida: '✕',
+};
+const TONO_PASO: Record<string, string> = {
+  pendiente: 'text-muted',
+  consultando: 'text-accent',
+  descargando: 'text-accent',
+  'sin-datos': 'text-muted',
+  ok: 'text-ok',
+  fallida: 'text-err',
+};
+
+let actual: EstadoTrabajo | undefined;
+const SIN_SENAL_MS = 60_000;
+
+const duracion = (ms: number) => {
+  const s = Math.max(0, Math.round(ms / 1000));
+  return s < 60 ? `${s} s` : `${Math.floor(s / 60)} min ${String(s % 60).padStart(2, '0')} s`;
+};
+const hora = (t: number) => new Date(t).toLocaleTimeString('es-EC', { hour12: false });
+
+function li(texto: string, clase: string) {
+  const el = document.createElement('li');
+  el.textContent = texto;
+  el.className = clase;
+  return el;
+}
+
+/** Se repinta cada segundo: pulso de vida, cuenta regresiva y tiempo transcurrido. */
+function pintarPulso() {
+  const p = actual;
+  if (!p) return;
+  const ahora = Date.now();
+  const activo = ['consultando', 'descargando', 'empaquetando'].includes(p.fase);
+  const latido = $('#prog-latido');
+  const texto = $('#prog-pulso-texto');
+  const silencio = ahora - p.actualizado;
+  if (!activo) {
+    latido.dataset.vivo = 'false';
+    latido.className = 'latido opacity-40';
+    texto.textContent = `terminó a las ${hora(p.actualizado)}`;
+  } else if (p.esperaHasta && p.esperaHasta > ahora) {
+    latido.dataset.vivo = 'true';
+    latido.className = 'latido';
+    texto.textContent = `siguiente paso en ${Math.ceil((p.esperaHasta - ahora) / 1000)} s`;
+  } else if (silencio > SIN_SENAL_MS) {
+    latido.dataset.vivo = 'false';
+    latido.className = 'latido bg-warn';
+    texto.textContent = `sin señal hace ${duracion(silencio)}`;
+  } else {
+    latido.dataset.vivo = 'true';
+    latido.className = 'latido';
+    texto.textContent = `activo · señal hace ${duracion(silencio)}`;
+  }
+  const transcurrido = (activo ? ahora : p.actualizado) - (p.inicio || p.actualizado);
+  let estimado = '';
+  if (activo && p.consultasHechas > 0 && p.consultasTotal > p.consultasHechas) {
+    const resto = (transcurrido / p.consultasHechas) * (p.consultasTotal - p.consultasHechas);
+    estimado = ` · faltan ~${duracion(resto)}`;
+  }
+  $('#prog-tiempo').textContent = `Transcurrido ${duracion(transcurrido)}${estimado}`;
+}
+
 function pintarProgreso(p: EstadoTrabajo | undefined) {
+  actual = p;
   const caja = $('#progreso');
   if (!p) {
     caja.hidden = true;
@@ -178,22 +256,54 @@ function pintarProgreso(p: EstadoTrabajo | undefined) {
   }
   caja.hidden = false;
   enCurso = ['consultando', 'descargando', 'empaquetando'].includes(p.fase) && (pagina?.ocupado ?? true);
-  const pct = p.consultasTotal ? Math.round((p.consultasHechas / p.consultasTotal) * 100) : 0;
-  $('#prog-consultas').textContent = `Consulta ${p.consultasHechas} de ${p.consultasTotal}`;
-  $('#prog-pct').textContent = `${pct} %`;
-  $('#prog-barra').style.width = `${p.fase === 'listo' ? 100 : pct}%`;
+
+  const fase = FASE[p.fase] ?? { texto: p.fase, tono: 'muted' };
+  const pill = $('#prog-fase');
+  pill.textContent = fase.texto;
+  pill.className = `pill bg-bg text-${fase.tono}`;
+
+  // La consulta en curso cuenta como media para que la barra avance durante las descargas.
+  const enCursoParcial = p.pasos?.some((x) => x.estado === 'descargando' || x.estado === 'consultando') ? 0.5 : 0;
+  const pct = p.fase === 'listo' ? 100 : p.consultasTotal ? Math.min(99, Math.round(((p.consultasHechas + enCursoParcial) / p.consultasTotal) * 100)) : 0;
+  $('#prog-barra').style.width = `${pct}%`;
+  $('#prog-consultas').textContent = `Consulta ${Math.min(p.consultasHechas + (enCursoParcial ? 1 : 0), p.consultasTotal)} de ${p.consultasTotal} · ${pct} %`;
   $('#prog-cifras').textContent = `${p.encontrados} comprobantes · ${p.descargados} archivos${p.fallidos ? ` · ${p.fallidos} fallidos` : ''}`;
+
   const msg = $('#prog-mensaje');
-  msg.textContent = p.verificacion ? 'El SRI pide verificar el captcha en la pestaña del portal.' : p.mensaje;
-  msg.className = `text-[12px] text-${p.fase === 'error' ? 'err' : p.fase === 'listo' ? 'ok' : p.verificacion ? 'warn' : 'muted'}`;
-  $('#prog-fallidas').innerHTML = '';
-  for (const f of [...(p.consultasFallidas ?? []), ...(p.errores ?? [])]) {
-    const li = document.createElement('li');
-    li.textContent = f;
-    $('#prog-fallidas').append(li);
+  msg.textContent = p.verificacion ? 'El SRI muestra una verificación en la pestaña del portal.' : p.mensaje;
+  msg.className = `text-[12.5px] font-semibold text-${p.fase === 'error' ? 'err' : p.fase === 'listo' ? 'ok' : p.verificacion ? 'warn' : 'ink'}`;
+
+  const pasos = $('#prog-pasos');
+  pasos.innerHTML = '';
+  for (const x of p.pasos ?? []) {
+    const fila = document.createElement('li');
+    fila.className = 'paso';
+    fila.dataset.estado = x.estado;
+    const izq = document.createElement('span');
+    izq.className = `flex items-center gap-1.5 ${TONO_PASO[x.estado] ?? ''}`;
+    izq.textContent = `${ICONO_PASO[x.estado] ?? '·'} ${x.etiqueta}`;
+    const der = document.createElement('span');
+    der.className = 'font-mono text-muted tabular-nums';
+    der.textContent =
+      x.estado === 'sin-datos' ? 'sin comprobantes' : x.estado === 'pendiente' ? '' : x.estado === 'fallida' ? 'falló' : x.estado === 'consultando' ? 'consultando…' : `${x.comprobantes}`;
+    fila.append(izq, der);
+    pasos.append(fila);
   }
+  pasos.querySelector('[data-estado="consultando"],[data-estado="descargando"]')?.scrollIntoView({ block: 'nearest' });
+
+  const act = $('#prog-actividad');
+  act.innerHTML = '';
+  for (const a of [...(p.actividad ?? [])].reverse().slice(0, 25)) {
+    act.append(li(`${hora(a.t)}  ${a.texto}`, a.nivel === 'error' ? 'text-err' : a.nivel === 'aviso' ? 'text-warn' : 'text-muted'));
+  }
+
+  $('#prog-fallidas').innerHTML = '';
+  for (const f of [...(p.consultasFallidas ?? []), ...(p.errores ?? [])]) $('#prog-fallidas').append(li(f, ''));
+  pintarPulso();
   actualizarBoton();
 }
+
+setInterval(pintarPulso, 1000);
 
 function leerTrabajo(): Trabajo {
   return {
