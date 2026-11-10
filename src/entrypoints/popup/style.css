@@ -63,6 +63,21 @@
   .pill {
     @apply inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 font-mono text-[11px] font-medium;
   }
+  .pestana {
+    @apply -mb-px flex cursor-pointer items-center gap-1.5 border-b-2 border-transparent px-3 py-2 text-[12.5px] font-semibold text-muted disabled:cursor-not-allowed disabled:opacity-40;
+  }
+  .pestana[aria-selected='true'] {
+    @apply border-accent text-ink;
+  }
+  .indicador {
+    @apply inline-block size-1.5 rounded-full bg-accent;
+  }
+  .indicador[data-estado='listo'] {
+    @apply bg-ok;
+  }
+  .indicador[data-estado='error'] {
+    @apply bg-err;
+  }
   .latido {
     @apply inline-block size-2 rounded-full bg-ok;
   }
@@ -75,13 +90,10 @@
   }
 }
 
-/* Mientras descarga, el formulario se oculta y el progreso queda arriba. */
-body[data-en-curso='true'] .form-seccion {
-  display: none;
-}
 
 @media (prefers-reduced-motion: no-preference) {
-  .latido[data-vivo='true'] {
+  .latido[data-vivo='true'],
+  .indicador[data-estado='activo'] {
     animation: latir 1.2s ease-in-out infinite;
   }
   @keyframes latir {

@@ -17,7 +17,14 @@
       </div>
     </header>
 
-    <main class="flex flex-col gap-3.5 bg-surface p-3.5">
+    <nav class="flex border-b border-line bg-surface px-2" role="tablist" aria-label="Secciones">
+      <button type="button" id="tab-form" class="pestana" role="tab" aria-selected="true" aria-controls="panel-form">Nueva descarga</button>
+      <button type="button" id="tab-descargas" class="pestana" role="tab" aria-selected="false" aria-controls="panel-descargas">
+        Descargas <i id="tab-indicador" class="indicador" hidden></i>
+      </button>
+    </nav>
+
+    <main id="panel-form" class="flex flex-col gap-3.5 bg-surface p-3.5" role="tabpanel" aria-labelledby="tab-form">
       <section class="form-seccion flex flex-col gap-2">
         <span class="etiqueta">Periodo</span>
         <div class="flex flex-wrap gap-1.5" role="group" aria-label="Tipo de periodo">
@@ -48,6 +55,11 @@
         </div>
       </section>
 
+      <p id="plan" class="form-seccion rounded-lg border border-line bg-bg px-2.5 py-2 font-mono text-[11.5px] text-muted tabular-nums" aria-live="polite"></p>
+    </main>
+
+    <main id="panel-descargas" class="flex flex-col gap-3.5 bg-surface p-3.5" role="tabpanel" aria-labelledby="tab-descargas" hidden>
+      <p id="sin-descargas" class="py-8 text-center text-[12.5px] text-muted">Aquí verás el avance de tus descargas: cada consulta al SRI, los archivos y cualquier aviso.</p>
       <section id="progreso" class="flex flex-col gap-2.5 rounded-lg border border-line p-2.5" hidden aria-live="polite">
         <div class="flex items-center justify-between gap-2">
           <span id="prog-fase" class="pill"></span>
@@ -69,7 +81,6 @@
         <ul id="prog-fallidas" class="list-disc pl-4 text-[11.5px] text-err"></ul>
       </section>
 
-      <p id="plan" class="form-seccion rounded-lg border border-line bg-bg px-2.5 py-2 font-mono text-[11.5px] text-muted tabular-nums" aria-live="polite"></p>
     </main>
 
     <footer class="flex flex-col gap-2 border-t border-line bg-bg px-3.5 py-3">

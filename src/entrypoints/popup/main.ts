@@ -132,13 +132,40 @@ function estado(texto: string, tono: 'muted' | 'warn' | 'err' | 'ok' = 'muted') 
   el.className = `text-[12px] text-${tono}`;
 }
 
+type Pestana = 'form' | 'descargas';
+let pestanaActiva: Pestana = 'form';
+
+function mostrarPestana(cual: Pestana) {
+  pestanaActiva = cual;
+  for (const [id, panel] of [['form', 'panel-form'], ['descargas', 'panel-descargas']] as const) {
+    $(`#tab-${id}`).setAttribute('aria-selected', String(id === cual));
+    $(`#${panel}`).hidden = id !== cual;
+  }
+  actualizarBoton();
+}
+
 function actualizarBoton() {
-  document.body.dataset.enCurso = String(enCurso);
+  // Mientras descarga, el formulario queda bloqueado y se ve la pestaña Descargas.
+  const tabForm = $<HTMLButtonElement>('#tab-form');
+  tabForm.disabled = enCurso;
+  tabForm.title = enCurso ? 'Disponible al terminar la descarga en curso' : '';
+  if (enCurso && pestanaActiva === 'form') mostrarPestana('descargas');
+
   const b = $<HTMLButtonElement>('#descargar');
-  b.textContent = enCurso ? 'Cancelar' : 'Descargar ZIP';
-  b.className = `btn ${enCurso ? 'btn-s' : 'btn-p'} flex-1`;
   const planOk = !$('#plan').className.includes('text-err');
-  b.disabled = !enCurso && (!pagina?.bandeja || !planOk);
+  if (enCurso) {
+    b.textContent = 'Cancelar descarga';
+    b.className = 'btn btn-s flex-1';
+    b.disabled = false;
+  } else if (pestanaActiva === 'descargas') {
+    b.textContent = 'Nueva descarga';
+    b.className = 'btn btn-p flex-1';
+    b.disabled = false;
+  } else {
+    b.textContent = 'Descargar ZIP';
+    b.className = 'btn btn-p flex-1';
+    b.disabled = !pagina?.bandeja || !planOk;
+  }
 }
 
 const pedirEstado = async (id: number) => {
@@ -276,12 +303,17 @@ function pintarPulso() {
 function pintarProgreso(p: EstadoTrabajo | undefined) {
   actual = p;
   const caja = $('#progreso');
+  const indicador = $('#tab-indicador');
+  $('#sin-descargas').hidden = !!p;
   if (!p) {
     caja.hidden = true;
+    indicador.hidden = true;
     return;
   }
   caja.hidden = false;
   enCurso = ['consultando', 'descargando', 'empaquetando'].includes(p.fase) && (pagina?.ocupado ?? true);
+  indicador.hidden = false;
+  indicador.dataset.estado = enCurso ? 'activo' : p.fase === 'listo' ? 'listo' : 'error';
 
   const fase = FASE[p.fase] ?? { texto: p.fase, tono: 'muted' };
   const pill = $('#prog-fase');
@@ -345,7 +377,14 @@ function leerTrabajo(): Trabajo {
   };
 }
 
+$('#tab-form').addEventListener('click', () => !enCurso && mostrarPestana('form'));
+$('#tab-descargas').addEventListener('click', () => mostrarPestana('descargas'));
+
 $('#descargar').addEventListener('click', async () => {
+  if (!enCurso && pestanaActiva === 'descargas') {
+    mostrarPestana('form');
+    return;
+  }
   if (pestana === null) return;
   if (enCurso) {
     await browser.tabs.sendMessage(pestana, { tipo: 'cancelar' } satisfies Peticion);
@@ -364,7 +403,7 @@ $('#descargar').addEventListener('click', async () => {
   }
   enCurso = true;
   if (pagina) pagina.ocupado = true;
-  actualizarBoton();
+  mostrarPestana('descargas');
 });
 
 browser.storage.onChanged.addListener((cambios, area) => {
