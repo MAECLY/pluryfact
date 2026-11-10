@@ -137,7 +137,7 @@ export class SesionCaducada extends Error {
 }
 
 export const MENSAJE_SESION =
-  'Tu sesión del SRI caducó. Inicia sesión de nuevo, entra a la pantalla de comprobantes y pulsa «Reanudar»: Legajo seguirá con lo que faltaba.';
+  'Tu sesión del SRI caducó. Inicia sesión otra vez en la pestaña del portal, entra a la pantalla de comprobantes y pulsa Reanudar.';
 
 /** Pausa entre consultas: recibidos usa reCAPTCHA, así que va más despacio. */
 export const RITMO = {
