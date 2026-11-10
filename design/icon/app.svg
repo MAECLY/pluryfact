@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024">
+  <!-- Legajo: carpeta manila atada con cinta roja sobre tinta. Baldosa 100..924. -->
+  <rect x="100" y="100" width="824" height="824" rx="168" fill="#1D3A6E"/>
+  <path d="M236 330h196l56 60h300v364H236z" fill="#D9A441"/>
+  <path d="M236 432h552" stroke="#B8862E" stroke-width="18"/>
+  <path d="M512 390v364" stroke="#C8102E" stroke-width="34"/>
+  <circle cx="512" cy="586" r="52" fill="none" stroke="#C8102E" stroke-width="30"/>
+</svg>

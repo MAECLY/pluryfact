@@ -13,7 +13,8 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
-    "check": "bun run typecheck && bun run test && bun run build"
+    "check": "bun run typecheck && bun run test && bun run build",
+    "icons": "bun scripts/icons.ts"
   },
   "devDependencies": {
     "@tailwindcss/vite": "4.3.3",

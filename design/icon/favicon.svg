@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024">
+  <!-- Versión 16/32 px: sin margen, trazos más gruesos y sin la línea interior. -->
+  <rect width="1024" height="1024" rx="200" fill="#1D3A6E"/>
+  <path d="M150 270h260l70 80h394v474H150z" fill="#D9A441"/>
+  <path d="M512 350v474" stroke="#C8102E" stroke-width="70"/>
+</svg>
