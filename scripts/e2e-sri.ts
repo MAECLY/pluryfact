@@ -151,8 +151,8 @@ async function ronda(sri: Page): Promise<string> {
   for (const el of await popup.$$('#campos-periodo input, #campos-periodo select')) await el.dispatchEvent('change');
 
   const tipos = (process.env.E2E_TIPOS ?? 'factura').split(',');
-  await popup.$$eval('#tipos input', (els, ts) => els.forEach((e) => ((e as HTMLInputElement).checked = ts.includes((e as HTMLInputElement).dataset.tipo!)) || e.dispatchEvent(new Event('change'))), tipos);
-  for (const t of tipos) await popup.check(`#tipos input[data-tipo="${t}"]`, { force: true });
+  await popup.$$eval('[data-ref="tipos"] input', (els, ts) => els.forEach((e) => ((e as HTMLInputElement).checked = ts.includes((e as HTMLInputElement).dataset.tipo!)) || e.dispatchEvent(new Event('change'))), tipos);
+  for (const t of tipos) await popup.check(`[data-ref="tipos"] input[data-tipo="${t}"]`, { force: true });
   const formatos = (process.env.E2E_FORMATOS ?? 'xml,pdf').split(',');
   for (const f of ['xml', 'pdf', 'txt']) await popup.setChecked(`#f-${f}`, formatos.includes(f));
   if (process.env.E2E_EMISOR && bandeja === 'recibidos') await popup.fill('#emisor', process.env.E2E_EMISOR);
@@ -165,7 +165,7 @@ async function ronda(sri: Page): Promise<string> {
   // Progreso en consola mientras corre.
   let ultimo = '';
   const reloj = setInterval(async () => {
-    const txt = [await popup.textContent('#prog-mensaje'), await popup.textContent('#prog-cifras')].join(' ');
+    const txt = [await popup.textContent('.estado-frase'), await popup.textContent('[data-cifras]')].join(' ');
     if (txt !== ultimo) console.log(`  ${txt}`);
     ultimo = txt;
   }, 2000);
@@ -192,7 +192,7 @@ async function ronda(sri: Page): Promise<string> {
   const segundos = Math.round((Date.now() - t0) / 1000);
 
   if (!terminado.d) {
-    comprobar(false, 'la descarga produjo un ZIP', (await popup.textContent('#prog-mensaje')) ?? '');
+    comprobar(false, 'la descarga produjo un ZIP', (await popup.textContent('.estado-frase')) ?? '');
   } else {
     const ruta = join(salida, terminado.d.suggestedFilename());
     await terminado.d.saveAs(ruta);
@@ -220,7 +220,7 @@ async function ronda(sri: Page): Promise<string> {
     }
   }
 
-  const fallidas = await popup.$$eval('#prog-fallidas li', (ls) => ls.map((l) => l.textContent));
+  const fallidas = await popup.$$eval('.fallidas li', (ls) => ls.map((l) => l.textContent));
   comprobar(fallidas.length === 0, 'sin consultas fallidas', fallidas.join('; '));
 
   await popup.close();
