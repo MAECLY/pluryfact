@@ -117,8 +117,10 @@ export default defineContentScript({
           descargar(armarZip(r.archivos), nombre);
           base.zip = nombre;
         }
-        const fase = r.progreso.fase === 'cancelado' ? 'cancelado' : 'listo';
-        const mensaje = r.archivos.length
+        const fase = r.progreso.fase === 'cancelado' ? 'cancelado' : r.detenidaPor ? 'error' : 'listo';
+        const mensaje = r.detenidaPor
+          ? `${r.detenidaPor}${r.archivos.length ? ` Se guardó lo ya descargado (${r.archivos.length} archivos).` : ''}`
+          : r.archivos.length
           ? `ZIP con ${r.archivos.length} archivos`
           : fase === 'cancelado'
             ? 'Descarga cancelada'
