@@ -61,9 +61,19 @@ export function dentroDeRango(f: Fecha, r: { desde: Fecha; hasta: Fecha }): bool
   return compararFechas(f, r.desde) >= 0 && compararFechas(f, r.hasta) <= 0;
 }
 
-/** Emitidos: la pantalla solo filtra por un día, así que hay una consulta por día. */
+export function diaAnterior(f: Fecha): Fecha {
+  const d = aDate(f);
+  d.setUTCDate(d.getUTCDate() - 1);
+  return deDate(d);
+}
+
+/**
+ * Emitidos: la pantalla solo filtra por un día, así que hay una consulta por
+ * día. El portal no acepta el día de hoy ("La fecha ingresada debe ser menor a
+ * la fecha actual", verificado en vivo), así que el último día es ayer.
+ */
 export function consultasEmitidos(p: Periodo, hoy: Fecha): Fecha[] {
-  const { desde, hasta } = aRango(p, hoy);
+  const { desde, hasta } = aRango(p, diaAnterior(hoy));
   const dias: Fecha[] = [];
   for (let d = aDate(desde); d <= aDate(hasta); d.setUTCDate(d.getUTCDate() + 1)) dias.push(deDate(d));
   return dias;

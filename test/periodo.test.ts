@@ -34,6 +34,13 @@ describe('consultasEmitidos', () => {
     expect(dias.map(formatoSri)).toEqual(['30/12/2025', '31/12/2025', '01/01/2026', '02/01/2026']);
   });
 
+  it('termina ayer: el portal rechaza el día de hoy', () => {
+    const dias = consultasEmitidos({ tipo: 'mes', anio: 2026, mes: 11 }, hoy);
+    expect(dias.at(-1)).toEqual({ anio: 2026, mes: 11, dia: 8 });
+    expect(dias).toHaveLength(8);
+    expect(() => consultasEmitidos({ tipo: 'dia', fecha: hoy }, hoy)).toThrow(/futuro/);
+  });
+
   it('un año bisiesto completo son 366 consultas', () => {
     expect(consultasEmitidos({ tipo: 'anio', anio: 2024 }, hoy)).toHaveLength(366);
   });
