@@ -6,18 +6,29 @@ import { bandejaDePagina, consultar, siguientePagina } from '../src/lib/conducto
 const fx = (n: string) => readFileSync(resolve(process.cwd(), 'test/fixtures', n), 'utf8');
 
 /** Ventana falsa con un jQuery mínimo: al pulsar el botón, `alPulsar` simula la respuesta del portal. */
-function ventana(html: string, alPulsar: (doc: Document) => void) {
+type H = (ev: unknown, xhr: unknown, o?: { data?: string }) => void;
+const LISTADO = { data: 'javax.faces.partial.render=frmPrincipal%3ApanelListaComprobantes+frmPrincipal%3AtablaCompRecibidos' };
+const BOTON_SOLO = { data: 'javax.faces.source=frmPrincipal%3AbtnBuscar' };
+
+let anterior: AbortController | null = null;
+
+function ventana(html: string, alPulsar: (doc: Document) => void, respuestas: Array<{ data: string }> = [LISTADO]) {
   document.body.innerHTML = html + '<div id="formMessages:messages"></div>';
-  const handlers = new Set<() => void>();
-  const jq = () => ({ on: (_: string, h: () => void) => handlers.add(h), off: (_: string, h: () => void) => handlers.delete(h) });
+  const handlers = new Set<H>();
+  const jq = () => ({ on: (_: string, h: H) => handlers.add(h), off: (_: string, h: H) => handlers.delete(h) });
   (window as unknown as { jQuery: unknown }).jQuery = jq;
+  anterior?.abort();
+  anterior = new AbortController();
   document.addEventListener(
     'click',
     () => {
-      alPulsar(document);
-      handlers.forEach((h) => h());
+      // Como el portal: primero respuestas que no actualizan el listado y luego la real.
+      for (const [i, o] of respuestas.entries()) {
+        if (i === respuestas.length - 1) alPulsar(document);
+        [...handlers].forEach((h) => h({}, {}, o));
+      }
     },
-    { capture: true },
+    { capture: true, signal: anterior.signal },
   );
   return window;
 }
@@ -45,6 +56,22 @@ describe('conductor', () => {
     });
     const r = await consultar(w, { bandeja: 'emitidos', tipoCombo: '1', fecha: '06/11/2026' }, () => {});
     expect(fechaAlPulsar).toBe('06/11/2026');
+    expect(r.estado).toBe('ok');
+  });
+
+  it('recibidos: ignora la petición inmediata del botón y espera la del listado', async () => {
+    let tablaAlLeer = 0;
+    const w = ventana(
+      conBoton(fx('recibidos-tabla.html').replace(/<tr data-ri[\s\S]*?<\/tr>/g, ''), 'frmPrincipal:btnBuscar'),
+      (doc) => {
+        // La consulta real llena la tabla.
+        doc.getElementById('frmPrincipal:tablaCompRecibidos_data')!.innerHTML = '<tr data-ri="0"><td>1</td></tr>';
+        tablaAlLeer = 1;
+      },
+      [BOTON_SOLO, LISTADO],
+    );
+    const r = await consultar(w, { bandeja: 'recibidos', tipoCombo: '1', anio: 2026, mes: 11, dia: 0 }, () => {});
+    expect(tablaAlLeer).toBe(1);
     expect(r.estado).toBe('ok');
   });
 

@@ -33,7 +33,24 @@ export interface MensajeCanal {
 
 const TIEMPO = { consulta: 45_000, verificacion: 300_000, pagina: 20_000 };
 
-type JQ = (t: unknown) => { on(e: string, h: () => void): void; off(e: string, h: () => void): void };
+type AlCompletar = (ev: unknown, xhr: unknown, opciones?: { data?: unknown }) => void;
+type JQ = (t: unknown) => { on(e: string, h: AlCompletar): void; off(e: string, h: AlCompletar): void };
+
+/**
+ * En recibidos, Consultar lanza DOS peticiones: un PrimeFaces.ab inmediato
+ * del botón (sin actualizar nada) y, tras el reCAPTCHA, la consulta real
+ * (rcBuscar) que actualiza panelListaComprobantes. Solo la segunda cuenta.
+ */
+export const actualizaListado = (opciones?: { data?: unknown }) => {
+  const d = typeof opciones?.data === 'string' ? opciones.data : '';
+  let texto = d;
+  try {
+    texto = decodeURIComponent(d.replace(/\+/g, ' '));
+  } catch {
+    /* data no codificada */
+  }
+  return texto.includes('panelListaComprobantes');
+};
 
 /** El desafío visible de reCAPTCHA es un iframe "bframe" con tamaño real. */
 export function desafioVisible(doc: Document): boolean {
@@ -50,6 +67,7 @@ function pulsarYEsperar(
   boton: HTMLElement,
   limite: number,
   alVerificar: () => void,
+  esLaRespuesta: (opciones?: { data?: unknown }) => boolean = () => true,
 ): Promise<'ok' | 'timeout'> {
   const $ = (win as unknown as { jQuery?: JQ }).jQuery;
   return new Promise((resolver) => {
@@ -65,7 +83,9 @@ function pulsarYEsperar(
       resolver(v);
     };
     // Pequeña espera para que PrimeFaces pinte la respuesta antes de leerla.
-    const alCompletar = () => setTimeout(() => fin('ok'), 200);
+    const alCompletar: AlCompletar = (_ev, _xhr, opciones) => {
+      if (esLaRespuesta(opciones)) setTimeout(() => fin('ok'), 200);
+    };
     $?.(win.document).on('ajaxComplete', alCompletar);
     const reloj = setInterval(() => {
       if (desafioVisible(win.document)) {
@@ -129,7 +149,7 @@ export async function consultar(win: Window, c: ConsultaPortal, alVerificar: () 
   if (!boton) return { estado: 'error', mensaje: 'No se encontró el botón Consultar' };
   if ((boton as HTMLButtonElement).disabled) return { estado: 'timeout', mensaje: 'El portal sigue procesando la consulta anterior' };
 
-  const r = await pulsarYEsperar(win, boton, TIEMPO.consulta, alVerificar);
+  const r = await pulsarYEsperar(win, boton, TIEMPO.consulta, alVerificar, actualizaListado);
   const mensaje = textoMensajes(doc);
   const tipo = clasificarMensaje(mensaje);
   if (tipo === 'sin-datos') return { estado: 'sin-datos', mensaje };
