@@ -82,6 +82,7 @@ export default defineContentScript({
         descargados: 0,
         fallidos: 0,
         mensaje: 'Preparando la descarga',
+        errores: [],
         ...base,
         verificacion: false,
         actualizado: Date.now(),
@@ -129,7 +130,7 @@ export default defineContentScript({
       } catch (e) {
         if (!(e instanceof Cancelado)) {
           await guardar({
-            ...(ultimo ?? { consultasHechas: 0, consultasTotal: 0, encontrados: 0, descargados: 0, fallidos: 0 }),
+            ...(ultimo ?? { consultasHechas: 0, consultasTotal: 0, encontrados: 0, descargados: 0, fallidos: 0, errores: [] }),
             ...base,
             fase: 'error',
             mensaje: e instanceof Error ? e.message : String(e),

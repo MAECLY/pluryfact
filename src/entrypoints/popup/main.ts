@@ -187,7 +187,7 @@ function pintarProgreso(p: EstadoTrabajo | undefined) {
   msg.textContent = p.verificacion ? 'El SRI pide verificar el captcha en la pestaña del portal.' : p.mensaje;
   msg.className = `text-[12px] text-${p.fase === 'error' ? 'err' : p.fase === 'listo' ? 'ok' : p.verificacion ? 'warn' : 'muted'}`;
   $('#prog-fallidas').innerHTML = '';
-  for (const f of p.consultasFallidas ?? []) {
+  for (const f of [...(p.consultasFallidas ?? []), ...(p.errores ?? [])]) {
     const li = document.createElement('li');
     li.textContent = f;
     $('#prog-fallidas').append(li);
