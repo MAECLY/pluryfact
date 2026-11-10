@@ -104,6 +104,27 @@ describe('ejecutar', () => {
     expect(r.consultasFallidas).toEqual(['2026-11: El SRI rechazó la consulta', '2026-11: El SRI rechazó la consulta']);
   });
 
+  it('captcha rechazado: espera larga, un reintento y se detiene sin seguir consultando', async () => {
+    const consultar = vi.fn(async () => ({ estado: 'captcha' as const, mensaje: 'Captcha incorrecta' }));
+    const { d } = deps({ consultar });
+    const r = await ejecutar({ ...base, tipos: ['factura', 'retencion'] }, d);
+    expect(consultar).toHaveBeenCalledTimes(2); // la primera consulta y su reintento; la de retenciones no se intenta
+    expect(d.esperar).toHaveBeenCalledWith(75_000);
+    expect(r.detenidaPor).toMatch(/rechazó la verificación/);
+    expect(r.consultasFallidas).toEqual(['2026-11: Captcha incorrecta']);
+  });
+
+  it('captcha rechazado una vez y aceptado al reintentar: sigue normal', async () => {
+    const consultar = vi
+      .fn()
+      .mockResolvedValueOnce({ estado: 'captcha', mensaje: 'Captcha incorrecta' })
+      .mockResolvedValueOnce({ estado: 'ok', mensaje: '' });
+    const { d } = deps({ consultar });
+    const r = await ejecutar({ ...base, formatos: { xml: true, pdf: false, txt: false } }, d);
+    expect(r.detenidaPor).toBeNull();
+    expect(r.archivos).toHaveLength(2);
+  });
+
   it('cuenta como fallido un XML que el SRI no tiene autorizado', async () => {
     const { d } = deps({ xml: vi.fn(async () => null) });
     const r = await ejecutar({ ...base, formatos: { xml: true, pdf: false, txt: false } }, d);

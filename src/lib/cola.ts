@@ -27,7 +27,7 @@ export type ConsultaPortal =
   | { bandeja: 'recibidos'; tipoCombo: string; anio: number; mes: number; dia: number }
   | { bandeja: 'emitidos'; tipoCombo: string; fecha: string };
 
-export type EstadoConsulta = 'ok' | 'sin-datos' | 'rechazada' | 'timeout' | 'error';
+export type EstadoConsulta = 'ok' | 'sin-datos' | 'rechazada' | 'captcha' | 'timeout' | 'error';
 
 export interface ResultadoConsulta {
   estado: EstadoConsulta;
@@ -81,6 +81,8 @@ export class Cancelado extends Error {
 /** Pausa entre consultas: recibidos usa reCAPTCHA, así que va más despacio. */
 export const RITMO = {
   recibidos: { base: 4000, extra: 5000 },
+  /** Tras un "Captcha incorrecta": una sola espera larga antes de reintentar. */
+  captcha: { base: 60_000, extra: 30_000 },
   emitidos: { base: 600, extra: 900 },
   descarga: { base: 250, extra: 450 },
 } as const;
@@ -119,7 +121,12 @@ export interface Resumen {
   progreso: Progreso;
   /** Consultas que fallaron tras reintentar, para mostrarlas al usuario. */
   consultasFallidas: string[];
+  /** Motivo por el que la cola se detuvo antes de terminar el plan. */
+  detenidaPor: string | null;
 }
+
+export const MENSAJE_CAPTCHA =
+  'El SRI rechazó la verificación reCAPTCHA. Legajo se detuvo para no insistir: usa tu Chrome habitual, espera unos minutos y vuelve a intentar.';
 
 export async function ejecutar(t: Trabajo, d: Dependencias): Promise<Resumen> {
   const plan = planificar(t, d.hoy);
@@ -137,6 +144,7 @@ export async function ejecutar(t: Trabajo, d: Dependencias): Promise<Resumen> {
   const archivos: Archivo[] = [];
   const consultasFallidas: string[] = [];
   const vistos = new Set<string>();
+  let detenidaPor: string | null = null;
   const avisar = (cambios: Partial<Progreso>) => {
     Object.assign(p, cambios);
     d.progreso({ ...p });
@@ -159,6 +167,16 @@ export async function ejecutar(t: Trabajo, d: Dependencias): Promise<Resumen> {
         await d.esperar(5000);
         revisar();
         r = await d.consultar(consulta);
+      } else if (r.estado === 'captcha') {
+        avisar({ mensaje: 'El SRI pidió repetir la verificación; reintento en un minuto' });
+        await pausa(RITMO.captcha);
+        revisar();
+        r = await d.consultar(consulta);
+      }
+      if (r.estado === 'captcha') {
+        consultasFallidas.push(`${etiqueta}: ${r.mensaje || 'Captcha incorrecta'}`);
+        detenidaPor = MENSAJE_CAPTCHA;
+        break;
       }
       if (r.estado === 'sin-datos') {
         avisar({ consultasHechas: p.consultasHechas + 1 });
@@ -204,12 +222,12 @@ export async function ejecutar(t: Trabajo, d: Dependencias): Promise<Resumen> {
       if (t.formatos.pdf && filas.length) await descargarRides(t.bandeja, filas, d, archivos, avisar, revisar, pausa, p);
       avisar({ consultasHechas: p.consultasHechas + 1 });
     }
-    avisar({ fase: 'empaquetando', mensaje: 'Armando el ZIP' });
-    return { archivos, progreso: { ...p }, consultasFallidas };
+    avisar({ fase: 'empaquetando', mensaje: detenidaPor ?? 'Armando el ZIP' });
+    return { archivos, progreso: { ...p }, consultasFallidas, detenidaPor };
   } catch (e) {
     if (e instanceof Cancelado) {
       avisar({ fase: 'cancelado', mensaje: e.message });
-      return { archivos, progreso: { ...p }, consultasFallidas };
+      return { archivos, progreso: { ...p }, consultasFallidas, detenidaPor };
     }
     avisar({ fase: 'error', mensaje: e instanceof Error ? e.message : String(e) });
     throw e;
