@@ -25,7 +25,10 @@ if (!ruta) {
 }
 const fallos: string[] = [];
 const comprobar = (ok: boolean, msg: string, detalle = '') => {
-  console.log(`${ok ? 'PASS' : 'FAIL'} ${msg}${detalle ? ` — ${detalle}` : ''}`);
+  // Listas largas: los 10 primeros y cuántos más.
+  const partes = detalle.split(', ').filter(Boolean);
+  const corto = partes.length > 10 ? `${partes.slice(0, 10).join(', ')} y ${partes.length - 10} más` : detalle;
+  console.log(`${ok ? 'PASS' : 'FAIL'} ${msg}${corto ? ` — ${corto}` : ''}`);
   if (!ok) fallos.push(msg);
 };
 
@@ -66,7 +69,7 @@ for (const t of txts) {
   const claves = lineas.map((l) => l.split('\t')[i]?.trim()).filter((c): c is string => !!c && /^\d{49}$/.test(c));
   const enZip = new Set(xmls.map((n) => /_(\d{49})\.xml$/.exec(n)?.[1]));
   const faltan = claves.filter((c) => !enZip.has(c));
-  comprobar(faltan.length === 0, `${claves.length} claves del reporte tienen su XML`, faltan.map((c) => c.slice(30, 39)).join(', '));
+  comprobar(faltan.length === 0, `${t.split('/').pop()}: ${claves.length - faltan.length} de ${claves.length} claves con XML`, faltan.map((c) => c.slice(30, 39)).join(', '));
 }
 console.log(fallos.length ? `\n${fallos.length} FALLOS` : '\nTODO OK');
 process.exit(fallos.length ? 1 : 0);
