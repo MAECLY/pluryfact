@@ -80,6 +80,13 @@ Base: `https://srienlinea.sri.gob.ec/comprobantes-electronicos-internet/`. Menú
 - Sin sesión ni captcha, ~100–200 ms por clave. Comprobante escapado con entidades dentro de `<comprobante>`. Clave inexistente → `<numeroComprobantes>0</numeroComprobantes><autorizaciones/>`.
 - Un primer intento dio timeout transitorio: hace falta reintento.
 
+### reCAPTCHA en navegador automatizado (2026-11-09)
+
+- En un Chromium manejado por Playwright (perfil nuevo, `navigator.webdriver`), la consulta real llega al SRI y vuelve con el mensaje **`Captcha incorrecta`**, también al reintentar.
+- En el Chrome habitual de Miguel, 5 consultas seguidas pasaron sin desafío.
+- Conclusión: las pruebas de **recibidos** se hacen con Legajo instalado en un Chrome normal. No se disfraza el navegador de pruebas.
+- Secuencia real de Consultar en recibidos: `deshabilitarBoton(this)` → `PrimeFaces.ab` inmediato del botón (no trae el listado) → reCAPTCHA → `rcBuscar` (actualiza `panelListaComprobantes`) → `onsuccess`: `reactivarBoton`. El conductor da la consulta por terminada cuando el botón se rehabilita.
+
 ## Verificado en vivo (2026-11-09, emitidos)
 
 - **Sin reCAPTCHA** (`executeRecaptcha` no existe en la página). 10 consultas de un día seguidas, 1,5 s entre cada una: sin freno; ~0,4–0,75 s por consulta.
