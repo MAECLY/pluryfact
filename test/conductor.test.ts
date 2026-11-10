@@ -75,6 +75,20 @@ describe('conductor', () => {
     expect(r.estado).toBe('ok');
   });
 
+  it('si el ajaxComplete no trae el listado, termina cuando cambia el panel', async () => {
+    const w = ventana(
+      conBoton(fx('recibidos-tabla.html').replace(/<tr data-ri[\s\S]*?<\/tr>/g, ''), 'frmPrincipal:btnBuscar'),
+      (doc) => {
+        setTimeout(() => {
+          doc.getElementById('frmPrincipal:tablaCompRecibidos_data')!.innerHTML = '<tr data-ri="0"><td>1</td></tr>';
+        }, 50);
+      },
+      [BOTON_SOLO],
+    );
+    const r = await consultar(w, { bandeja: 'recibidos', tipoCombo: '1', anio: 2026, mes: 11, dia: 0 }, () => {});
+    expect(r.estado).toBe('ok');
+  });
+
   it('día sin datos según el mensaje del portal', async () => {
     const w = ventana(conBoton(fx('emitidos-tabla.html'), 'frmPrincipal:btnConsultar'), (doc) => {
       doc.getElementById('frmPrincipal:tablaCompEmitidos_data')!.innerHTML = '';

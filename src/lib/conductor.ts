@@ -68,6 +68,7 @@ function pulsarYEsperar(
   limite: number,
   alVerificar: () => void,
   esLaRespuesta: (opciones?: { data?: unknown }) => boolean = () => true,
+  idsQueCambian: string[] = [],
 ): Promise<'ok' | 'timeout'> {
   const $ = (win as unknown as { jQuery?: JQ }).jQuery;
   return new Promise((resolver) => {
@@ -75,10 +76,13 @@ function pulsarYEsperar(
     let avisado = false;
     let limiteActual = limite;
     const inicio = Date.now();
+    let espera: ReturnType<typeof setTimeout> | undefined;
     const fin = (v: 'ok' | 'timeout') => {
       if (terminado) return;
       terminado = true;
       clearInterval(reloj);
+      clearTimeout(espera);
+      observador?.disconnect();
       $?.(win.document).off('ajaxComplete', alCompletar);
       resolver(v);
     };
@@ -87,6 +91,24 @@ function pulsarYEsperar(
       if (esLaRespuesta(opciones)) setTimeout(() => fin('ok'), 200);
     };
     $?.(win.document).on('ajaxComplete', alCompletar);
+    // Respaldo: PrimeFaces reemplaza el panel del listado o los mensajes al
+    // terminar. Se espera a que el DOM quede quieto 400 ms.
+    const tocaIds = (n: Node | null): boolean => {
+      for (let el = n instanceof Element ? n : n?.parentElement; el; el = el.parentElement)
+        if (idsQueCambian.includes(el.id)) return true;
+      return false;
+    };
+    const observador = idsQueCambian.length
+      ? new MutationObserver((cambios: MutationRecord[]) => {
+          const relevante = cambios.some(
+            (c) => tocaIds(c.target) || Array.from(c.addedNodes).some((n) => n instanceof Element && (idsQueCambian.includes(n.id) || !!n.querySelector?.(idsQueCambian.map((i) => `[id="${i}"]`).join(',')))),
+          );
+          if (!relevante) return;
+          clearTimeout(espera);
+          espera = setTimeout(() => fin('ok'), 400);
+        })
+      : null;
+    observador?.observe(win.document.body, { childList: true, subtree: true, characterData: true });
     const reloj = setInterval(() => {
       if (desafioVisible(win.document)) {
         limiteActual = Math.max(limiteActual, TIEMPO.verificacion);
@@ -149,7 +171,10 @@ export async function consultar(win: Window, c: ConsultaPortal, alVerificar: () 
   if (!boton) return { estado: 'error', mensaje: 'No se encontró el botón Consultar' };
   if ((boton as HTMLButtonElement).disabled) return { estado: 'timeout', mensaje: 'El portal sigue procesando la consulta anterior' };
 
-  const r = await pulsarYEsperar(win, boton, TIEMPO.consulta, alVerificar, actualizaListado);
+  const r = await pulsarYEsperar(win, boton, TIEMPO.consulta, alVerificar, actualizaListado, [
+    'frmPrincipal:panelListaComprobantes',
+    'formMessages:messages',
+  ]);
   const mensaje = textoMensajes(doc);
   const tipo = clasificarMensaje(mensaje);
   if (tipo === 'sin-datos') return { estado: 'sin-datos', mensaje };
