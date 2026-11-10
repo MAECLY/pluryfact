@@ -30,7 +30,7 @@ export function lineaCifras(e: EstadoTrabajo, ahora: number): string {
     else if (silencio > 30_000) partes.push(`Esperando respuesta del SRI desde hace ${Math.round(silencio / 1000)} s.`);
     else if (e.consultasHechas > 0 && e.consultasTotal > e.consultasHechas) {
       const resto = ((ahora - e.inicio) / e.consultasHechas) * (e.consultasTotal - e.consultasHechas);
-      partes.push(`Faltan unos ${duracion(resto)}.`);
+      partes.push(resto < 60_000 ? 'Falta menos de un minuto.' : `Faltan unos ${duracion(resto)}.`);
     }
   } else if (e.fallidos) partes.push(`${miles(e.fallidos)} ${e.fallidos === 1 ? 'archivo no se pudo bajar' : 'archivos no se pudieron bajar'}.`);
   return partes.join(' ');
@@ -48,6 +48,11 @@ function el<K extends keyof HTMLElementTagNameMap>(tag: K, clase: string, texto?
  * obtenidos) para la página; el popup usa la versión compacta.
  */
 export function pintarTarjeta(cont: HTMLElement, e: EstadoTrabajo, completa: boolean, nivelTitulo: 'h1' | 'h2' | 'h3' = 'h1') {
+  // El progreso llega varias veces por segundo: al redibujar se conserva lo
+  // que el usuario abrió y dónde estaba leyendo.
+  const antes = cont.querySelector<HTMLDetailsElement>('details.detalle');
+  const estabaAbierto = !!antes?.open;
+  const scrollActividad = cont.querySelector<HTMLElement>('.actividad')?.scrollTop ?? 0;
   cont.textContent = '';
   cont.append(el(nivelTitulo, 'titulo', tituloTrabajo(e.trabajo)));
   const ol = el('ol', 'fichero');
@@ -98,7 +103,9 @@ export function pintarTarjeta(cont: HTMLElement, e: EstadoTrabajo, completa: boo
     for (const f of fallidas) ul.append(el('li', '', f));
     detalle.append(ul);
   }
+  detalle.open = estabaAbierto;
   cont.append(detalle);
+  if (estabaAbierto) act.scrollTop = scrollActividad;
 }
 
 /** Refresca solo la línea de cifras (cuenta regresiva, silencio, tiempo restante). */
