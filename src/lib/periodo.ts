@@ -73,6 +73,8 @@ export function diaAnterior(f: Fecha): Fecha {
  * la fecha actual", verificado en vivo), así que el último día es ayer.
  */
 export function consultasEmitidos(p: Periodo, hoy: Fecha): Fecha[] {
+  const r = aRango(p, hoy);
+  if (compararFechas(r.desde, hoy) === 0) throw new RangeError('Emitidos se puede consultar hasta ayer');
   const { desde, hasta } = aRango(p, diaAnterior(hoy));
   const dias: Fecha[] = [];
   for (let d = aDate(desde); d <= aDate(hasta); d.setUTCDate(d.getUTCDate() + 1)) dias.push(deDate(d));

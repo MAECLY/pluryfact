@@ -38,7 +38,7 @@ describe('consultasEmitidos', () => {
     const dias = consultasEmitidos({ tipo: 'mes', anio: 2026, mes: 11 }, hoy);
     expect(dias.at(-1)).toEqual({ anio: 2026, mes: 11, dia: 8 });
     expect(dias).toHaveLength(8);
-    expect(() => consultasEmitidos({ tipo: 'dia', fecha: hoy }, hoy)).toThrow(/futuro/);
+    expect(() => consultasEmitidos({ tipo: 'dia', fecha: hoy }, hoy)).toThrow(/hasta ayer/);
   });
 
   it('un año bisiesto completo son 366 consultas', () => {
