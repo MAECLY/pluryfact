@@ -80,4 +80,15 @@ Base: `https://srienlinea.sri.gob.ec/comprobantes-electronicos-internet/`. Menú
 - Sin sesión ni captcha, ~100–200 ms por clave. Comprobante escapado con entidades dentro de `<comprobante>`. Clave inexistente → `<numeroComprobantes>0</numeroComprobantes><autorizaciones/>`.
 - Un primer intento dio timeout transitorio: hace falta reintento.
 
-**Pendiente en vivo:** pantalla de emitidos (consulta por día, reporte, RIDE) y la XML de emitidos, que ahora se resuelve con el servicio web.
+## Verificado en vivo (2026-11-09, emitidos)
+
+- **Sin reCAPTCHA** (`executeRecaptcha` no existe en la página). 10 consultas de un día seguidas, 1,5 s entre cada una: sin freno; ~0,4–0,75 s por consulta.
+- La consulta se dispara con `frmPrincipal:btnConsultar` tras poner `frmPrincipal:calendarFechaDesde_input` (`dd/mm/aaaa`).
+- Mensajes en `formMessages:messages`:
+  - `No existen datos para los parámetros  ingresados` (dos espacios) → día sin comprobantes.
+  - `La fecha ingresada debe ser menor a la fecha actual` → **hoy no se puede consultar**; el último día es ayer.
+- Tabla `frmPrincipal:tablaCompEmitidos`: 10 columnas, enlaces por fila `j_idt53` (detalle), `lnkPdf`, `j_idt78` (relacionados). **Sin enlace de XML.** Paginador con 5/10/15 filas.
+- RIDE por POST (`lnkPdf`): `application/pdf`, `filename="Factura.pdf"`.
+- Reporte TXT: `filename="<RUC>_EmitidosAutorizados.txt"`, 8 columnas `COMPROBANTE SERIE_COMPROBANTE CLAVE_ACCESO FECHA_AUTORIZACION FECHA_EMISION VALOR_SIN_IMPUESTOS IVA IMPORTE_TOTAL`; `FECHA_EMISION` con hora.
+- **XML de emitidos por el servicio web**: comprobado con las dos facturas del 06/11/2026; `importeTotal` del XML coincide con la tabla.
+
