@@ -7,6 +7,7 @@ import { etiquetaPeriodo } from '@/lib/periodo-etiqueta';
 import { CLAVE_AJUSTES, factorRitmo, normalizarAjustes } from '@/lib/ajustes';
 import { agregar, CLAVE_HISTORIAL, type EntradaHistorial } from '@/lib/historial';
 import { crearRegistro } from '@/lib/registro';
+import { pareceSesionCaducada } from '@/lib/sesion';
 import { byId, LINK_REPORTE } from '@/lib/selectors';
 import { hoyEcuador } from '@/entrypoints/popup/estado';
 import { armarZip, nombreZip } from '@/lib/zip';
@@ -73,10 +74,6 @@ export default defineContentScript({
     const formulario = () => byId(document, 'frmPrincipal') as HTMLFormElement | null;
     const ruc = () => (byId(document, 'frmPrincipal:txtParametro') as HTMLInputElement | null)?.value.trim() ?? '';
 
-    /** La respuesta es la página de login de SRI en Línea (Keycloak). */
-    const esLogin = (url: string, html: string, titulo: string) =>
-      /\/auth\/realms\//.test(url) || /login/i.test(titulo) || /kc-form-login|openid-connect\/auth/i.test(html);
-
     async function postArchivo(idEnlace: string): Promise<Uint8Array> {
       const form = formulario();
       if (!form) throw new Error('No se encontró el formulario del portal');
@@ -91,7 +88,7 @@ export default defineContentScript({
         log.aviso(
           `POST ${idEnlace.split(':').slice(-2).join(':')}: ${r.status} ${r.headers.get('content-type') ?? ''} sin adjunto · ${html.length} B · título="${titulo.slice(0, 60)}" · pistas=${pistas || 'ninguna'} · url=${new URL(r.url).pathname.split('/').pop()}`,
         );
-        if (esLogin(r.url, html, titulo)) throw new SesionCaducada();
+        if (pareceSesionCaducada(r.url, html, titulo)) throw new SesionCaducada();
         throw new Error('El portal no devolvió el archivo');
       }
       return new Uint8Array(await r.arrayBuffer());
@@ -181,12 +178,14 @@ export default defineContentScript({
         },
         cancelado: () => cancelar,
         registro: log,
+        // Con sesión, el reporte TXT siempre llega como archivo. Cualquier otra
+        // respuesta (página del portal, redirección mínima) es sesión caída.
         sesionActiva: async () => {
           try {
             await postArchivo(LINK_REPORTE);
             return true;
-          } catch (e) {
-            return !(e instanceof SesionCaducada);
+          } catch {
+            return false;
           }
         },
       };
