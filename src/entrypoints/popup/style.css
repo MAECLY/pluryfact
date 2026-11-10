@@ -1,0 +1,63 @@
+@import 'tailwindcss';
+@import '../../ui/tokens.css';
+
+@theme inline {
+  --color-bg: var(--lg-bg);
+  --color-surface: var(--lg-surface);
+  --color-ink: var(--lg-ink);
+  --color-muted: var(--lg-muted);
+  --color-line: var(--lg-line);
+  --color-accent: var(--lg-accent);
+  --color-accent-ink: var(--lg-accent-ink);
+  --color-manila: var(--lg-manila);
+  --color-ok: var(--lg-ok);
+  --color-warn: var(--lg-warn);
+  --color-err: var(--lg-err);
+  --font-display: var(--lg-font-display);
+  --font-sans: var(--lg-font-body);
+  --font-mono: var(--lg-font-mono);
+  --radius-lg: var(--lg-radius);
+  --radius-xl: var(--lg-radius-lg);
+}
+
+@layer base {
+  html,
+  body {
+    background: var(--lg-bg);
+    color: var(--lg-ink);
+    font-family: var(--lg-font-body);
+    font-size: 13px;
+    margin: 0;
+  }
+  body {
+    width: 380px;
+  }
+  :focus-visible {
+    outline: 2px solid var(--lg-accent);
+    outline-offset: 2px;
+  }
+}
+
+@layer components {
+  .etiqueta {
+    @apply font-mono text-[10.5px] font-medium tracking-[0.08em] text-muted uppercase;
+  }
+  .chip {
+    @apply cursor-pointer rounded-full border border-line px-2.5 py-1 text-[12px];
+  }
+  .chip[aria-pressed='true'] {
+    @apply border-accent bg-accent font-semibold text-accent-ink;
+  }
+  .campo {
+    @apply w-full rounded-lg border border-line bg-bg px-2.5 py-2 font-mono text-[12px] text-ink;
+  }
+  .btn {
+    @apply cursor-pointer rounded-lg px-3.5 py-2 text-[13px] font-semibold disabled:cursor-not-allowed disabled:opacity-50;
+  }
+  .btn-p {
+    @apply bg-accent text-accent-ink;
+  }
+  .btn-s {
+    @apply border border-line text-ink;
+  }
+}

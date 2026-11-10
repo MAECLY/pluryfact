@@ -1,7 +1,7 @@
 # Arquitectura
 
 ```
-popup (Svelte-less, TS + Tailwind)        background (service worker)
+popup (TS + Tailwind)                    background (service worker)
   periodo, bandeja, tipos, emisor   ──►   cola de lotes, ritmo, reintentos,
   formatos, progreso, pausar               chrome.downloads, historial
                                                 │  mensajes
