@@ -172,6 +172,7 @@ async function guardarHistorial(nuevo: EntradaHistorial[]) {
 function filaHistorial(e: EntradaHistorial): HTMLElement {
   const li = document.createElement('li');
   li.className = 'fila';
+  li.dataset.id = e.id;
   li.dataset.problemas = String(tieneProblemas(e));
 
   const cab = document.createElement('div');
@@ -243,6 +244,8 @@ function filaHistorial(e: EntradaHistorial): HTMLElement {
 
 function pintarHistorial() {
   const cont = $('#historial');
+  // Conserva las filas que el usuario tenía abiertas.
+  const abiertas = new Set([...cont.querySelectorAll<HTMLElement>('li.fila')].filter((li) => li.querySelector('details')?.open).map((li) => li.dataset.id));
   cont.textContent = '';
   const cuentas = {
     todas: historial.length,
@@ -267,7 +270,11 @@ function pintarHistorial() {
     h.textContent = g.grupo;
     const ol = document.createElement('ol');
     ol.className = 'filas';
-    for (const e of g.items) ol.append(filaHistorial(e));
+    for (const e of g.items) {
+      const fila = filaHistorial(e);
+      if (abiertas.has(e.id)) fila.querySelector('details')!.open = true;
+      ol.append(fila);
+    }
     cont.append(h, ol);
   }
   if (historial.length && !visibles.length) {
@@ -372,9 +379,10 @@ conConfirmacion('#borrar-todo', '¿Borrar todo? Pulsa otra vez', async () => {
 browser.storage.onChanged.addListener((cambios, area) => {
   if (area !== 'local') return;
   if (cambios[CLAVE_PROGRESO]) {
+    const faseAntes = actual?.fase;
     actual = cambios[CLAVE_PROGRESO].newValue as EstadoTrabajo | undefined;
     pintarActiva();
-    pintarHistorial();
+    if (actual?.fase !== faseAntes) pintarHistorial();
   }
   if (cambios[CLAVE_HISTORIAL]) {
     historial = (cambios[CLAVE_HISTORIAL].newValue as EntradaHistorial[] | undefined) ?? [];
