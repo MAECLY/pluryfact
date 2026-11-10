@@ -12,7 +12,13 @@
  *    clave del nombre, PDF válidos, rutas por año/mes.
  *
  * Variables:
- *   E2E_PERIODO  dia:2026-11-06 | mes:2026-10 | anio:2025 | rango:2026-10-01:2026-10-15   (por defecto dia:2026-11-06)
+ *   E2E_PERIODO_EMITIDOS / E2E_PERIODO_RECIBIDOS (o E2E_PERIODO para ambas)
+ *                dia:2026-11-06 | mes:2026-10 | anio:2025 | rango:2026-10-01:2026-10-15
+ *                (por defecto: emitidos dia:2026-11-06, recibidos mes:2026-10)
+ *
+ * Rondas: al terminar una, el script espera a que entres desde el menú a la
+ * otra pantalla (emitidos ↔ recibidos) y corre otra ronda con la misma sesión.
+ * Cierra la ventana para terminar.
  *   E2E_TIPOS    factura,retencion…   (por defecto factura)
  *   E2E_EMISOR   RUC o razón social (solo recibidos)
  *   E2E_FORMATOS xml,pdf,txt          (por defecto xml,pdf)
@@ -60,14 +66,27 @@ console.log('\n>>> Inicia sesión en la ventana de Chromium y entra desde el men
 console.log('>>> Facturación electrónica → Comprobantes electrónicos emitidos (o recibidos).\n');
 
 // Espera hasta 15 min a que alguna pestaña tenga la pantalla de consulta lista.
-async function esperarPantalla(): Promise<Page | null> {
-  for (let i = 0; i < 900; i++) {
+let cerrado = false;
+ctx.on('close', () => (cerrado = true));
+
+const bandejaDe = (p: Page) =>
+  p
+    .evaluate(() =>
+      document.getElementById('frmPrincipal:ano')
+        ? 'recibidos'
+        : document.getElementById('frmPrincipal:calendarFechaDesde_input')
+          ? 'emitidos'
+          : null,
+    )
+    .catch(() => null);
+
+/** Espera (hasta 15 min) una pestaña con la pantalla de consulta, distinta de `excluir`. */
+async function esperarPantalla(excluir?: string): Promise<Page | null> {
+  for (let i = 0; i < 900 && !cerrado; i++) {
     for (const p of ctx.pages()) {
       if (!p.url().includes(PORTAL)) continue;
-      const lista = await p
-        .evaluate(() => !!(document.getElementById('frmPrincipal:ano') || document.getElementById('frmPrincipal:calendarFechaDesde_input')))
-        .catch(() => false);
-      if (lista) return p;
+      const b = await bandejaDe(p);
+      if (b && b !== excluir) return p;
     }
     await dormir(1000);
   }
@@ -79,91 +98,103 @@ if (!encontrada) {
   await ctx.close();
   process.exit(1);
 }
-const sri: Page = encontrada;
-const bandeja = (await sri.evaluate(() => (document.getElementById('frmPrincipal:ano') ? 'recibidos' : 'emitidos'))) as string;
-console.log(`Pantalla detectada: ${bandeja}.`);
+async function ronda(sri: Page): Promise<string> {
+  const bandeja = (await bandejaDe(sri))!;
+  console.log(`Pantalla detectada: ${bandeja}.`);
 
-// ─── Popup ─────────────────────────────────────────────────────────────────
-const popup = await ctx.newPage();
-await popup.setViewportSize({ width: 380, height: 760 });
-await popup.goto(`chrome-extension://${extId}/popup.html`);
-await popup.waitForFunction(() => /Conectado|Abre SRI/.test(document.querySelector('#estado')?.textContent ?? ''), null, { timeout: 15_000 });
-const estado = (await popup.textContent('#estado')) ?? '';
-comprobar(estado.startsWith('Conectado'), 'el popup encuentra la pestaña del portal', estado.replace(/\d{10,13}/, '<RUC>'));
-comprobar(estado.includes(bandeja === 'recibidos' ? 'recibidos' : 'emitidos'), 'el popup toma la bandeja de la pantalla abierta');
+  // ─── Popup ─────────────────────────────────────────────────────────────────
+  const popup = await ctx.newPage();
+  await popup.setViewportSize({ width: 380, height: 760 });
+  await popup.goto(`chrome-extension://${extId}/popup.html`);
+  await popup.waitForFunction(() => /Conectado|Abre SRI/.test(document.querySelector('#estado')?.textContent ?? ''), null, { timeout: 15_000 });
+  const estado = (await popup.textContent('#estado')) ?? '';
+  comprobar(estado.startsWith('Conectado'), 'el popup encuentra la pestaña del portal', estado.replace(/\d{10,13}/, '<RUC>'));
+  comprobar(estado.includes(bandeja === 'recibidos' ? 'recibidos' : 'emitidos'), 'el popup toma la bandeja de la pantalla abierta');
 
-const [tipoPeriodo, ...valores] = (process.env.E2E_PERIODO ?? 'dia:2026-11-06').split(':');
-await popup.click(`[data-periodo="${tipoPeriodo}"]`);
-if (tipoPeriodo === 'dia') await popup.fill('#p-dia', valores[0]!);
-if (tipoPeriodo === 'rango') {
-  await popup.fill('#p-desde', valores[0]!);
-  await popup.fill('#p-hasta', valores[1]!);
-}
-if (tipoPeriodo === 'mes') {
-  const [a, m] = valores[0]!.split('-');
-  await popup.selectOption('#p-anio', a!);
-  await popup.selectOption('#p-mes', String(Number(m)));
-}
-if (tipoPeriodo === 'anio') await popup.selectOption('#p-anio', valores[0]!);
-for (const el of await popup.$$('#campos-periodo input, #campos-periodo select')) await el.dispatchEvent('change');
-
-const tipos = (process.env.E2E_TIPOS ?? 'factura').split(',');
-await popup.$$eval('#tipos input', (els, ts) => els.forEach((e) => ((e as HTMLInputElement).checked = ts.includes((e as HTMLInputElement).dataset.tipo!)) || e.dispatchEvent(new Event('change'))), tipos);
-for (const t of tipos) await popup.check(`#tipos input[data-tipo="${t}"]`);
-const formatos = (process.env.E2E_FORMATOS ?? 'xml,pdf').split(',');
-for (const f of ['xml', 'pdf', 'txt']) await popup.setChecked(`#f-${f}`, formatos.includes(f));
-if (process.env.E2E_EMISOR && bandeja === 'recibidos') await popup.fill('#emisor', process.env.E2E_EMISOR);
-
-console.log(`Plan: ${await popup.textContent('#plan')}`);
-const descarga = sri.waitForEvent('download', { timeout: 30 * 60_000 });
-const t0 = Date.now();
-await popup.click('#descargar');
-
-// Progreso en consola mientras corre.
-let ultimo = '';
-const reloj = setInterval(async () => {
-  const txt = [await popup.textContent('#prog-consultas'), await popup.textContent('#prog-cifras'), await popup.textContent('#prog-mensaje')].join(' · ');
-  if (txt !== ultimo) console.log(`  ${txt}`);
-  ultimo = txt;
-}, 2000);
-
-const terminado = await Promise.race([
-  descarga.then((d) => ({ d })),
-  popup.waitForFunction(() => /No hay comprobantes|cancelada/.test(document.querySelector('#prog-mensaje')?.textContent ?? '') || document.querySelector('#prog-mensaje')?.className.includes('text-err'), null, { timeout: 30 * 60_000 }).then(() => ({ d: null })),
-]);
-clearInterval(reloj);
-const segundos = Math.round((Date.now() - t0) / 1000);
-
-if (!terminado.d) {
-  comprobar(false, 'la descarga produjo un ZIP', (await popup.textContent('#prog-mensaje')) ?? '');
-} else {
-  const ruta = join(salida, terminado.d.suggestedFilename());
-  await terminado.d.saveAs(ruta);
-  comprobar(/^legajo_\d{13}_(emitidos|recibidos)_/.test(terminado.d.suggestedFilename()), 'nombre del ZIP', terminado.d.suggestedFilename().replace(/\d{13}/, '<RUC>'));
-  const zip = unzipSync(new Uint8Array(readFileSync(ruta)));
-  const nombres = Object.keys(zip);
-  const xmls = nombres.filter((n) => n.endsWith('.xml'));
-  const pdfs = nombres.filter((n) => n.endsWith('.pdf'));
-  console.log(`ZIP: ${xmls.length} XML, ${pdfs.length} PDF, ${nombres.length - xmls.length - pdfs.length} otros, en ${segundos} s`);
-  comprobar(nombres.length > 0, 'el ZIP tiene archivos');
-  comprobar(nombres.every((n) => new RegExp(`^legajo/\\d{13}/${bandeja}/(\\d{4}/\\d{2}|reportes)/`).test(n)), 'rutas legajo/<RUC>/<bandeja>/<año>/<mes>/');
-  for (const n of xmls) {
-    const x = strFromU8(zip[n]!);
-    const clave = /_(\d{49})\.xml$/.exec(n)?.[1];
-    const sec = clave?.slice(30, 39);
-    comprobar(x.includes('<estado>AUTORIZADO</estado>') && !!clave && x.includes(clave), `XML ${sec} autorizado y con su clave`);
+  const [tipoPeriodo, ...valores] = (process.env[`E2E_PERIODO_${bandeja.toUpperCase()}`] ?? process.env.E2E_PERIODO ?? (bandeja === 'emitidos' ? 'dia:2026-11-06' : 'mes:2026-10')).split(':');
+  await popup.click(`[data-periodo="${tipoPeriodo}"]`);
+  if (tipoPeriodo === 'dia') await popup.fill('#p-dia', valores[0]!);
+  if (tipoPeriodo === 'rango') {
+    await popup.fill('#p-desde', valores[0]!);
+    await popup.fill('#p-hasta', valores[1]!);
   }
-  for (const n of pdfs) {
-    const sec = /_(\d{49})\.pdf$/.exec(n)?.[1]?.slice(30, 39);
-    comprobar(strFromU8(zip[n]!.slice(0, 4)) === '%PDF', `RIDE ${sec} es un PDF`);
+  if (tipoPeriodo === 'mes') {
+    const [a, m] = valores[0]!.split('-');
+    await popup.selectOption('#p-anio', a!);
+    await popup.selectOption('#p-mes', String(Number(m)));
   }
-  if (formatos.includes('xml') && formatos.includes('pdf')) comprobar(xmls.length === pdfs.length, 'un RIDE por cada XML', `${xmls.length}/${pdfs.length}`);
+  if (tipoPeriodo === 'anio') await popup.selectOption('#p-anio', valores[0]!);
+  for (const el of await popup.$$('#campos-periodo input, #campos-periodo select')) await el.dispatchEvent('change');
+
+  const tipos = (process.env.E2E_TIPOS ?? 'factura').split(',');
+  await popup.$$eval('#tipos input', (els, ts) => els.forEach((e) => ((e as HTMLInputElement).checked = ts.includes((e as HTMLInputElement).dataset.tipo!)) || e.dispatchEvent(new Event('change'))), tipos);
+  for (const t of tipos) await popup.check(`#tipos input[data-tipo="${t}"]`);
+  const formatos = (process.env.E2E_FORMATOS ?? 'xml,pdf').split(',');
+  for (const f of ['xml', 'pdf', 'txt']) await popup.setChecked(`#f-${f}`, formatos.includes(f));
+  if (process.env.E2E_EMISOR && bandeja === 'recibidos') await popup.fill('#emisor', process.env.E2E_EMISOR);
+
+  console.log(`Plan: ${await popup.textContent('#plan')}`);
+  const descarga = sri.waitForEvent('download', { timeout: 30 * 60_000 });
+  const t0 = Date.now();
+  await popup.click('#descargar');
+
+  // Progreso en consola mientras corre.
+  let ultimo = '';
+  const reloj = setInterval(async () => {
+    const txt = [await popup.textContent('#prog-consultas'), await popup.textContent('#prog-cifras'), await popup.textContent('#prog-mensaje')].join(' · ');
+    if (txt !== ultimo) console.log(`  ${txt}`);
+    ultimo = txt;
+  }, 2000);
+
+  const terminado = await Promise.race([
+    descarga.then((d) => ({ d })),
+    popup.waitForFunction(() => /No hay comprobantes|cancelada/.test(document.querySelector('#prog-mensaje')?.textContent ?? '') || document.querySelector('#prog-mensaje')?.className.includes('text-err'), null, { timeout: 30 * 60_000 }).then(() => ({ d: null })),
+  ]);
+  clearInterval(reloj);
+  const segundos = Math.round((Date.now() - t0) / 1000);
+
+  if (!terminado.d) {
+    comprobar(false, 'la descarga produjo un ZIP', (await popup.textContent('#prog-mensaje')) ?? '');
+  } else {
+    const ruta = join(salida, terminado.d.suggestedFilename());
+    await terminado.d.saveAs(ruta);
+    comprobar(/^legajo_\d{13}_(emitidos|recibidos)_/.test(terminado.d.suggestedFilename()), 'nombre del ZIP', terminado.d.suggestedFilename().replace(/\d{13}/, '<RUC>'));
+    const zip = unzipSync(new Uint8Array(readFileSync(ruta)));
+    const nombres = Object.keys(zip);
+    const xmls = nombres.filter((n) => n.endsWith('.xml'));
+    const pdfs = nombres.filter((n) => n.endsWith('.pdf'));
+    console.log(`ZIP: ${xmls.length} XML, ${pdfs.length} PDF, ${nombres.length - xmls.length - pdfs.length} otros, en ${segundos} s`);
+    comprobar(nombres.length > 0, 'el ZIP tiene archivos');
+    comprobar(nombres.every((n) => new RegExp(`^legajo/\\d{13}/${bandeja}/(\\d{4}/\\d{2}|reportes)/`).test(n)), 'rutas legajo/<RUC>/<bandeja>/<año>/<mes>/');
+    const xmlMalos = xmls.filter((n) => {
+      const x = strFromU8(zip[n]!);
+      const clave = /_(\d{49})\.xml$/.exec(n)?.[1];
+      return !(x.includes('<estado>AUTORIZADO</estado>') && clave && x.includes(clave));
+    });
+    const sec = (n: string) => /_(\d{49})\.\w+$/.exec(n)?.[1]?.slice(30, 39) ?? n;
+    comprobar(xmlMalos.length === 0, `${xmls.length} XML autorizados y con su clave`, xmlMalos.map(sec).join(', '));
+    const pdfMalos = pdfs.filter((n) => strFromU8(zip[n]!.slice(0, 4)) !== '%PDF');
+    comprobar(pdfMalos.length === 0, `${pdfs.length} RIDE son PDF válidos`, pdfMalos.map(sec).join(', '));
+    const claves = (ext: string) => new Set(nombres.filter((n) => n.endsWith(ext)).map(sec));
+    if (formatos.includes('xml') && formatos.includes('pdf')) {
+      const sinPdf = [...claves('.xml')].filter((c) => !claves('.pdf').has(c));
+      comprobar(sinPdf.length === 0, 'cada XML tiene su RIDE', sinPdf.join(', '));
+    }
+  }
+
+  const fallidas = await popup.$$eval('#prog-fallidas li', (ls) => ls.map((l) => l.textContent));
+  comprobar(fallidas.length === 0, 'sin consultas fallidas', fallidas.join('; '));
+
+  await popup.close();
+  return bandeja;
 }
 
-const fallidas = await popup.$$eval('#prog-fallidas li', (ls) => ls.map((l) => l.textContent));
-comprobar(fallidas.length === 0, 'sin consultas fallidas', fallidas.join('; '));
-
+let actual: Page | null = encontrada;
+while (actual) {
+  const hecha = await ronda(actual);
+  console.log(`\n>>> Ronda de ${hecha} terminada. Para otra ronda entra desde el menú a la otra pantalla; cierra la ventana para terminar.\n`);
+  actual = await esperarPantalla(hecha);
+}
 console.log(fallos.length ? `\n${fallos.length} FALLOS` : '\nTODO OK');
-console.log('La ventana queda abierta para revisar; ciérrala para terminar.');
-await new Promise<void>((r) => ctx.on('close', () => r()));
+await ctx.close().catch(() => {});
 process.exit(fallos.length ? 1 : 0);
