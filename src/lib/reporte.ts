@@ -6,7 +6,9 @@ import type { Fecha } from './types';
  * Reporte TXT del listado ("Descargar reporte", enlace frmPrincipal:lnkTxtlistado).
  * Verificado en vivo el 2026-11-09: ISO-8859-1, separado por tabuladores,
  * saltos LF, una fila por comprobante de TODO el listado (no solo la página
- * visible). Recibidos trae 12 columnas con cabecera.
+ * visible). Recibidos trae 12 columnas; emitidos trae 8 (COMPROBANTE,
+ * SERIE_COMPROBANTE, CLAVE_ACCESO, FECHA_AUTORIZACION, FECHA_EMISION con hora,
+ * VALOR_SIN_IMPUESTOS, IVA, IMPORTE_TOTAL) y sin RUC de emisor: se toma de la clave.
  */
 export interface FilaReporte {
   rucEmisor: string;
@@ -34,11 +36,11 @@ export const decodificarReporte = (bytes: ArrayBuffer | Uint8Array) => new TextD
 export function parseReporte(texto: string): Reporte {
   const lineas = texto.split(/\r?\n/).filter((l) => l.trim());
   const columnas = (lineas.shift() ?? '').split('\t').map((c) => c.trim()).filter(Boolean);
-  const idx = (nombre: string) => columnas.indexOf(nombre);
+  const idx = (...nombres: string[]) => columnas.findIndex((c) => nombres.includes(c));
   const c = {
     ruc: idx('RUC_EMISOR'),
     razon: idx('RAZON_SOCIAL_EMISOR'),
-    tipo: idx('TIPO_COMPROBANTE'),
+    tipo: idx('TIPO_COMPROBANTE', 'COMPROBANTE'),
     serie: idx('SERIE_COMPROBANTE'),
     clave: idx('CLAVE_ACCESO'),
     aut: idx('FECHA_AUTORIZACION'),

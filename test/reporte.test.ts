@@ -32,3 +32,15 @@ it('convierte montos, fechas y tolera la columna final vacía', () => {
 it('sin columna CLAVE_ACCESO no inventa filas', () => {
   expect(parseReporte('A\tB\n1\t2\n').filas).toHaveLength(0);
 });
+
+it('lee el reporte de emitidos (8 columnas, sin RUC emisor, fecha con hora)', () => {
+  const e = parseReporte(decodificarReporte(readFileSync(resolve(process.cwd(), 'test/fixtures/reporte-emitidos.txt'))));
+  expect(e.columnas).toHaveLength(8);
+  expect(e.filas).toHaveLength(2);
+  expect(e.filas[1]).toMatchObject({
+    rucEmisor: '1799999999001',
+    tipoTexto: 'Factura',
+    fechaEmision: { dia: 4, mes: 11, anio: 2026 },
+    total: 8333.98,
+  });
+});
