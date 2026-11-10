@@ -179,7 +179,11 @@ export async function ejecutar(t: Trabajo, d: Dependencias): Promise<Resumen> {
           !vistos.has(f.clave.clave),
       );
       filas.forEach((f) => vistos.add(f.clave.clave));
-      avisar({ fase: 'descargando', encontrados: p.encontrados + filas.length });
+      avisar({
+        fase: 'descargando',
+        encontrados: p.encontrados + filas.length,
+        mensaje: filas.length ? `Descargando ${filas.length} comprobantes de ${etiqueta}` : `Sin coincidencias en ${etiqueta}`,
+      });
 
       if (t.formatos.txt && reporte.filas.length) {
         const tipo = filas[0]?.clave.tipo ?? reporte.filas[0]!.clave.tipo;

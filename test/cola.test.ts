@@ -66,7 +66,7 @@ describe('ejecutar', () => {
       'legajo/1799999999001/recibidos/reportes/factura_2026-11.txt',
     ]);
     expect(r.progreso).toMatchObject({ encontrados: 2, descargados: 4, fallidos: 0, consultasHechas: 1, fase: 'empaquetando' });
-    expect(progresos.some((p) => p.fase === 'descargando')).toBe(true);
+    expect(progresos.find((p) => p.fase === 'descargando')?.mensaje).toBe('Descargando 2 comprobantes de 2026-11');
     expect(d.consultar).toHaveBeenCalledTimes(1);
   });
 
