@@ -92,6 +92,10 @@ export default defineContentScript({
         fallidos: 0,
         mensaje: 'Preparando la descarga',
         errores: [],
+        inicio: Date.now(),
+        pasos: [],
+        actividad: [{ t: Date.now(), texto: 'Preparando la descarga…', nivel: 'info' }],
+        esperaHasta: null,
         ...base,
         verificacion: false,
         actualizado: Date.now(),
@@ -138,12 +142,24 @@ export default defineContentScript({
           : fase === 'cancelado'
             ? 'Descarga cancelada'
             : 'No hay comprobantes para ese periodo y filtro';
-        await guardar({ ...r.progreso, ...base, fase, mensaje, verificacion: false, actualizado: Date.now() });
+        const actividad = [...r.progreso.actividad, { t: Date.now(), texto: mensaje, nivel: fase === 'listo' ? ('info' as const) : ('aviso' as const) }].slice(-40);
+        await guardar({ ...r.progreso, ...base, fase, mensaje, actividad, esperaHasta: null, verificacion: false, actualizado: Date.now() });
       } catch (e) {
         log.error(`Trabajo interrumpido: ${e instanceof Error ? e.stack ?? e.message : String(e)}`);
         if (!(e instanceof Cancelado)) {
           await guardar({
-            ...(ultimo ?? { consultasHechas: 0, consultasTotal: 0, encontrados: 0, descargados: 0, fallidos: 0, errores: [] }),
+            ...(ultimo ?? {
+              consultasHechas: 0,
+              consultasTotal: 0,
+              encontrados: 0,
+              descargados: 0,
+              fallidos: 0,
+              errores: [],
+              inicio: Date.now(),
+              pasos: [],
+              actividad: [],
+              esperaHasta: null,
+            }),
             ...base,
             fase: 'error',
             mensaje: e instanceof Error ? e.message : String(e),
