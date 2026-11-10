@@ -146,10 +146,21 @@ async function ronda(sri: Page): Promise<string> {
     ultimo = txt;
   }, 2000);
 
-  const terminado = await Promise.race([
-    descarga.then((d) => ({ d })),
-    popup.waitForFunction(() => /No hay comprobantes|cancelada/.test(document.querySelector('#prog-mensaje')?.textContent ?? '') || document.querySelector('#prog-mensaje')?.className.includes('text-err'), null, { timeout: 30 * 60_000 }).then(() => ({ d: null })),
-  ]);
+  // Solo cuentan estados escritos DESPUÉS del clic: el perfil guarda el progreso de corridas anteriores.
+  const terminal = popup
+    .waitForFunction(
+      (desde) =>
+        new Promise<boolean>((ok) =>
+          (globalThis as unknown as { chrome: { storage: { local: { get(k: string, cb: (v: Record<string, { fase: string; actualizado: number; zip: string | null }>) => void): void } } } }).chrome.storage.local.get('legajo:progreso', (v: Record<string, { fase: string; actualizado: number; zip: string | null }>) => {
+            const p = v['legajo:progreso'];
+            ok(!!p && p.actualizado >= desde && ['listo', 'cancelado', 'error'].includes(p.fase) && !p.zip);
+          }),
+        ),
+      t0,
+      { timeout: 30 * 60_000, polling: 1000 },
+    )
+    .then(() => ({ d: null }));
+  const terminado = await Promise.race([descarga.then((d) => ({ d })), terminal]);
   clearInterval(reloj);
   const segundos = Math.round((Date.now() - t0) / 1000);
 
