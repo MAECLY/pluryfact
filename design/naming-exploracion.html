@@ -1,0 +1,305 @@
+<title>Naming extensión SRI</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;600;800&family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,800&family=DM+Mono:wght@400;500&family=Familjen+Grotesk:wght@500;700&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;600&family=IBM+Plex+Serif:wght@500;700&family=Instrument+Sans:wght@400;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&family=Public+Sans:wght@400;600&family=Sora:wght@500;700&family=Space+Mono:wght@400;700&display=swap">
+<style>
+/* Layout: página neutra y fría; cada candidato es un "mundo" propio con sus tokens, especimen y popup simulado. */
+:root{
+  --pg-bg:#F4F5F7; --pg-surface:#FFFFFF; --pg-ink:#14161B; --pg-muted:#5C6270; --pg-line:#DEE1E7; --pg-gold:#B8860B;
+  --f-head:"Instrument Sans", system-ui, sans-serif; --f-body:"Inter", system-ui, sans-serif; --f-mono:"JetBrains Mono", ui-monospace, monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--pg-bg:#0F1115;--pg-surface:#171A20;--pg-ink:#ECEEF2;--pg-muted:#9AA1AE;--pg-line:#2A2F38;--pg-gold:#E2B33C;color-scheme:dark}}
+:root[data-theme="dark"]{--pg-bg:#0F1115;--pg-surface:#171A20;--pg-ink:#ECEEF2;--pg-muted:#9AA1AE;--pg-line:#2A2F38;--pg-gold:#E2B33C;color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--pg-bg);color:var(--pg-ink);font-family:var(--f-body);font-size:15px;line-height:1.55}
+.wrap{max-width:1180px;margin:0 auto;padding-block:40px 80px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:flex;flex-direction:column;gap:56px}
+h1,h2,h3{font-family:var(--f-head);text-wrap:balance;margin:0;line-height:1.15}
+h1{font-size:clamp(28px,4vw,44px);font-weight:700;letter-spacing:-.02em}
+.lede{max-width:68ch;color:var(--pg-muted);margin:12px 0 0}
+.eyebrow{font:600 11px/1 var(--f-mono);letter-spacing:.12em;text-transform:uppercase;color:var(--pg-muted)}
+.intro{display:grid;grid-template-columns:1.4fr 1fr;gap:32px;align-items:start}
+.intro>*{min-width:0}
+.facts{background:var(--pg-surface);border:1px solid var(--pg-line);border-radius:10px;padding:20px;display:flex;flex-direction:column;gap:10px;font-size:14px}
+.facts div{display:flex;justify-content:space-between;gap:12px;border-bottom:1px dashed var(--pg-line);padding-bottom:8px}
+.facts div:last-child{border:0;padding:0}
+.facts b{font-weight:600}
+.facts span{color:var(--pg-muted);text-align:right}
+.toc{display:flex;flex-wrap:wrap;gap:8px;margin-top:20px}
+.toc a{font:500 13px var(--f-mono);color:var(--pg-ink);text-decoration:none;border:1px solid var(--pg-line);border-radius:999px;padding:6px 12px;background:var(--pg-surface)}
+.toc a:hover,.toc a:focus-visible{border-color:var(--pg-ink);outline:none}
+
+/* ---- Candidato ---- */
+.cand{background:var(--bg);color:var(--ink);border-radius:18px;border:1px solid var(--line);overflow:hidden}
+.cand-in{padding:clamp(20px,4vw,40px);display:flex;flex-direction:column;gap:32px}
+.c-head{display:grid;grid-template-columns:1fr auto;gap:24px;align-items:end}
+.c-head>*{min-width:0}
+.c-num{font:500 12px var(--fm);color:var(--muted);letter-spacing:.08em}
+.wordmark{display:flex;align-items:center;gap:14px;margin-top:8px}
+.wordmark svg{width:56px;height:56px;flex:none}
+.wordmark .wm{font-family:var(--fd);font-weight:var(--fdw);font-size:clamp(44px,7vw,76px);letter-spacing:var(--fdls);line-height:1;color:var(--ink)}
+.wordmark .by{font:500 11px var(--fm);color:var(--muted);align-self:flex-end;margin-bottom:8px;letter-spacing:.06em}
+.tagline{font-family:var(--fb);font-size:18px;color:var(--ink);margin:12px 0 0;max-width:52ch}
+.meaning{font-family:var(--fb);color:var(--muted);max-width:62ch;margin:8px 0 0}
+.url{font:500 13px var(--fm);color:var(--accent);background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:8px 12px;white-space:nowrap}
+.grid{display:grid;grid-template-columns:1.05fr 1fr;gap:28px}
+.grid>*{min-width:0}
+.block{display:flex;flex-direction:column;gap:12px}
+.block h3{font-family:var(--fm);font-size:11px;font-weight:500;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.swatches{display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:8px}
+.sw{border-radius:var(--r);border:1px solid var(--line);overflow:hidden;background:var(--surface)}
+.sw i{display:block;height:44px}
+.sw span{display:block;padding:6px 8px;font:500 10.5px/1.35 var(--fm);color:var(--ink)}
+.sw small{display:block;color:var(--muted);font-weight:400}
+.type{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:16px;display:flex;flex-direction:column;gap:10px}
+.type .t1{font-family:var(--fd);font-weight:var(--fdw);font-size:30px;letter-spacing:var(--fdls);line-height:1.1}
+.type .t2{font-family:var(--fb);font-size:15px}
+.type .t3{font-family:var(--fm);font-size:12.5px;color:var(--muted);font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+.type .lab{font:500 10px var(--fm);color:var(--muted);letter-spacing:.08em;text-transform:uppercase}
+.comps{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.btn{font-family:var(--fb);font-weight:600;font-size:13px;border-radius:var(--r);padding:9px 14px;border:1px solid transparent;cursor:pointer}
+.btn.p{background:var(--accent);color:var(--accent-ink)}
+.btn.s{background:transparent;color:var(--ink);border-color:var(--line)}
+.btn:focus-visible{outline:2px solid var(--accent2);outline-offset:2px}
+.pill{font:500 11px var(--fm);border-radius:999px;padding:4px 9px;display:inline-flex;gap:6px;align-items:center;white-space:nowrap}
+.pill::before{content:"";width:6px;height:6px;border-radius:50%;background:currentColor}
+.ok{color:var(--ok);background:color-mix(in srgb,var(--ok) 14%,transparent)}
+.wait{color:var(--muted);background:color-mix(in srgb,var(--muted) 14%,transparent)}
+.warn{color:var(--warn);background:color-mix(in srgb,var(--warn) 16%,transparent)}
+.err{color:var(--err);background:color-mix(in srgb,var(--err) 14%,transparent)}
+.notes{display:grid;grid-template-columns:1fr 1fr;gap:16px;font-family:var(--fb);font-size:14px}
+.notes>div{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:14px 16px}
+.notes h4{margin:0 0 6px;font:600 12px var(--fm);letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.notes ul{margin:0;padding-left:18px;display:flex;flex-direction:column;gap:4px}
+
+/* ---- Popup simulado (380px, como la extensión real) ---- */
+.popup{width:100%;max-width:380px;background:var(--surface);border:1px solid var(--line);border-radius:calc(var(--r) + 6px);box-shadow:0 18px 40px -18px color-mix(in srgb,var(--ink) 40%,transparent);font-family:var(--fb);font-size:13px;overflow:hidden;justify-self:center}
+.pp-top{display:flex;align-items:center;justify-content:space-between;padding:12px 14px;border-bottom:1px solid var(--line)}
+.pp-brand{display:flex;align-items:center;gap:8px;font-family:var(--fd);font-weight:var(--fdw);font-size:17px;letter-spacing:var(--fdls)}
+.pp-brand svg{width:22px;height:22px}
+.seg{display:flex;background:var(--bg);border-radius:var(--r);padding:3px;gap:2px}
+.seg span{padding:4px 9px;border-radius:calc(var(--r) - 2px);font-size:12px;color:var(--muted)}
+.seg .on{background:var(--surface);color:var(--ink);font-weight:600;box-shadow:0 1px 2px color-mix(in srgb,var(--ink) 18%,transparent)}
+.pp-body{padding:14px;display:flex;flex-direction:column;gap:12px}
+.pp-lab{font:500 10.5px var(--fm);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:6px}
+.chips{display:flex;gap:6px;flex-wrap:wrap}
+.chip{border:1px solid var(--line);border-radius:999px;padding:4px 10px;font-size:12px;color:var(--ink)}
+.chip.on{background:var(--accent);border-color:var(--accent);color:var(--accent-ink);font-weight:600}
+.field{display:flex;justify-content:space-between;align-items:center;border:1px solid var(--line);border-radius:var(--r);padding:8px 10px;background:var(--bg);gap:8px}
+.field .v{font-family:var(--fm);font-size:12px}
+.field .h{color:var(--muted);font-size:11.5px}
+.fmts{display:flex;gap:12px}
+.fmts label{display:flex;gap:6px;align-items:center;font-size:12.5px}
+.box{width:15px;height:15px;border-radius:4px;border:1.5px solid var(--line);display:inline-grid;place-items:center}
+.box.on{background:var(--accent);border-color:var(--accent)}
+.box.on::after{content:"";width:7px;height:4px;border:2px solid var(--accent-ink);border-top:0;border-right:0;transform:rotate(-45deg) translate(1px,-1px)}
+.prog{display:flex;flex-direction:column;gap:6px}
+.prog .row{display:flex;justify-content:space-between;font-family:var(--fm);font-size:11.5px;color:var(--muted);font-variant-numeric:tabular-nums}
+.bar{height:6px;background:var(--bg);border-radius:99px;overflow:hidden}
+.bar i{display:block;height:100%;width:45%;background:linear-gradient(90deg,var(--accent),var(--accent2))}
+.q{display:flex;flex-direction:column;border:1px solid var(--line);border-radius:var(--r)}
+.q div{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:8px 10px;border-bottom:1px solid var(--line)}
+.q div:last-child{border:0}
+.q b{font-weight:600;font-size:12px;display:block}
+.q small{color:var(--muted);font-size:11px;font-family:var(--fm)}
+.q .tx{min-width:0;overflow:hidden}
+.q .tx b,.q .tx small{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pp-foot{display:flex;gap:8px;padding:12px 14px;border-top:1px solid var(--line);background:var(--bg)}
+.pp-foot .btn{flex:1}
+
+/* ---- Comparativa ---- */
+.cmp-wrap{overflow-x:auto;background:var(--pg-surface);border:1px solid var(--pg-line);border-radius:12px}
+table{border-collapse:collapse;width:100%;min-width:720px;font-size:14px}
+th,td{text-align:left;padding:12px 14px;border-bottom:1px solid var(--pg-line);vertical-align:top}
+th{font:600 11px var(--f-mono);letter-spacing:.08em;text-transform:uppercase;color:var(--pg-muted)}
+td.n{font-variant-numeric:tabular-nums;font-family:var(--f-mono)}
+tr.rec td{background:color-mix(in srgb,var(--pg-gold) 10%,transparent)}
+tr:last-child td{border-bottom:0}
+.rec-tag{font:600 10px var(--f-mono);color:var(--pg-gold);border:1px solid var(--pg-gold);border-radius:99px;padding:2px 7px;margin-left:6px;letter-spacing:.06em}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.two>div{background:var(--pg-surface);border:1px solid var(--pg-line);border-radius:12px;padding:20px;min-width:0}
+.two h3{font-size:18px;margin-bottom:8px}
+.two p,.two li{color:var(--pg-muted);font-size:14px}
+.two ul{padding-left:18px;margin:8px 0 0;display:flex;flex-direction:column;gap:6px}
+.two a{color:var(--pg-ink)}
+@media (max-width:860px){.intro,.grid,.two{grid-template-columns:1fr}.c-head{grid-template-columns:1fr}.url{justify-self:start}}
+@media (max-width:560px){.notes{grid-template-columns:1fr}}
+@media (prefers-reduced-motion:no-preference){.bar i{animation:fill 2.4s ease-out both}@keyframes fill{from{width:8%}to{width:45%}}}
+</style>
+
+<div class="wrap">
+  <header class="intro">
+    <div>
+      <div class="eyebrow">MAECLY · nuevo producto · noviembre 2026</div>
+      <h1>Cinco nombres para la extensión de descargas del SRI</h1>
+      <p class="lede">Extensión de Chrome (WXT, AGPL-3.0, igual que Versorium y Coverly) que descarga en lote los comprobantes emitidos y recibidos de SRI en Línea: por día, rango, mes o año, filtrando recibidos por RUC o razón social, en XML, PDF (RIDE) y el reporte TXT. Cada candidato trae su sistema de diseño completo y el popup de la extensión pintado con él.</p>
+      <nav class="toc" aria-label="Candidatos" id="toc"></nav>
+    </div>
+    <aside class="facts" aria-label="Restricciones de naming">
+      <div><b>Vive en</b><span>&lt;nombre&gt;.maecly.com</span></div>
+      <div><b>Evitar</b><span>terminar en -ly (eco con MAECLY)</span></div>
+      <div><b>Evitar</b><span>"SRI" en la marca: suplantación y rechazo en Chrome Web Store</span></div>
+      <div><b>Familia</b><span>Yupana (facturación) ya usa kichwa</span></div>
+      <div><b>Competencia</b><span>~10 extensiones; todas se llaman "Descargador / Downloader SRI"</span></div>
+    </aside>
+  </header>
+
+  <div id="cands" style="display:flex;flex-direction:column;gap:40px"></div>
+
+  <section style="display:flex;flex-direction:column;gap:16px" aria-labelledby="cmp-h">
+    <h2 id="cmp-h" style="font-size:26px">Comparativa</h2>
+    <div class="cmp-wrap">
+      <table>
+        <thead><tr><th>Nombre</th><th>Encaje con la función</th><th>Familia con Yupana</th><th>Pronunciación ES/EN</th><th>Distinción en la Store</th><th>Riesgo</th></tr></thead>
+        <tbody id="cmp"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="two">
+    <div>
+      <h3>Recomendación revisada</h3>
+      <p>Kipu queda descartado como recomendación: KIPU (mikipu.pe) ya es un software contable y tributario en Perú, el mismo sector y el país vecino. Acopio y Legajo no tienen choques visibles en software ni en la Chrome Web Store; Acopio es la opción más limpia. Chaski sigue siendo la más fuerte como marca, pero hay sociedades ecuatorianas con ese nombre y hay que confirmar en SENADI que nadie lo tenga registrado en las clases 9 y 42 antes de usarlo.</p>
+    </div>
+    <div>
+      <h3>Nota sobre el captcha</h3>
+      <ul>
+        <li>La extensión corre en la sesión real del usuario, así que el reCAPTCHA Enterprise invisible suele puntuar bien si las consultas van espaciadas y en lotes por mes (Recibidos ya devuelve el mes completo en una consulta).</li>
+        <li>Propuesta: cola con ritmo humano, reintentos con espera y, cuando aparezca el desafío, pausar y pedir al usuario que lo resuelva con un clic; la cola sigue sola después. Los popups de arriba muestran ese estado.</li>
+        <li>No conectaría servicios de resolución de captchas de terceros: es la parte que más expone a la extensión a una baja en la Chrome Web Store y a bloqueos del SRI. Lo detallo en la investigación técnica después de elegir nombre.</li>
+      </ul>
+    </div>
+  </section>
+
+  <p class="lede" style="font-size:13px">Competencia revisada: <a href="https://chromewebstore.google.com/detail/e/gbkbepicfihgbemoajgahpmaljcffjkm" style="color:inherit">XML Manager</a>, <a href="https://chromewebstore.google.com/detail/frec-sri/ppjlbimpmbjhiaemikjgnidgbnnokhbd" style="color:inherit">FREC SRI</a>, <a href="https://chromewebstore.google.com/detail/gokjdojamjphhhfjcbddamnnlbodipko" style="color:inherit">DaatSRI</a>, <a href="https://chromewebstore.google.com/detail/busiconti-vault-sri/mgdllaacecnbeodejohhhkmjohbmnoeo" style="color:inherit">Busiconti Vault</a>, Descargador Masivo SRI, UpConta, ACCOUNTEX365, Fenix Descargas, Tributafacil. Ninguna es open source.</p>
+</div>
+
+<script>
+const ICONS = {
+  chaski:`<svg viewBox="0 0 56 56" aria-hidden="true"><rect width="56" height="56" rx="14" fill="var(--accent)"/><path d="M14 18l10 10-10 10M26 18l10 10-10 10" fill="none" stroke="var(--accent-ink)" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/><circle cx="42" cy="28" r="4" fill="var(--accent-ink)"/></svg>`,
+  kipu:`<svg viewBox="0 0 56 56" aria-hidden="true"><rect width="56" height="56" rx="10" fill="var(--accent)"/><path d="M10 14h36" stroke="var(--accent-ink)" stroke-width="4" stroke-linecap="round"/><path d="M16 14v28M25 14v22M34 14v30M43 14v18" stroke="var(--accent-ink)" stroke-width="2.5" stroke-linecap="round"/><circle cx="16" cy="26" r="3.6" fill="var(--accent2)"/><circle cx="25" cy="31" r="3.6" fill="var(--accent-ink)"/><circle cx="34" cy="22" r="3.6" fill="var(--accent-ink)"/><circle cx="34" cy="36" r="3.6" fill="var(--accent2)"/><circle cx="43" cy="27" r="3.6" fill="var(--accent-ink)"/></svg>`,
+  acopio:`<svg viewBox="0 0 56 56" aria-hidden="true"><rect width="56" height="56" rx="6" fill="var(--accent)"/><rect x="12" y="30" width="15" height="13" fill="var(--accent2)"/><rect x="29" y="30" width="15" height="13" fill="var(--accent-ink)"/><rect x="20.5" y="15" width="15" height="13" fill="var(--accent-ink)"/></svg>`,
+  legajo:`<svg viewBox="0 0 56 56" aria-hidden="true"><rect width="56" height="56" rx="4" fill="var(--accent)"/><path d="M11 19h12l4 4h18v19H11z" fill="var(--accent2)"/><path d="M11 25h34" stroke="var(--accent)" stroke-width="2"/><path d="M28 23v19" stroke="var(--err)" stroke-width="2.5"/><circle cx="28" cy="33" r="3" fill="none" stroke="var(--err)" stroke-width="2"/></svg>`,
+  tambo:`<svg viewBox="0 0 56 56" aria-hidden="true"><rect width="56" height="56" rx="16" fill="var(--accent)"/><path d="M10 44h36M14 44V36h28v8M18 36v-8h20v8M22 28v-8h12v8" fill="none" stroke="var(--accent-ink)" stroke-width="3" stroke-linejoin="round"/><path d="M25 44l1.5-6h3l1.5 6z" fill="var(--accent2)"/></svg>`
+};
+
+const C = [
+ {id:"chaski", name:"Chaski", url:"chaski.maecly.com",
+  tag:"Tus comprobantes del SRI, traídos en lote.",
+  meaning:"Los chaskis eran los mensajeros del Tawantinsuyu: corrían por relevos entre tambos llevando mensajes y kipus. La extensión hace lo mismo: va al SRI, trae cada XML y PDF y te los entrega ordenados.",
+  fonts:{d:"Bricolage Grotesque",dw:800,dls:"-0.03em",b:"Inter",m:"JetBrains Mono"}, r:"10px",
+  L:{bg:"#F4F5FA",surface:"#FFFFFF",ink:"#161A33",muted:"#5B6178",line:"#DCDFEA",accent:"#E4572E","accent-ink":"#FFFFFF",accent2:"#2B3A8C",ok:"#1F8A5B",warn:"#B7790A",err:"#C0392B"},
+  D:{bg:"#0E1022",surface:"#171A33",ink:"#ECEEF7",muted:"#9AA0B8",line:"#2A2E4A",accent:"#FF7A50","accent-ink":"#1A0D06",accent2:"#8C9BFF",ok:"#4CC38A",warn:"#E5B13A",err:"#FF6B5E"},
+  sw:[["accent","Pututu"],["accent2","Añil"],["ink","Noche"],["bg","Páramo"],["ok","Listo"],["warn","Verificar"]],
+  pros:["El nombre describe la acción: buscar y entregar","Muy enérgico, sirve para animaciones de relevo","Kichwa, misma familia que Yupana"],
+  cons:["En Ecuador hay sociedades registradas: Chaskitechnological Solutions S.A., Chaskis-Tech S.A.S. (no son software de este nicho)","Chazki es un courier peruano; se escribe también chasqui"],
+  score:["Alto","Alta","Buena (chás-ki)","Media","Medio"]},
+ {id:"kipu", name:"Kipu", url:"kipu.maecly.com", rec:true,
+  tag:"El registro de todos tus comprobantes, anudado y en orden.",
+  meaning:"El kipu era el sistema de cuerdas y nudos con el que los incas registraban tributos y cuentas. Yupana cuenta, Kipu registra: la extensión guarda cada comprobante emitido y recibido, por año, mes y RUC.",
+  fonts:{d:"Sora",dw:700,dls:"-0.02em",b:"Public Sans",m:"IBM Plex Mono"}, r:"6px",
+  L:{bg:"#F3F4F0",surface:"#FFFFFF",ink:"#1E2233",muted:"#5E6472",line:"#DCDED6",accent:"#3A3F9E","accent-ink":"#FFFFFF",accent2:"#C2185B",ok:"#2E7D32",warn:"#A86A12",err:"#B3261E"},
+  D:{bg:"#12141C",surface:"#1B1E2A",ink:"#E9EAF0",muted:"#A0A4B3",line:"#2C3040",accent:"#9AA2FF","accent-ink":"#12141C",accent2:"#F06292",ok:"#66BB6A",warn:"#E0A84A",err:"#EF6A60"},
+  sw:[["accent","Añil"],["accent2","Cochinilla"],["ink","Obsidiana"],["bg","Lana"],["ok","Anudado"],["warn","Verificar"]],
+  pros:["Pareja natural de Yupana: instrumentos contables incas","4 letras, igual en español e inglés","Ícono de cuerdas y nudos muy reconocible a 16 px"],
+  cons:["CONFLICTO: KIPU (mikipu.pe) es un software contable-tributario en Perú, mismo sector","En Ecuador existe Quipusoft S.A. (software)","Algunos lo escriben quipu"],
+  score:["Alto","Máxima","Excelente (kí-pu)","Baja","Alto"]},
+ {id:"acopio", name:"Acopio", url:"acopio.maecly.com",
+  tag:"Recoge un año de comprobantes en un solo paso.",
+  meaning:"Acopiar es reunir en cantidad lo que está disperso, como la cosecha en el centro de acopio. Describe sin rodeos la descarga masiva: el usuario elige un periodo y la extensión junta todo.",
+  fonts:{d:"Archivo",dw:800,dls:"-0.035em",b:"Archivo",m:"DM Mono"}, r:"4px",
+  L:{bg:"#F4F6F1",surface:"#FFFFFF",ink:"#17251C",muted:"#56645A",line:"#D6DDD2",accent:"#1E6B47","accent-ink":"#FFFFFF",accent2:"#D9A20A",ok:"#1E6B47",warn:"#A0700A",err:"#B23A2A"},
+  D:{bg:"#0F1712",surface:"#17221B",ink:"#E7EFE9",muted:"#98A89D",line:"#263529",accent:"#4FC08D","accent-ink":"#08140D",accent2:"#F5C842",ok:"#4FC08D",warn:"#E8B53C",err:"#F07462"},
+  sw:[["accent","Hoja"],["accent2","Maíz"],["ink","Tierra"],["bg","Neblina"],["ok","Recogido"],["err","Fallido"]],
+  pros:["Palabra española clara, se entiende sin explicar","Comunica volumen: ideal para contadores"],
+  cons:["Suena agrícola, menos tecnológico","Rompe la familia kichwa de Yupana"],
+  score:["Alto","Baja","Buena en ES, rara en EN","Media","Bajo"]},
+ {id:"legajo", name:"Legajo", url:"legajo.maecly.com",
+  tag:"El expediente tributario de tu RUC, completo.",
+  meaning:"Un legajo es la carpeta atada con cinta donde la oficina guarda los papeles de un caso. Aquí es el expediente digital de cada contribuyente: XML, RIDE y reporte, ordenados para el contador.",
+  fonts:{d:"IBM Plex Serif",dw:700,dls:"-0.015em",b:"IBM Plex Sans",m:"IBM Plex Mono"}, r:"3px",
+  L:{bg:"#F2F3F5",surface:"#FFFFFF",ink:"#14213D",muted:"#5A6275",line:"#D8DBE2",accent:"#1D3A6E","accent-ink":"#FFFFFF",accent2:"#D9A441",ok:"#2D7A4F",warn:"#A8701A",err:"#C8102E"},
+  D:{bg:"#0D1322",surface:"#151D30",ink:"#E8ECF4",muted:"#9CA5B8",line:"#26304A",accent:"#7FA6E8","accent-ink":"#0D1322",accent2:"#E8B95A",ok:"#5DBB86",warn:"#E2AE52",err:"#FF5A6E"},
+  sw:[["accent","Tinta"],["accent2","Manila"],["err","Cinta"],["bg","Archivo"],["ok","Archivado"],["warn","Verificar"]],
+  pros:["Muy serio: genera confianza en estudios contables","Metáfora visual clara (carpeta + cinta roja)"],
+  cons:["Tono burocrático, poco amigable para el usuario común","Difícil en inglés; no hace familia con Yupana"],
+  score:["Medio","Baja","Media","Alta","Bajo"]},
+ {id:"tambo", name:"Tambo", url:"tambo.maecly.com",
+  tag:"Tu almacén de comprobantes, al día y sin colas.",
+  meaning:"Los tambos eran los depósitos del Qhapaq Ñan donde se guardaban provisiones y descansaban los chaskis. La extensión funciona como tu tambo: un depósito local de todo lo emitido y recibido.",
+  fonts:{d:"Familjen Grotesk",dw:700,dls:"-0.025em",b:"Inter",m:"Space Mono"}, r:"14px",
+  L:{bg:"#F1F5F8",surface:"#FFFFFF",ink:"#1A2733",muted:"#586776",line:"#D3DDE5",accent:"#2F6F8F","accent-ink":"#FFFFFF",accent2:"#B8643F",ok:"#2B7A5A",warn:"#A8701A",err:"#B53A2E"},
+  D:{bg:"#0D161D",surface:"#15212B",ink:"#E6EEF4",muted:"#95A6B4",line:"#22313D",accent:"#6BB6DA","accent-ink":"#0D161D",accent2:"#E08B65",ok:"#5CC096",warn:"#E2AE52",err:"#F07A6C"},
+  sw:[["accent","Lago"],["accent2","Adobe"],["ink","Piedra"],["bg","Cielo"],["ok","Guardado"],["warn","Verificar"]],
+  pros:["Kichwa y conecta con Yupana","Puerta trapezoidal inca como ícono propio"],
+  cons:["Tambo es una cadena de tiendas en Perú y un grupo comercial en Ecuador","Evoca el instrumento musical en español rioplatense"],
+  score:["Medio","Alta","Buena","Baja","Medio"]}
+];
+
+// Tokens por marca: claro en .b-x, oscuro en las dos variantes del contrato de tema.
+const css = C.map(c=>{
+  const f=c.fonts, base=`--fd:"${f.d}",system-ui,sans-serif;--fdw:${f.dw};--fdls:${f.dls};--fb:"${f.b}",system-ui,sans-serif;--fm:"${f.m}",ui-monospace,monospace;--r:${c.r};`;
+  const v=o=>Object.entries(o).map(([k,x])=>`--${k}:${x}`).join(";");
+  return `.b-${c.id}{${base}${v(c.L)}}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .b-${c.id}{${v(c.D)}}}
+:root[data-theme="dark"] .b-${c.id}{${v(c.D)}}`;
+}).join("\n");
+const st=document.createElement("style"); st.textContent=css; document.head.appendChild(st);
+
+const esc=s=>String(s).replace(/[&<>"]/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[m]));
+const popup=c=>`
+<div class="popup" role="img" aria-label="Popup de la extensión ${c.name}">
+  <div class="pp-top"><div class="pp-brand">${ICONS[c.id]}${c.name}</div><div class="seg"><span class="on">Recibidos</span><span>Emitidos</span></div></div>
+  <div class="pp-body">
+    <div><div class="pp-lab">Periodo</div><div class="chips"><span class="chip">Día</span><span class="chip">Rango</span><span class="chip on">Mes</span><span class="chip">Año</span></div></div>
+    <div class="field"><span class="v">Noviembre 2026</span><span class="h">01/11 – 30/11</span></div>
+    <div><div class="pp-lab">Emisor (RUC o razón social)</div><div class="field"><span class="v">0990000003001</span><span class="h">COMERCIAL EJEMPLO S.A.</span></div></div>
+    <div class="fmts"><label><i class="box on"></i>XML</label><label><i class="box on"></i>PDF (RIDE)</label><label><i class="box"></i>Reporte TXT</label></div>
+    <div class="prog"><div class="row"><span>142 de 318 comprobantes</span><span>45 %</span></div><div class="bar"><i></i></div></div>
+    <div class="q">
+      <div><span class="tx"><b>Factura 133-007-000223738</b><small>TIENDAS INDUSTRIALES ASOCIADAS</small></span><span class="pill ok">Listo</span></div>
+      <div><span class="tx"><b>Factura 214-053-000094432</b><small>ATIMASA S.A.</small></span><span class="pill warn">Verifica el captcha</span></div>
+      <div><span class="tx"><b>Retención 001-002-000004511</b><small>0990000004001</small></span><span class="pill wait">En cola</span></div>
+    </div>
+  </div>
+  <div class="pp-foot"><button class="btn s" type="button">Pausar</button><button class="btn p" type="button">Descargar ZIP</button></div>
+</div>`;
+
+const sec=(c,i)=>`
+<section class="cand b-${c.id}" id="${c.id}" aria-labelledby="h-${c.id}">
+ <div class="cand-in">
+  <div class="c-head">
+   <div>
+    <div class="c-num">OPCIÓN ${i+1} DE 5</div>
+    <h2 id="h-${c.id}" class="wordmark">${ICONS[c.id]}<span class="wm">${c.name}</span><span class="by">by MAECLY</span></h2>
+    <p class="tagline">${esc(c.tag)}</p>
+    <p class="meaning">${esc(c.meaning)}</p>
+   </div>
+   <span class="url">${c.url}</span>
+  </div>
+  <div class="grid">
+   <div class="block" style="gap:22px">
+    <div class="block"><h3>Color · cambia con el tema</h3>
+     <div class="swatches">${c.sw.map(([k,n])=>`<div class="sw"><i style="background:var(--${k})"></i><span>${n}<small>${c.L[k]} / ${c.D[k]}</small></span></div>`).join("")}</div>
+    </div>
+    <div class="block"><h3>Tipografía</h3>
+     <div class="type">
+      <div class="lab">Display · ${c.fonts.d}</div><div class="t1">318 comprobantes listos</div>
+      <div class="lab">Texto · ${c.fonts.b}</div><div class="t2">Descarga noviembre completo de un emisor, en XML y RIDE, sin abrir cada fila.</div>
+      <div class="lab">Datos · ${c.fonts.m}</div><div class="t3">0811202601099000000300121330070002237382468135715</div>
+     </div>
+    </div>
+    <div class="block"><h3>Componentes · radio ${c.r}</h3>
+     <div class="comps"><button class="btn p" type="button">Descargar</button><button class="btn s" type="button">Elegir periodo</button><span class="pill ok">Listo</span><span class="pill wait">En cola</span><span class="pill warn">Verificar</span><span class="pill err">Error</span></div>
+    </div>
+   </div>
+   ${popup(c)}
+  </div>
+  <div class="notes"><div><h4>A favor</h4><ul>${c.pros.map(p=>`<li>${esc(p)}</li>`).join("")}</ul></div><div><h4>En contra</h4><ul>${c.cons.map(p=>`<li>${esc(p)}</li>`).join("")}</ul></div></div>
+ </div>
+</section>`;
+
+document.getElementById("cands").innerHTML=C.map(sec).join("");
+document.getElementById("toc").innerHTML=C.map((c,i)=>`<a href="#${c.id}">${i+1}. ${c.name}</a>`).join("");
+document.getElementById("cmp").innerHTML=C.map(c=>`<tr class="${c.rec?'rec':''}"><td><b>${c.name}</b></td>${c.score.map(s=>`<td>${s}</td>`).join("")}</tr>`).join("");
+</script>
