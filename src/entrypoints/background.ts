@@ -1,13 +1,16 @@
-import type { Peticion } from '@/lib/mensajeria';
+import { CLAVE_AJUSTES, normalizarAjustes } from '@/lib/ajustes';
+import { insignia, notificacion } from '@/lib/aviso-icono';
+import { CLAVE_PROGRESO, type EstadoTrabajo, type Peticion } from '@/lib/mensajeria';
 import { crearRegistro } from '@/lib/registro';
 import { xmlPorClave } from '@/lib/ws-reintentos';
 
-// El background solo hace de puente al servicio web del SRI: el content
-// script no puede llamarlo directamente por CORS; el service worker sí, con
-// el host_permission de cel.sri.gob.ec.
+// El background hace de puente al servicio web del SRI (el content script no
+// puede llamarlo por CORS), mantiene la insignia del icono y avisa con
+// notificaciones del sistema cuando el trabajo termina o necesita atención.
 export default defineBackground(() => {
   const log = crearRegistro('background', browser.storage.local);
   log.info('Service worker iniciado');
+
   browser.runtime.onMessage.addListener((msg: Peticion, _sender, responder: (r: unknown) => void) => {
     if (msg?.tipo !== 'xml') return false;
     const clave = msg.clave;
@@ -21,4 +24,43 @@ export default defineBackground(() => {
       });
     return true;
   });
+
+  const pintarIcono = async (e: EstadoTrabajo | undefined) => {
+    const i = insignia(e);
+    await browser.action.setBadgeText({ text: i.texto });
+    await browser.action.setBadgeBackgroundColor({ color: i.color });
+    await browser.action.setTitle({ title: i.titulo });
+  };
+
+  browser.storage.onChanged.addListener(async (cambios, area) => {
+    if (area !== 'local' || !cambios[CLAVE_PROGRESO]) return;
+    const antes = cambios[CLAVE_PROGRESO].oldValue as EstadoTrabajo | undefined;
+    const ahora = cambios[CLAVE_PROGRESO].newValue as EstadoTrabajo | undefined;
+    await pintarIcono(ahora);
+    const n = notificacion(antes, ahora);
+    if (!n) return;
+    const ajustes = normalizarAjustes((await browser.storage.local.get(CLAVE_AJUSTES))[CLAVE_AJUSTES]);
+    if (!ajustes.notificaciones) return;
+    await browser.notifications.create(n.id, {
+      type: 'basic',
+      iconUrl: '/icon/128.png',
+      title: n.titulo,
+      message: n.mensaje,
+      requireInteraction: n.insistente,
+    });
+  });
+
+  // Clic en una notificación: abre Descargas en la página de Legajo.
+  browser.notifications.onClicked.addListener(async (id) => {
+    if (!id.startsWith('legajo-')) return;
+    await browser.tabs.create({ url: browser.runtime.getURL('/legajo.html#descargas') });
+    await browser.notifications.clear(id);
+  });
+
+  // Primera instalación: bienvenida en la página completa.
+  browser.runtime.onInstalled.addListener(async ({ reason }) => {
+    if (reason === 'install') await browser.tabs.create({ url: browser.runtime.getURL('/legajo.html#acerca') });
+  });
+
+  void browser.storage.local.get(CLAVE_PROGRESO).then((v) => pintarIcono(v[CLAVE_PROGRESO] as EstadoTrabajo | undefined));
 });
