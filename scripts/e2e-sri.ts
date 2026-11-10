@@ -16,8 +16,8 @@
  *                dia:2026-11-06 | mes:2026-10 | anio:2025 | rango:2026-10-01:2026-10-15
  *                (por defecto: emitidos dia:2026-11-06, recibidos mes:2026-10)
  *
- * Rondas: al terminar una, el script espera a que entres desde el menú a la
- * otra pantalla (emitidos ↔ recibidos) y corre otra ronda con la misma sesión.
+ * Rondas: al terminar una, el script espera a que vuelvas a entrar desde el
+ * menú a una pantalla de consulta y corre otra ronda con la misma sesión.
  * Cierra la ventana para terminar.
  *   E2E_TIPOS    factura,retencion…   (por defecto factura)
  *   E2E_EMISOR   RUC o razón social (solo recibidos)
@@ -80,13 +80,23 @@ const bandejaDe = (p: Page) =>
     )
     .catch(() => null);
 
-/** Espera (hasta 15 min) una pestaña con la pantalla de consulta, distinta de `excluir`. */
-async function esperarPantalla(excluir?: string): Promise<Page | null> {
+// Cuenta las cargas de página del portal: una ronda nueva necesita una carga nueva.
+let cargas = 0;
+const vigilar = (p: Page) =>
+  p.on('framenavigated', (f) => {
+    if (f === p.mainFrame() && f.url().includes(PORTAL)) cargas++;
+  });
+ctx.pages().forEach(vigilar);
+ctx.on('page', vigilar);
+
+/** Espera (hasta 15 min) una pestaña con la pantalla de consulta cargada después de `desdeCarga`. */
+async function esperarPantalla(desdeCarga = -1): Promise<Page | null> {
   for (let i = 0; i < 900 && !cerrado; i++) {
-    for (const p of ctx.pages()) {
-      if (!p.url().includes(PORTAL)) continue;
-      const b = await bandejaDe(p);
-      if (b && b !== excluir) return p;
+    if (cargas > desdeCarga) {
+      for (const p of ctx.pages()) {
+        if (!p.url().includes(PORTAL)) continue;
+        if (await bandejaDe(p)) return p;
+      }
     }
     await dormir(1000);
   }
@@ -147,19 +157,22 @@ async function ronda(sri: Page): Promise<string> {
   }, 2000);
 
   // Solo cuentan estados escritos DESPUÉS del clic: el perfil guarda el progreso de corridas anteriores.
-  const terminal = popup
-    .waitForFunction(
-      (desde) =>
-        new Promise<boolean>((ok) =>
-          (globalThis as unknown as { chrome: { storage: { local: { get(k: string, cb: (v: Record<string, { fase: string; actualizado: number; zip: string | null }>) => void): void } } } }).chrome.storage.local.get('legajo:progreso', (v: Record<string, { fase: string; actualizado: number; zip: string | null }>) => {
-            const p = v['legajo:progreso'];
-            ok(!!p && p.actualizado >= desde && ['listo', 'cancelado', 'error'].includes(p.fase) && !p.zip);
-          }),
-        ),
-      t0,
-      { timeout: 30 * 60_000, polling: 1000 },
-    )
-    .then(() => ({ d: null }));
+  // Sondeo desde Node (waitForFunction no espera promesas devueltas por la función).
+  const leerEstado = () =>
+    popup.evaluate(async () => {
+      const g = globalThis as unknown as { chrome: { storage: { local: { get(k: string): Promise<Record<string, unknown>> } } } };
+      return (await g.chrome.storage.local.get('legajo:progreso'))['legajo:progreso'] as
+        | { fase: string; actualizado: number; zip: string | null; mensaje: string }
+        | undefined;
+    });
+  const terminal = (async () => {
+    for (let i = 0; i < 1800; i++) {
+      const e = await leerEstado().catch(() => undefined);
+      if (e && e.actualizado >= t0 && ['listo', 'cancelado', 'error'].includes(e.fase) && !e.zip) return { d: null };
+      await dormir(1000);
+    }
+    return { d: null };
+  })();
   const terminado = await Promise.race([descarga.then((d) => ({ d })), terminal]);
   clearInterval(reloj);
   const segundos = Math.round((Date.now() - t0) / 1000);
@@ -203,8 +216,9 @@ async function ronda(sri: Page): Promise<string> {
 let actual: Page | null = encontrada;
 while (actual) {
   const hecha = await ronda(actual);
-  console.log(`\n>>> Ronda de ${hecha} terminada. Para otra ronda entra desde el menú a la otra pantalla; cierra la ventana para terminar.\n`);
-  actual = await esperarPantalla(hecha);
+  const marca = cargas;
+  console.log(`\n>>> Ronda de ${hecha} terminada. Para otra ronda vuelve a entrar desde el menú (a cualquier pantalla); cierra la ventana para terminar.\n`);
+  actual = await esperarPantalla(marca);
 }
 console.log(fallos.length ? `\n${fallos.length} FALLOS` : '\nTODO OK');
 await ctx.close().catch(() => {});
