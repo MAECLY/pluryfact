@@ -20,6 +20,8 @@ export interface Trabajo {
   /** RUC o razón social del emisor; vacío = todos. */
   emisor: string;
   formatos: { xml: boolean; pdf: boolean; txt: boolean };
+  /** Al reanudar: índices del plan completo que faltan. */
+  soloIndices?: number[];
 }
 
 /** Lo que el conductor sabe pedir al portal. */
@@ -54,14 +56,20 @@ export interface Progreso {
   actividad: Actividad[];
   /** Fin de la pausa en curso (ms) o null: permite mostrar una cuenta regresiva. */
   esperaHasta: number | null;
+  /** Consultas que fallaron, en vivo. */
+  consultasFallidas: string[];
 }
 
 export type EstadoPaso = 'pendiente' | 'consultando' | 'descargando' | 'sin-datos' | 'ok' | 'fallida';
 
 export interface Paso {
+  /** Índice en el plan completo (para reanudar). */
+  indice: number;
   etiqueta: string;
   estado: EstadoPaso;
   comprobantes: number;
+  /** Archivos de esta consulta que no se pudieron bajar. */
+  fallidos: number;
 }
 
 export interface Actividad {
@@ -107,6 +115,8 @@ export interface Dependencias {
   progreso(p: Progreso): void;
   /** true si el usuario canceló. */
   cancelado(): boolean;
+  /** false si la sesión del SRI caducó (se consulta tras fallos sospechosos). */
+  sesionActiva?(): Promise<boolean>;
   /** Reloj (ms); por defecto Date.now. */
   ahora?: () => number;
   /** Registro de diagnóstico (opcional). */
@@ -118,6 +128,16 @@ export class Cancelado extends Error {
     super('Descarga cancelada');
   }
 }
+
+/** El portal respondió con la página de login: la sesión del SRI caducó. */
+export class SesionCaducada extends Error {
+  constructor() {
+    super('La sesión del SRI caducó');
+  }
+}
+
+export const MENSAJE_SESION =
+  'Tu sesión del SRI caducó. Inicia sesión de nuevo, entra a la pantalla de comprobantes y pulsa «Reanudar»: Legajo seguirá con lo que faltaba.';
 
 /** Pausa entre consultas: recibidos usa reCAPTCHA, así que va más despacio. */
 export const RITMO = {
@@ -184,13 +204,17 @@ export interface Resumen {
   consultasFallidas: string[];
   /** Motivo por el que la cola se detuvo antes de terminar el plan. */
   detenidaPor: string | null;
+  /** Índices del plan completo que no terminaron bien (para «Reanudar»). */
+  pendientes: number[];
 }
 
 export const MENSAJE_CAPTCHA =
   'El SRI rechazó la verificación reCAPTCHA. Legajo se detuvo para no insistir: usa tu Chrome habitual, espera unos minutos y vuelve a intentar.';
 
 export async function ejecutar(t: Trabajo, d: Dependencias): Promise<Resumen> {
-  const plan = planificar(t, d.hoy);
+  const planCompleto = planificar(t, d.hoy);
+  const indices = t.soloIndices?.length ? t.soloIndices.filter((i) => i < planCompleto.length) : planCompleto.map((_, i) => i);
+  const plan = indices.map((i) => planCompleto[i]!);
   const ahora = d.ahora ?? Date.now;
   // Emitidos solo existe hasta ayer; recibidos hasta hoy.
   const rango = aRango(t.periodo, t.bandeja === 'emitidos' ? diaAnterior(d.hoy) : d.hoy);
@@ -205,16 +229,19 @@ export async function ejecutar(t: Trabajo, d: Dependencias): Promise<Resumen> {
     mensaje: '',
     errores: [],
     inicio: ahora(),
-    pasos: plan.map((c) => ({
+    pasos: plan.map((c, k) => ({
+      indice: indices[k]!,
       etiqueta: variosTipos ? `${nombreConsulta(c)} · ${tipoDeCombo(c.tipoCombo)}` : nombreConsulta(c),
       estado: 'pendiente',
       comprobantes: 0,
+      fallidos: 0,
     })),
     actividad: [],
     esperaHasta: null,
+    consultasFallidas: [],
   };
   const archivos: Archivo[] = [];
-  const consultasFallidas: string[] = [];
+  const consultasFallidas = p.consultasFallidas;
   const vistos = new Set<string>();
   let detenidaPor: string | null = null;
   const avisar = (cambios: Partial<Progreso>) => {
@@ -227,6 +254,13 @@ export async function ejecutar(t: Trabajo, d: Dependencias): Promise<Resumen> {
     avisar({ mensaje: texto, ...cambios });
   };
   const marcar = (i: number, cambios: Partial<Paso>) => Object.assign(p.pasos[i]!, cambios);
+  const pendientes = () =>
+    p.pasos.filter((x) => !(x.estado === 'sin-datos' || (x.estado === 'ok' && x.fallidos === 0))).map((x) => x.indice);
+  let pasoActual = -1;
+  /** Ante un fallo sospechoso: si la sesión caducó, se corta la cola. */
+  const confirmarSesion = async () => {
+    if (d.sesionActiva && !(await d.sesionActiva().catch(() => true))) throw new SesionCaducada();
+  };
   const log = d.registro;
   const anotarError = (e: unknown) => {
     const m = e instanceof Error ? e.message : String(e);
@@ -255,6 +289,7 @@ export async function ejecutar(t: Trabajo, d: Dependencias): Promise<Resumen> {
           t.bandeja === 'recibidos' ? 'Ritmo seguro para la verificación del SRI' : 'Ritmo entre consultas',
         );
       revisar();
+      pasoActual = i;
       marcar(i, { estado: 'consultando' });
       contar(
         t.bandeja === 'recibidos' ? `Consultando ${nombre} (verificación reCAPTCHA invisible)…` : `Consultando ${nombre}…`,
@@ -289,6 +324,7 @@ export async function ejecutar(t: Trabajo, d: Dependencias): Promise<Resumen> {
         contar(`${nombre}: el SRI no tiene comprobantes`, 'info', { consultasHechas: p.consultasHechas + 1 });
         continue;
       }
+      if (r.estado === 'timeout' || r.estado === 'error') await confirmarSesion();
       if (r.estado !== 'ok') {
         consultasFallidas.push(`${etiqueta}: ${r.mensaje || r.estado}`);
         marcar(i, { estado: 'fallida' });
@@ -361,6 +397,7 @@ export async function ejecutar(t: Trabajo, d: Dependencias): Promise<Resumen> {
             avisar({ mensaje });
           } else {
             fallidosAqui++;
+            p.pasos[i]!.fallidos++;
             anotarError(`Sin XML del SRI: ${f.serie || f.clave.secuencial}`);
             avisar({ fallidos: p.fallidos + 1, mensaje });
           }
@@ -377,18 +414,27 @@ export async function ejecutar(t: Trabajo, d: Dependencias): Promise<Resumen> {
           [pedirPdf ? `${filas.length} RIDE` : '', sinXml.size ? `${sinXml.size} XML` : ''].filter(Boolean).join(' y ') +
             ` de ${nombre} desde el portal…`,
         );
-        await recorrerPaginas(t.bandeja, pedirPdf ? filas : [], sinXml, d, archivos, avisar, revisar, pausa, p, anotarError, contar);
+        const antes = p.fallidos;
+        await recorrerPaginas(t.bandeja, pedirPdf ? filas : [], sinXml, d, archivos, avisar, revisar, pausa, p, anotarError, contar, confirmarSesion);
+        p.pasos[i]!.fallidos += p.fallidos - antes;
       }
       marcar(i, { estado: 'ok' });
       avisar({ consultasHechas: p.consultasHechas + 1 });
     }
     log?.info(`Fin: ${p.encontrados} comprobantes, ${p.descargados} descargados, ${p.fallidos} fallidos, ${archivos.length} archivos${detenidaPor ? ` · detenida: ${detenidaPor}` : ''}`);
     contar(detenidaPor ?? `Armando el ZIP con ${archivos.length} archivos…`, detenidaPor ? 'error' : 'info', { fase: 'empaquetando' });
-    return { archivos, progreso: { ...p }, consultasFallidas, detenidaPor };
+    return { archivos, progreso: { ...p }, consultasFallidas, detenidaPor, pendientes: pendientes() };
   } catch (e) {
+    if (e instanceof SesionCaducada) {
+      if (pasoActual >= 0 && p.pasos[pasoActual]!.estado !== 'ok') marcar(pasoActual, { estado: 'fallida' });
+      detenidaPor = MENSAJE_SESION;
+      log?.error('Sesión del SRI caducada: se detiene la cola');
+      contar(MENSAJE_SESION, 'error', { fase: 'empaquetando', esperaHasta: null });
+      return { archivos, progreso: { ...p }, consultasFallidas, detenidaPor, pendientes: pendientes() };
+    }
     if (e instanceof Cancelado) {
       contar('Descarga cancelada', 'aviso', { fase: 'cancelado', esperaHasta: null });
-      return { archivos, progreso: { ...p }, consultasFallidas, detenidaPor };
+      return { archivos, progreso: { ...p }, consultasFallidas, detenidaPor, pendientes: pendientes() };
     }
     contar(e instanceof Error ? e.message : String(e), 'error', { fase: 'error', esperaHasta: null });
     throw e;
@@ -411,6 +457,7 @@ async function recorrerPaginas(
   p: Progreso,
   anotar: (e: unknown) => void,
   contar: (texto: string, nivel?: Actividad['nivel']) => void,
+  confirmarSesion: () => Promise<void>,
 ) {
   const pdfPendientes = new Map(filasPdf.map((f) => [f.clave.clave, f]));
   const quedan = () => pdfPendientes.size + sinXml.size;
@@ -428,6 +475,7 @@ async function recorrerPaginas(
         await pausa(RITMO.descarga);
         return true;
       } catch (e) {
+        if (e instanceof SesionCaducada) throw e;
         if (intento === 2) {
           fallosSeguidos++;
           if (ultimoIntento) {
@@ -478,6 +526,7 @@ async function recorrerPaginas(
     if ((await procesarPagina(false)) > 0) {
       contar(`El portal dejó de entregar archivos en la página ${tabla.paginaActual}; se vuelve a cargar y se reintenta`, 'aviso');
       d.registro?.aviso(`Resincronizando en página ${tabla.paginaActual}`);
+      await confirmarSesion();
       await d.esperar(3000);
       await irA(tabla.paginaActual);
       fallosSeguidos = 0;

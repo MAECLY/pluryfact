@@ -70,7 +70,8 @@ describe('ejecutar', () => {
     expect(textos).toContain('noviembre 2026: 2 comprobantes');
     expect(textos).toContain('XML de noviembre 2026: 2 por servicio web');
     expect(textos.some((x) => x.startsWith('Portal: página 1 de 1'))).toBe(true);
-    expect(progresos.at(-1)!.pasos).toEqual([{ etiqueta: 'noviembre 2026', estado: 'ok', comprobantes: 2 }]);
+    expect(progresos.at(-1)!.pasos).toEqual([{ indice: 0, etiqueta: 'noviembre 2026', estado: 'ok', comprobantes: 2, fallidos: 0 }]);
+    expect(r.pendientes).toEqual([]);
     expect(d.consultar).toHaveBeenCalledTimes(1);
   });
 
@@ -184,6 +185,38 @@ describe('ejecutar', () => {
     const r = await ejecutar({ ...base, formatos: { xml: true, pdf: true, txt: false } }, d);
     expect(primeraPagina).toHaveBeenCalledTimes(2); // inicio + resincronización
     expect(r.progreso).toMatchObject({ fallidos: 0, descargados: 4 });
+  });
+
+  it('sesión caducada: se detiene, explica y deja pendientes para reanudar', async () => {
+    const { MENSAJE_SESION } = await import('../src/lib/cola');
+    const consultar = vi
+      .fn()
+      .mockResolvedValueOnce({ estado: 'ok', mensaje: '' })
+      .mockResolvedValue({ estado: 'timeout', mensaje: 'El portal no respondió a tiempo' });
+    const sesionActiva = vi.fn(async () => false);
+    const { d } = deps({ consultar, sesionActiva });
+    const t = { ...base, periodo: { tipo: 'rango' as const, desde: { anio: 2026, mes: 9, dia: 1 }, hasta: hoy }, formatos: { xml: true, pdf: false, txt: false } };
+    const r = await ejecutar(t, d);
+    expect(r.detenidaPor).toBe(MENSAJE_SESION);
+    expect(consultar).toHaveBeenCalledTimes(3); // septiembre ok; octubre + su reintento; noviembre no se intenta
+    expect(r.pendientes).toEqual([1, 2]);
+    expect(r.progreso.pasos.map((x) => x.estado)).toEqual(['ok', 'fallida', 'pendiente']);
+  });
+
+  it('reanudar ejecuta solo las consultas pendientes del plan', async () => {
+    const consultar = vi.fn(async () => ({ estado: 'sin-datos' as const, mensaje: '' }));
+    const { d } = deps({ consultar });
+    const t = { ...base, periodo: { tipo: 'anio' as const, anio: 2025 }, soloIndices: [5, 6, 11] };
+    const r = await ejecutar(t, d);
+    expect((consultar.mock.calls as unknown as Array<[{ mes: number }]>).map((c) => c[0].mes)).toEqual([6, 7, 12]);
+    expect(r.progreso.pasos.map((x) => x.indice)).toEqual([5, 6, 11]);
+    expect(r.pendientes).toEqual([]);
+  });
+
+  it('un mes con archivos fallidos queda pendiente para reanudar', async () => {
+    const { d } = deps({ xml: vi.fn(async () => null) });
+    const r = await ejecutar({ ...base, formatos: { xml: true, pdf: false, txt: false } }, d);
+    expect(r.pendientes).toEqual([0]);
   });
 
   it('cuenta como fallido un XML que el SRI no tiene autorizado', async () => {
