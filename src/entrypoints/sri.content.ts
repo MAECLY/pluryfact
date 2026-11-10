@@ -135,6 +135,11 @@ export default defineContentScript({
         siguientePagina: async () => ((await ordenar({ accion: 'siguiente-pagina', bandeja: t.bandeja })) as { hay: boolean }).hay,
         leerTabla: () => parseTabla(document, t.bandeja),
         pdf: postArchivo,
+        xmlPortal: async (idEnlace) => {
+          const texto = new TextDecoder('utf-8').decode(await postArchivo(idEnlace));
+          if (!/<autorizacion>[\s\S]*<estado>AUTORIZADO<\/estado>/.test(texto)) throw new Error('El portal entregó un XML sin estado AUTORIZADO');
+          return texto;
+        },
         xml: async (clave) => {
           const r = (await browser.runtime.sendMessage({ tipo: 'xml', clave } satisfies Peticion)) as { ok: boolean; xml?: string | null; error?: string };
           if (!r?.ok) throw new Error(r?.error ?? 'Sin respuesta del servicio web');
