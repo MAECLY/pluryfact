@@ -11,3 +11,9 @@ playwright-report/
 .e2e-profile/
 .venv/
 __pycache__/
+
+# Secretos locales: nunca al repo
+.env
+.env.*
+!.env.example
+.env
