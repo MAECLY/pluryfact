@@ -6,14 +6,16 @@ import { defineConfig } from 'wxt';
 // script (mismo origen, sesión del usuario). El único host extra es el
 // servicio web público de autorización del SRI, que entrega el XML por
 // clave de acceso sin sesión ni captcha. El host del portal permite al popup
-// encontrar la pestaña del SRI sin el permiso amplio `tabs`.
+// encontrar la pestaña del SRI sin el permiso amplio `tabs`. `scripting`
+// permite al popup activar Legajo en una pestaña del SRI que ya estaba
+// abierta antes de instalar o recargar la extensión.
 export default defineConfig({
   srcDir: 'src',
   manifest: {
     name: 'Legajo',
     description:
       'Descarga en lote tus comprobantes electrónicos de SRI en Línea: XML, RIDE y reporte.',
-    permissions: ['storage'],
+    permissions: ['storage', 'scripting'],
     host_permissions: [
       'https://cel.sri.gob.ec/*',
       'https://srienlinea.sri.gob.ec/comprobantes-electronicos-internet/*',
