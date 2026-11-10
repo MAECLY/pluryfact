@@ -201,6 +201,7 @@ export async function consultar(win: Window, c: ConsultaPortal, alVerificar: () 
   const filas = filasVisibles(doc, c.bandeja);
   if (tipo === 'sin-datos') return { estado: 'sin-datos', mensaje };
   if (tipo === 'fecha-actual') return { estado: 'rechazada', mensaje };
+  if (tipo === 'captcha') return { estado: 'captcha', mensaje };
   if (r === 'timeout') return { estado: 'timeout', mensaje: `El portal no respondió a tiempo (${diag.ajax} respuestas, ${diag.listado} del listado)` };
   if (filas > 0) return { estado: 'ok', mensaje: '' };
   if (tipo === 'otro') return { estado: 'rechazada', mensaje };
