@@ -46,6 +46,36 @@ export interface Progreso {
   mensaje: string;
   /** Últimos errores (máx. 5), para diagnosticar sin abrir la consola. */
   errores: string[];
+  /** Momento de inicio del trabajo (ms). */
+  inicio: number;
+  /** Una entrada por consulta del plan, para mostrar el avance mes a mes o día a día. */
+  pasos: Paso[];
+  /** Lo último que hizo la cola, más reciente al final (máx. 40). */
+  actividad: Actividad[];
+  /** Fin de la pausa en curso (ms) o null: permite mostrar una cuenta regresiva. */
+  esperaHasta: number | null;
+}
+
+export type EstadoPaso = 'pendiente' | 'consultando' | 'descargando' | 'sin-datos' | 'ok' | 'fallida';
+
+export interface Paso {
+  etiqueta: string;
+  estado: EstadoPaso;
+  comprobantes: number;
+}
+
+export interface Actividad {
+  t: number;
+  texto: string;
+  nivel: 'info' | 'aviso' | 'error';
+}
+
+const MESES = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
+
+/** "noviembre 2026", "8 de noviembre 2026", "06/11/2026" → texto legible para la actividad. */
+export function nombreConsulta(c: ConsultaPortal): string {
+  if (c.bandeja === 'emitidos') return c.fecha;
+  return c.dia ? `${c.dia} de ${MESES[c.mes - 1]} ${c.anio}` : `${MESES[c.mes - 1]} ${c.anio}`;
 }
 
 export interface Archivo {
@@ -72,6 +102,8 @@ export interface Dependencias {
   progreso(p: Progreso): void;
   /** true si el usuario canceló. */
   cancelado(): boolean;
+  /** Reloj (ms); por defecto Date.now. */
+  ahora?: () => number;
   /** Registro de diagnóstico (opcional). */
   registro?: { info(m: string): void; aviso(m: string): void; error(m: string): void };
 }
@@ -104,6 +136,9 @@ export function conLimite<T>(promesa: Promise<T>, ms: number, mensaje: string): 
   return Promise.race([promesa, limite]).finally(() => clearTimeout(reloj));
 }
 const MAX_PAGINAS = 200;
+
+const tipoDeCombo = (combo: string) =>
+  (Object.entries(TIPO_COMBO).find(([, v]) => v === combo)?.[0] ?? combo).replace('-', ' ');
 
 export function planificar(t: Trabajo, hoy: Fecha): ConsultaPortal[] {
   const out: ConsultaPortal[] = [];
@@ -145,8 +180,10 @@ export const MENSAJE_CAPTCHA =
 
 export async function ejecutar(t: Trabajo, d: Dependencias): Promise<Resumen> {
   const plan = planificar(t, d.hoy);
+  const ahora = d.ahora ?? Date.now;
   // Emitidos solo existe hasta ayer; recibidos hasta hoy.
   const rango = aRango(t.periodo, t.bandeja === 'emitidos' ? diaAnterior(d.hoy) : d.hoy);
+  const variosTipos = t.tipos.length > 1;
   const p: Progreso = {
     fase: 'consultando',
     consultasHechas: 0,
@@ -156,6 +193,14 @@ export async function ejecutar(t: Trabajo, d: Dependencias): Promise<Resumen> {
     fallidos: 0,
     mensaje: '',
     errores: [],
+    inicio: ahora(),
+    pasos: plan.map((c) => ({
+      etiqueta: variosTipos ? `${nombreConsulta(c)} · ${tipoDeCombo(c.tipoCombo)}` : nombreConsulta(c),
+      estado: 'pendiente',
+      comprobantes: 0,
+    })),
+    actividad: [],
+    esperaHasta: null,
   };
   const archivos: Archivo[] = [];
   const consultasFallidas: string[] = [];
@@ -163,8 +208,14 @@ export async function ejecutar(t: Trabajo, d: Dependencias): Promise<Resumen> {
   let detenidaPor: string | null = null;
   const avisar = (cambios: Partial<Progreso>) => {
     Object.assign(p, cambios);
-    d.progreso({ ...p });
+    d.progreso({ ...p, pasos: p.pasos.map((x) => ({ ...x })), actividad: [...p.actividad] });
   };
+  /** Anota una línea de actividad visible para el usuario (y en el registro). */
+  const contar = (texto: string, nivel: Actividad['nivel'] = 'info', cambios: Partial<Progreso> = {}) => {
+    p.actividad = [...p.actividad, { t: ahora(), texto, nivel }].slice(-40);
+    avisar({ mensaje: texto, ...cambios });
+  };
+  const marcar = (i: number, cambios: Partial<Paso>) => Object.assign(p.pasos[i]!, cambios);
   const log = d.registro;
   const anotarError = (e: unknown) => {
     const m = e instanceof Error ? e.message : String(e);
@@ -175,27 +226,42 @@ export async function ejecutar(t: Trabajo, d: Dependencias): Promise<Resumen> {
   const revisar = () => {
     if (d.cancelado()) throw new Cancelado();
   };
-  const pausa = async (r: { base: number; extra: number }) => d.esperar(r.base + Math.round(d.azar() * r.extra));
+  const pausa = async (r: { base: number; extra: number }, motivo?: string) => {
+    const ms = r.base + Math.round(d.azar() * r.extra);
+    if (motivo) contar(`${motivo}: pausa de ${Math.round(ms / 1000)} s`, 'info', { esperaHasta: ahora() + ms });
+    await d.esperar(ms);
+    if (motivo) avisar({ esperaHasta: null });
+  };
 
   try {
     for (const [i, consulta] of plan.entries()) {
       revisar();
-      if (i > 0) await pausa(RITMO[t.bandeja]);
-      revisar();
       const etiqueta = etiquetaConsulta(consulta);
-      avisar({ fase: 'consultando', mensaje: `Consultando ${etiqueta}` });
+      const nombre = p.pasos[i]!.etiqueta;
+      if (i > 0)
+        await pausa(
+          RITMO[t.bandeja],
+          t.bandeja === 'recibidos' ? 'Ritmo seguro para la verificación del SRI' : 'Ritmo entre consultas',
+        );
+      revisar();
+      marcar(i, { estado: 'consultando' });
+      contar(
+        t.bandeja === 'recibidos' ? `Consultando ${nombre} (verificación reCAPTCHA invisible)…` : `Consultando ${nombre}…`,
+        'info',
+        { fase: 'consultando' },
+      );
 
       const t0 = Date.now();
       let r = await d.consultar(consulta);
       log?.info(`Consulta ${etiqueta}: ${r.estado} en ${Date.now() - t0} ms ${r.mensaje}`);
       if (r.estado === 'timeout' || r.estado === 'error') {
+        contar(`${nombre}: ${r.mensaje || 'sin respuesta'}. Reintento en 5 s`, 'aviso');
         await d.esperar(5000);
         revisar();
         r = await d.consultar(consulta);
         log?.aviso(`Reintento ${etiqueta}: ${r.estado} ${r.mensaje}`);
       } else if (r.estado === 'captcha') {
-        avisar({ mensaje: 'El SRI pidió repetir la verificación; reintento en un minuto' });
-        await pausa(RITMO.captcha);
+        await pausa(RITMO.captcha, `El SRI rechazó la verificación de ${nombre}; se reintenta una vez`);
         revisar();
         r = await d.consultar(consulta);
         log?.aviso(`Reintento por captcha ${etiqueta}: ${r.estado} ${r.mensaje}`);
@@ -203,17 +269,22 @@ export async function ejecutar(t: Trabajo, d: Dependencias): Promise<Resumen> {
       if (r.estado === 'captcha') {
         consultasFallidas.push(`${etiqueta}: ${r.mensaje || 'Captcha incorrecta'}`);
         detenidaPor = MENSAJE_CAPTCHA;
+        marcar(i, { estado: 'fallida' });
+        contar(`${nombre}: el SRI volvió a rechazar la verificación. Se detiene la descarga.`, 'error');
         break;
       }
       if (r.estado === 'sin-datos') {
-        avisar({ consultasHechas: p.consultasHechas + 1 });
+        marcar(i, { estado: 'sin-datos' });
+        contar(`${nombre}: el SRI no tiene comprobantes`, 'info', { consultasHechas: p.consultasHechas + 1 });
         continue;
       }
       if (r.estado !== 'ok') {
         consultasFallidas.push(`${etiqueta}: ${r.mensaje || r.estado}`);
-        avisar({ consultasHechas: p.consultasHechas + 1 });
+        marcar(i, { estado: 'fallida' });
+        contar(`${nombre}: falló (${r.mensaje || r.estado})`, 'error', { consultasHechas: p.consultasHechas + 1 });
         continue;
       }
+      contar(`${nombre}: el SRI respondió; leyendo el reporte…`);
 
       const bytes = await d.reporte();
       const reporte = parseReporte(decodificarReporte(bytes));
@@ -225,19 +296,24 @@ export async function ejecutar(t: Trabajo, d: Dependencias): Promise<Resumen> {
       );
       filas.forEach((f) => vistos.add(f.clave.clave));
       log?.info(`Reporte ${etiqueta}: ${reporte.filas.length} filas, ${reporte.descartadas} descartadas, ${filas.length} tras filtros (${bytes.length} bytes)`);
-      avisar({
-        fase: 'descargando',
-        encontrados: p.encontrados + filas.length,
-        mensaje: filas.length ? `Descargando ${filas.length} comprobantes de ${etiqueta}` : `Sin coincidencias en ${etiqueta}`,
-      });
+      marcar(i, { estado: filas.length ? 'descargando' : 'sin-datos', comprobantes: filas.length });
+      contar(
+        filas.length
+          ? `${nombre}: ${filas.length} comprobantes${filas.length !== reporte.filas.length ? ` (de ${reporte.filas.length} en el reporte, tras filtros)` : ''}`
+          : `${nombre}: ${reporte.filas.length} en el reporte, ninguno coincide con el filtro`,
+        'info',
+        { fase: 'descargando', encontrados: p.encontrados + filas.length },
+      );
 
       if (t.formatos.txt && reporte.filas.length) {
         const tipo = filas[0]?.clave.tipo ?? reporte.filas[0]!.clave.tipo;
         archivos.push({ ruta: `legajo/${d.rucContribuyente}/${t.bandeja}/reportes/${tipo}_${etiqueta}.txt`, datos: bytes });
       }
 
-      if (t.formatos.xml) {
+      if (t.formatos.xml && filas.length) {
+        contar(`Pidiendo ${filas.length} XML al servicio web del SRI…`);
         let hechos = 0;
+        let fallidosAqui = 0;
         await enParalelo(filas, XML_EN_PARALELO, async (f) => {
           revisar();
           let xml: string | null = null;
@@ -254,22 +330,33 @@ export async function ejecutar(t: Trabajo, d: Dependencias): Promise<Resumen> {
           if (xml) {
             archivos.push({ ruta: `${carpeta(d.rucContribuyente, t.bandeja, f)}/${nombreArchivo(f, 'xml')}`, datos: xml });
             avisar({ descargados: p.descargados + 1, mensaje });
-          } else avisar({ fallidos: p.fallidos + 1, mensaje });
+          } else {
+            fallidosAqui++;
+            avisar({ fallidos: p.fallidos + 1, mensaje });
+          }
         });
+        contar(
+          `XML de ${nombre}: ${hechos - fallidosAqui} listos${fallidosAqui ? `, ${fallidosAqui} fallidos` : ''}`,
+          fallidosAqui ? 'aviso' : 'info',
+        );
       }
 
-      if (t.formatos.pdf && filas.length) await descargarRides(t.bandeja, filas, d, archivos, avisar, revisar, pausa, p, anotarError);
+      if (t.formatos.pdf && filas.length) {
+        contar(`Descargando ${filas.length} RIDE de ${nombre} desde el portal…`);
+        await descargarRides(t.bandeja, filas, d, archivos, avisar, revisar, pausa, p, anotarError, contar);
+      }
+      marcar(i, { estado: 'ok' });
       avisar({ consultasHechas: p.consultasHechas + 1 });
     }
     log?.info(`Fin: ${p.encontrados} comprobantes, ${p.descargados} descargados, ${p.fallidos} fallidos, ${archivos.length} archivos${detenidaPor ? ` · detenida: ${detenidaPor}` : ''}`);
-    avisar({ fase: 'empaquetando', mensaje: detenidaPor ?? 'Armando el ZIP' });
+    contar(detenidaPor ?? `Armando el ZIP con ${archivos.length} archivos…`, detenidaPor ? 'error' : 'info', { fase: 'empaquetando' });
     return { archivos, progreso: { ...p }, consultasFallidas, detenidaPor };
   } catch (e) {
     if (e instanceof Cancelado) {
-      avisar({ fase: 'cancelado', mensaje: e.message });
+      contar('Descarga cancelada', 'aviso', { fase: 'cancelado', esperaHasta: null });
       return { archivos, progreso: { ...p }, consultasFallidas, detenidaPor };
     }
-    avisar({ fase: 'error', mensaje: e instanceof Error ? e.message : String(e) });
+    contar(e instanceof Error ? e.message : String(e), 'error', { fase: 'error', esperaHasta: null });
     throw e;
   }
 }
@@ -285,12 +372,14 @@ async function descargarRides(
   pausa: (r: { base: number; extra: number }) => Promise<void>,
   p: Progreso,
   anotar: (e: unknown) => void,
+  contar: (texto: string, nivel?: Actividad['nivel']) => void,
 ) {
   const pendientes = new Map(filas.map((f) => [f.clave.clave, f]));
   await d.primeraPagina();
   for (let pagina = 0; pagina < MAX_PAGINAS && pendientes.size; pagina++) {
     const tabla = d.leerTabla();
     d.registro?.info(`RIDE página ${tabla.paginaActual}/${tabla.totalPaginas}: ${tabla.filas.length} filas, ${pendientes.size} pendientes`);
+    contar(`RIDE: página ${tabla.paginaActual} de ${tabla.totalPaginas} del portal (${pendientes.size} pendientes)`);
     for (const fila of tabla.filas) {
       const pedida = pendientes.get(fila.clave.clave);
       if (!pedida || !fila.enlaces.pdf) continue;
@@ -310,6 +399,7 @@ async function descargarRides(
   }
   if (pendientes.size) {
     d.registro?.aviso(`RIDE sin encontrar en la tabla: ${pendientes.size}`);
+    contar(`${pendientes.size} RIDE no aparecieron en la tabla del portal`, 'aviso');
     avisar({ fallidos: p.fallidos + pendientes.size });
   }
 }

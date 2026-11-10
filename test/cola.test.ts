@@ -66,7 +66,11 @@ describe('ejecutar', () => {
       'legajo/1799999999001/recibidos/reportes/factura_2026-11.txt',
     ]);
     expect(r.progreso).toMatchObject({ encontrados: 2, descargados: 4, fallidos: 0, consultasHechas: 1, fase: 'empaquetando' });
-    expect(progresos.find((p) => p.fase === 'descargando')?.mensaje).toBe('Descargando 2 comprobantes de 2026-11');
+    const textos = progresos.at(-1)!.actividad.map((a) => a.texto);
+    expect(textos).toContain('noviembre 2026: 2 comprobantes');
+    expect(textos).toContain('XML de noviembre 2026: 2 listos');
+    expect(textos.some((x) => x.startsWith('RIDE: página 1 de 1'))).toBe(true);
+    expect(progresos.at(-1)!.pasos).toEqual([{ etiqueta: 'noviembre 2026', estado: 'ok', comprobantes: 2 }]);
     expect(d.consultar).toHaveBeenCalledTimes(1);
   });
 
@@ -147,6 +151,16 @@ describe('ejecutar', () => {
     const { d } = deps({ cancelado: () => ++n > 3 });
     const r = await ejecutar({ ...base, tipos: ['factura', 'retencion'] }, d);
     expect(r.progreso.fase).toBe('cancelado');
+  });
+
+  it('anuncia las pausas con cuenta regresiva y marca los meses sin datos', async () => {
+    const { d, progresos } = deps({ consultar: vi.fn(async () => ({ estado: 'sin-datos' as const, mensaje: '' })), ahora: () => 1000 });
+    await ejecutar({ ...base, periodo: { tipo: 'rango', desde: { anio: 2026, mes: 10, dia: 1 }, hasta: hoy } }, d);
+    expect(progresos.some((p) => p.esperaHasta === 7500)).toBe(true);
+    const fin = progresos.at(-1)!;
+    expect(fin.pasos.map((x) => x.estado)).toEqual(['sin-datos', 'sin-datos']);
+    expect(fin.actividad.map((a) => a.texto)).toContain('octubre 2026: el SRI no tiene comprobantes');
+    expect(fin.esperaHasta).toBeNull();
   });
 
   it('espera entre consultas a ritmo de recibidos', async () => {
