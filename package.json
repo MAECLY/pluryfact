@@ -15,7 +15,8 @@
     "test:watch": "vitest",
     "check": "bun run typecheck && bun run test && bun run build",
     "icons": "bun scripts/icons.ts",
-    "e2e": "bun scripts/e2e-sri.ts"
+    "e2e": "bun scripts/e2e-sri.ts",
+    "validar-zip": "bun scripts/validar-zip.ts"
   },
   "devDependencies": {
     "@fontsource/ibm-plex-mono": "5",
