@@ -76,7 +76,15 @@ export default defineContentScript({
       if (!form) throw new Error('No se encontró el formulario del portal');
       const r = await fetch(form.action, { method: 'POST', body: cuerpoDescarga(form, idEnlace), credentials: 'same-origin' });
       if (!r.ok || !esAdjunto(r.headers)) {
-        log.aviso(`POST ${idEnlace.split(':').slice(-2).join(':')}: ${r.status} ${r.headers.get('content-type') ?? ''} sin adjunto`);
+        // Diagnóstico: qué página devolvió el portal en lugar del archivo.
+        const html = await r.text().catch(() => '');
+        const titulo = /<title>([^<]*)<\/title>/i.exec(html)?.[1]?.trim() ?? '';
+        const pistas = ['sesi', 'login', 'expir', 'error', 'exception', 'viewexpired', 'keycloak', 'auth']
+          .filter((k) => html.toLowerCase().includes(k))
+          .join(',');
+        log.aviso(
+          `POST ${idEnlace.split(':').slice(-2).join(':')}: ${r.status} ${r.headers.get('content-type') ?? ''} sin adjunto · ${html.length} B · título="${titulo.slice(0, 60)}" · pistas=${pistas || 'ninguna'} · url=${new URL(r.url).pathname.split('/').pop()}`,
+        );
         throw new Error('El portal no devolvió el archivo');
       }
       return new Uint8Array(await r.arrayBuffer());
