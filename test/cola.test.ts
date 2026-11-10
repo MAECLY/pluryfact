@@ -125,6 +125,17 @@ describe('ejecutar', () => {
     expect(r.archivos).toHaveLength(2);
   });
 
+  it('un XML que nunca responde no cuelga la cola', async () => {
+    vi.useFakeTimers();
+    const { d } = deps({ xml: vi.fn(() => new Promise<string | null>(() => {})) });
+    const promesa = ejecutar({ ...base, formatos: { xml: true, pdf: false, txt: false } }, d);
+    await vi.advanceTimersByTimeAsync(46_000);
+    const r = await promesa;
+    vi.useRealTimers();
+    expect(r.progreso).toMatchObject({ descargados: 0, fallidos: 2 });
+    expect(r.progreso.errores).toContain('El servicio web no respondió a tiempo');
+  });
+
   it('cuenta como fallido un XML que el SRI no tiene autorizado', async () => {
     const { d } = deps({ xml: vi.fn(async () => null) });
     const r = await ejecutar({ ...base, formatos: { xml: true, pdf: false, txt: false } }, d);

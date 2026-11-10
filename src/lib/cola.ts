@@ -44,6 +44,8 @@ export interface Progreso {
   descargados: number;
   fallidos: number;
   mensaje: string;
+  /** Últimos errores (máx. 5), para diagnosticar sin abrir la consola. */
+  errores: string[];
 }
 
 export interface Archivo {
@@ -88,6 +90,17 @@ export const RITMO = {
 } as const;
 
 const XML_EN_PARALELO = 4;
+/** Ninguna descarga puede colgar la cola: pasado el límite cuenta como fallida. */
+export const LIMITE_XML_MS = 45_000;
+export const LIMITE_PDF_MS = 60_000;
+
+export function conLimite<T>(promesa: Promise<T>, ms: number, mensaje: string): Promise<T> {
+  let reloj: ReturnType<typeof setTimeout> | undefined;
+  const limite = new Promise<never>((_, rechazar) => {
+    reloj = setTimeout(() => rechazar(new Error(mensaje)), ms);
+  });
+  return Promise.race([promesa, limite]).finally(() => clearTimeout(reloj));
+}
 const MAX_PAGINAS = 200;
 
 export function planificar(t: Trabajo, hoy: Fecha): ConsultaPortal[] {
@@ -140,6 +153,7 @@ export async function ejecutar(t: Trabajo, d: Dependencias): Promise<Resumen> {
     descargados: 0,
     fallidos: 0,
     mensaje: '',
+    errores: [],
   };
   const archivos: Archivo[] = [];
   const consultasFallidas: string[] = [];
@@ -148,6 +162,10 @@ export async function ejecutar(t: Trabajo, d: Dependencias): Promise<Resumen> {
   const avisar = (cambios: Partial<Progreso>) => {
     Object.assign(p, cambios);
     d.progreso({ ...p });
+  };
+  const anotarError = (e: unknown) => {
+    const m = e instanceof Error ? e.message : String(e);
+    p.errores = [...p.errores, m].slice(-5);
   };
   const revisar = () => {
     if (d.cancelado()) throw new Cancelado();
@@ -209,17 +227,26 @@ export async function ejecutar(t: Trabajo, d: Dependencias): Promise<Resumen> {
       }
 
       if (t.formatos.xml) {
+        let hechos = 0;
         await enParalelo(filas, XML_EN_PARALELO, async (f) => {
           revisar();
-          const xml = await d.xml(f.clave.clave).catch(() => null);
+          let xml: string | null = null;
+          try {
+            xml = await conLimite(d.xml(f.clave.clave), LIMITE_XML_MS, 'El servicio web no respondió a tiempo');
+            if (!xml) anotarError(`Sin autorización en el SRI: ${f.serie || f.clave.secuencial}`);
+          } catch (e) {
+            anotarError(e);
+          }
+          hechos++;
+          const mensaje = `XML ${hechos} de ${filas.length} · ${etiqueta}`;
           if (xml) {
             archivos.push({ ruta: `${carpeta(d.rucContribuyente, t.bandeja, f)}/${nombreArchivo(f, 'xml')}`, datos: xml });
-            avisar({ descargados: p.descargados + 1 });
-          } else avisar({ fallidos: p.fallidos + 1 });
+            avisar({ descargados: p.descargados + 1, mensaje });
+          } else avisar({ fallidos: p.fallidos + 1, mensaje });
         });
       }
 
-      if (t.formatos.pdf && filas.length) await descargarRides(t.bandeja, filas, d, archivos, avisar, revisar, pausa, p);
+      if (t.formatos.pdf && filas.length) await descargarRides(t.bandeja, filas, d, archivos, avisar, revisar, pausa, p, anotarError);
       avisar({ consultasHechas: p.consultasHechas + 1 });
     }
     avisar({ fase: 'empaquetando', mensaje: detenidaPor ?? 'Armando el ZIP' });
@@ -244,6 +271,7 @@ async function descargarRides(
   revisar: () => void,
   pausa: (r: { base: number; extra: number }) => Promise<void>,
   p: Progreso,
+  anotar: (e: unknown) => void,
 ) {
   const pendientes = new Map(filas.map((f) => [f.clave.clave, f]));
   await d.primeraPagina();
@@ -253,10 +281,11 @@ async function descargarRides(
       if (!pedida || !fila.enlaces.pdf) continue;
       revisar();
       try {
-        const pdf = await d.pdf(fila.enlaces.pdf);
+        const pdf = await conLimite(d.pdf(fila.enlaces.pdf), LIMITE_PDF_MS, 'El portal no entregó el RIDE a tiempo');
         archivos.push({ ruta: `${carpeta(d.rucContribuyente, bandeja, pedida)}/${nombreArchivo(pedida, 'pdf')}`, datos: pdf });
         avisar({ descargados: p.descargados + 1 });
-      } catch {
+      } catch (e) {
+        anotar(e);
         avisar({ fallidos: p.fallidos + 1 });
       }
       pendientes.delete(fila.clave.clave);
