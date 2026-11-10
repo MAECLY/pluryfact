@@ -22,60 +22,26 @@
     </nav>
 
     <main id="panel-form" class="panel" role="tabpanel" aria-labelledby="tab-form">
-      <fieldset class="grupo">
-        <legend>Qué</legend>
-        <div id="tipos" class="opciones"></div>
-      </fieldset>
-
-      <fieldset class="grupo">
-        <legend>Cuándo</legend>
-        <div class="modos" role="group" aria-label="Tipo de periodo">
-          <button type="button" data-periodo="mes" aria-pressed="true">Mes</button>
-          <button type="button" data-periodo="anio" aria-pressed="false">Año</button>
-          <button type="button" data-periodo="dia" aria-pressed="false">Día</button>
-          <button type="button" data-periodo="rango" aria-pressed="false">Rango</button>
-        </div>
-        <div id="campos-periodo" class="campos"></div>
-      </fieldset>
-
-      <fieldset id="sec-emisor" class="grupo">
-        <legend><label for="emisor">De quién</label></legend>
-        <input id="emisor" class="campo" type="text" placeholder="Todos los emisores, o un RUC o nombre" autocomplete="off" />
-      </fieldset>
-
-      <fieldset class="grupo">
-        <legend>Archivos</legend>
-        <div class="casillas">
-          <label><input id="f-xml" type="checkbox" checked />XML</label>
-          <label><input id="f-pdf" type="checkbox" checked />RIDE en PDF</label>
-          <label><input id="f-txt" type="checkbox" />Reporte del SRI</label>
-        </div>
-      </fieldset>
-
+      <div id="formulario" class="formulario"></div>
       <p id="plan" class="plan" aria-live="polite"></p>
     </main>
 
     <main id="panel-descargas" class="panel" role="tabpanel" aria-labelledby="tab-descargas" hidden>
       <p id="sin-descargas" class="vacio">Todavía no hay descargas. Elige qué bajar en «Nueva descarga».</p>
-
-      <section id="progreso" class="progreso" hidden aria-live="polite">
-        <h1 id="prog-titulo" class="titulo"></h1>
-        <ol id="prog-pasos" class="fichero" aria-label="Avance por periodo"></ol>
-        <p id="prog-mensaje" class="estado-frase"></p>
-        <p id="prog-cifras" class="cifras"></p>
-        <p id="prog-problema" class="problema" hidden></p>
-        <details id="prog-detalle" class="detalle">
-          <summary>Ver detalle</summary>
-          <ol id="prog-actividad" class="actividad"></ol>
-          <ul id="prog-fallidas" class="fallidas"></ul>
-        </details>
-      </section>
+      <section id="tarjeta" class="progreso" hidden aria-live="polite"></section>
     </main>
 
     <footer class="pie">
+      <p id="cerrar" class="cerrar-aviso" hidden>
+        <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 1.5a6.5 6.5 0 1 0 0 13 6.5 6.5 0 0 0 0-13Zm3.2 4.7-3.9 4.3a.75.75 0 0 1-1.1 0L4.8 9a.75.75 0 1 1 1.1-1l1 1.1 3.3-3.7a.75.75 0 0 1 1.1 1Z" fill="currentColor" /></svg>
+        <span>Puedes cerrar esta ventana: la descarga sigue. No cierres la pestaña del SRI.</span>
+      </p>
       <p id="estado" class="aviso" hidden></p>
       <button id="descargar" type="button" class="boton boton-principal" disabled>Descargar</button>
-      <button id="secundario" type="button" class="enlace" hidden>Nueva descarga</button>
+      <div class="pie-enlaces">
+        <button id="secundario" type="button" class="enlace" hidden>Nueva descarga</button>
+        <button id="abrir" type="button" class="enlace">Abrir Legajo en una pestaña</button>
+      </div>
     </footer>
     <script type="module" src="./main.ts"></script>
   </body>
