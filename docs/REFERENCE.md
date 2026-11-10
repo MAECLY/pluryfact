@@ -1,6 +1,6 @@
 # Referencia: pantallas de consulta de SRI en Línea
 
-Material verificado el 2026-11-09 a partir del HTML real de las dos pantallas (copiado por Miguel con sesión iniciada). Los fixtures anonimizados están en `test/fixtures/`. Lo marcado **por verificar** se confirma en la prueba E2E con sesión real.
+Material verificado el 2026-11-09: primero con el HTML real de las dos pantallas y luego **en vivo con Claude-in-Chrome sobre la sesión de Miguel** (ver «Verificado en vivo» al final). Fixtures anonimizados en `test/fixtures/`.
 
 Base: `https://srienlinea.sri.gob.ec/comprobantes-electronicos-internet/`. Menú: `pages/consultas/menu.jsf`.
 
@@ -48,3 +48,36 @@ Base: `https://srienlinea.sri.gob.ec/comprobantes-electronicos-internet/`. Menú
 - Formatos de número: punto decimal sin miles (`7246.94`). Fechas `dd/mm/aaaa` y `dd/mm/aaaa hh:mm:ss`.
 - "Tipo y serie" usa dos espacios: `Factura  001-001-000001800`.
 - La clave de acceso trae fecha, tipo, RUC del emisor, serie y secuencial; `src/lib/clave.ts` la descompone y valida el dígito módulo 11 (verificado con claves reales).
+
+## Verificado en vivo (2026-11-09, recibidos)
+
+**Sesión**
+- Abrir una URL del portal directamente (barra de direcciones) **pierde la sesión** y redirige al login de Keycloak. El usuario debe entrar desde el menú del portal; la URL real lleva parámetros `contextoMPT`, `pathMPT`, `actualMPT`, `linkMPT`. Legajo **nunca navega**: solo trabaja en la pestaña que el usuario abrió.
+
+**reCAPTCHA**
+- `cargarRecaptcha` hace `grecaptcha.enterprise.render(contenedor, {sitekey, size:'invisible', callback:onSubmit})`; `executeRecaptcha` llama a `grecaptcha.enterprise.execute({action})`; `onSubmit` llama a `rcBuscar()` y `onsuccess` hace `grecaptcha.enterprise.reset()`.
+- 5 consultas de mes completo seguidas (octubre a junio, ~8 s entre cada una): **ninguna mostró desafío**; cada consulta tarda ~2 s.
+
+**Consulta y paginación**
+- Resultado de octubre: 3 páginas de 50 filas (`rpp` 25/50/75).
+- `data-ri` es **índice global**: la página 2 tiene filas 50–99.
+- **La página se conserva entre consultas**: tras consultar otro mes la tabla sigue en la página 2. Hay que volver a la 1.
+- Paginar (`.ui-paginator-next`) es AJAX **sin captcha**.
+
+**Descargas por POST** (`new FormData(frmPrincipal)` + `id=id` del enlace, `fetch` same-origin)
+- XML: `200`, `application/xml`, `attachment; filename="Factura.xml"`; contenido `<autorizacion><estado>AUTORIZADO</estado><numeroAutorizacion>…`.
+- RIDE: `200`, `application/pdf`, `filename="Factura.pdf"`, empieza con `%PDF`.
+- Una fila que **no está en la página visible** devuelve la página HTML (≈230 KB), no el archivo: el servidor solo resuelve índices de la página actual.
+- Ninguna descarga pide captcha.
+
+**Reporte TXT** (`frmPrincipal:lnkTxtlistado`)
+- `application/txt`, `filename="<RUC>_Recibidos.txt"`, **ISO-8859-1**, TAB, LF, **todo el listado** (126 filas en octubre, no solo la página).
+- Columnas: `RUC_EMISOR RAZON_SOCIAL_EMISOR TIPO_COMPROBANTE SERIE_COMPROBANTE CLAVE_ACCESO FECHA_AUTORIZACION FECHA_EMISION IDENTIFICACION_RECEPTOR VALOR_SIN_IMPUESTOS IVA IMPORTE_TOTAL NUMERO_DOCUMENTO_MODIFICADO`.
+
+**Servicio web público de autorización**
+- `POST https://cel.sri.gob.ec/comprobantes-electronicos-ws/AutorizacionComprobantesOffline`, SOAP 1.1, operación `autorizacionComprobante(claveAccesoComprobante)`.
+- **Requiere la cabecera `SOAPAction: ""`**; sin ella responde una página HTML de redirección.
+- Sin sesión ni captcha, ~100–200 ms por clave. Comprobante escapado con entidades dentro de `<comprobante>`. Clave inexistente → `<numeroComprobantes>0</numeroComprobantes><autorizaciones/>`.
+- Un primer intento dio timeout transitorio: hace falta reintento.
+
+**Pendiente en vivo:** pantalla de emitidos (consulta por día, reporte, RIDE) y la XML de emitidos, que ahora se resuelve con el servicio web.
