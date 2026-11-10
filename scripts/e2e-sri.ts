@@ -16,8 +16,10 @@
  *                dia:2026-11-06 | mes:2026-10 | anio:2025 | rango:2026-10-01:2026-10-15
  *                (por defecto: emitidos dia:2026-11-06, recibidos mes:2026-10)
  *
- * Rondas: al terminar una, el script espera a que vuelvas a entrar desde el
- * menú a una pantalla de consulta y corre otra ronda con la misma sesión.
+ * Rondas: al terminar una, el script espera el archivo .e2e-out/ronda (lo crea
+ * quien dirige la prueba con `touch`) y corre otra ronda sobre la pantalla que
+ * esté abierta, con la misma sesión. Opcional: .e2e-out/ronda puede contener
+ * un periodo (p. ej. `mes:2026-09`).
  * Cierra la ventana para terminar.
  *   E2E_TIPOS    factura,retencion…   (por defecto factura)
  *   E2E_EMISOR   RUC o razón social (solo recibidos)
@@ -26,7 +28,7 @@
  * No imprime datos personales: solo conteos y secuenciales.
  */
 import { spawnSync } from 'node:child_process';
-import { mkdirSync, readFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readFileSync, rmSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { unzipSync, strFromU8 } from 'fflate';
@@ -54,7 +56,8 @@ const ctx = await chromium.launchPersistentContext(perfil, {
   headless: false,
   acceptDownloads: true,
   viewport: { width: 1280, height: 860 },
-  args: [`--disable-extensions-except=${ext}`, `--load-extension=${ext}`],
+  // Puerto de depuración: permite diagnosticar en vivo con DevTools/CDP.
+  args: [`--disable-extensions-except=${ext}`, `--load-extension=${ext}`, '--remote-debugging-port=9333'],
 });
 const worker = ctx.serviceWorkers()[0] ?? (await ctx.waitForEvent('serviceworker', { timeout: 20_000 }));
 const extId = new URL(worker.url()).host;
@@ -80,34 +83,41 @@ const bandejaDe = (p: Page) =>
     )
     .catch(() => null);
 
-// Cuenta las cargas de página del portal: una ronda nueva necesita una carga nueva.
-let cargas = 0;
-const vigilar = (p: Page) =>
-  p.on('framenavigated', (f) => {
-    if (f === p.mainFrame() && f.url().includes(PORTAL)) cargas++;
-  });
-ctx.pages().forEach(vigilar);
-ctx.on('page', vigilar);
+const DISPARO = join(salida, 'ronda');
 
-/** Espera (hasta 15 min) una pestaña con la pantalla de consulta cargada después de `desdeCarga`. */
-async function esperarPantalla(desdeCarga = -1): Promise<Page | null> {
+/** Pestaña con la pantalla de consulta lista (hasta 15 min). */
+async function esperarPantalla(): Promise<Page | null> {
   for (let i = 0; i < 900 && !cerrado; i++) {
-    if (cargas > desdeCarga) {
-      for (const p of ctx.pages()) {
-        if (!p.url().includes(PORTAL)) continue;
-        if (await bandejaDe(p)) return p;
-      }
+    for (const p of ctx.pages()) {
+      if (!p.url().includes(PORTAL)) continue;
+      if (await bandejaDe(p)) return p;
     }
     await dormir(1000);
   }
   return null;
 }
+
+/** Espera el archivo de disparo; devuelve el periodo que traiga (o ''). null si se cerró la ventana. */
+async function esperarDisparo(): Promise<string | null> {
+  rmSync(DISPARO, { force: true });
+  while (!cerrado) {
+    if (existsSync(DISPARO)) {
+      const periodo = readFileSync(DISPARO, 'utf8').trim();
+      rmSync(DISPARO, { force: true });
+      return periodo;
+    }
+    await dormir(1000);
+  }
+  return null;
+}
+
 const encontrada = await esperarPantalla();
 if (!encontrada) {
   console.error('No se abrió la pantalla de comprobantes en 15 minutos.');
   await ctx.close();
   process.exit(1);
 }
+let periodoForzado = '';
 async function ronda(sri: Page): Promise<string> {
   const bandeja = (await bandejaDe(sri))!;
   console.log(`Pantalla detectada: ${bandeja}.`);
@@ -121,7 +131,7 @@ async function ronda(sri: Page): Promise<string> {
   comprobar(estado.startsWith('Conectado'), 'el popup encuentra la pestaña del portal', estado.replace(/\d{10,13}/, '<RUC>'));
   comprobar(estado.includes(bandeja === 'recibidos' ? 'recibidos' : 'emitidos'), 'el popup toma la bandeja de la pantalla abierta');
 
-  const [tipoPeriodo, ...valores] = (process.env[`E2E_PERIODO_${bandeja.toUpperCase()}`] ?? process.env.E2E_PERIODO ?? (bandeja === 'emitidos' ? 'dia:2026-11-06' : 'mes:2026-10')).split(':');
+  const [tipoPeriodo, ...valores] = (periodoForzado || process.env[`E2E_PERIODO_${bandeja.toUpperCase()}`] || process.env.E2E_PERIODO || (bandeja === 'emitidos' ? 'dia:2026-11-06' : 'mes:2026-10')).split(':');
   await popup.click(`[data-periodo="${tipoPeriodo}"]`);
   if (tipoPeriodo === 'dia') await popup.fill('#p-dia', valores[0]!);
   if (tipoPeriodo === 'rango') {
@@ -216,9 +226,11 @@ async function ronda(sri: Page): Promise<string> {
 let actual: Page | null = encontrada;
 while (actual) {
   const hecha = await ronda(actual);
-  const marca = cargas;
-  console.log(`\n>>> Ronda de ${hecha} terminada. Para otra ronda vuelve a entrar desde el menú (a cualquier pantalla); cierra la ventana para terminar.\n`);
-  actual = await esperarPantalla(marca);
+  console.log(`\n>>> Ronda de ${hecha} terminada. Esperando .e2e-out/ronda para otra ronda; cierra la ventana para terminar.\n`);
+  const disparo = await esperarDisparo();
+  if (disparo === null) break;
+  periodoForzado = disparo;
+  actual = await esperarPantalla();
 }
 console.log(fallos.length ? `\n${fallos.length} FALLOS` : '\nTODO OK');
 await ctx.close().catch(() => {});
