@@ -1,5 +1,5 @@
 import type { Trabajo } from '@/lib/cola';
-import type { EstadoPagina, Peticion } from '@/lib/mensajeria';
+import { CLAVE_CANCELAR, CLAVE_PROGRESO, type EstadoPagina, type EstadoTrabajo, type Peticion } from '@/lib/mensajeria';
 
 /** Conexión con la pestaña del portal del SRI, compartida por popup y página. */
 const PATRON_SRI = 'https://srienlinea.sri.gob.ec/comprobantes-electronicos-internet/*';
@@ -61,8 +61,13 @@ export async function iniciar(c: Conexion, t: Trabajo): Promise<string | null> {
   }
 }
 
-export async function cancelar(c: Conexion) {
-  if (c.pestana !== null) await browser.tabs.sendMessage(c.pestana, { tipo: 'cancelar' } satisfies Peticion).catch(() => {});
+/** Pide cancelar el trabajo en curso, esté en la pestaña que esté. */
+export async function cancelar(_c?: Conexion) {
+  const actual = (await browser.storage.local.get(CLAVE_PROGRESO))[CLAVE_PROGRESO] as EstadoTrabajo | undefined;
+  await browser.storage.local.set({ [CLAVE_CANCELAR]: actual?.inicio ?? Date.now() });
+  // Compatibilidad con versiones que solo escuchan mensajes: avisa a todas las pestañas del SRI.
+  for (const t of await browser.tabs.query({ url: PATRON_SRI }))
+    if (t.id !== undefined) await browser.tabs.sendMessage(t.id, { tipo: 'cancelar' } satisfies Peticion).catch(() => {});
 }
 
 /** Lleva al usuario a la pestaña del SRI (para iniciar sesión o volver a la pantalla). */

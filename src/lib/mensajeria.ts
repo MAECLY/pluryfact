@@ -28,3 +28,9 @@ export interface EstadoTrabajo extends Progreso {
 }
 
 export const CLAVE_PROGRESO = 'legajo:progreso';
+/**
+ * Pedido de cancelación: el `inicio` del trabajo a cancelar. Va por storage y
+ * no por mensaje a una pestaña, para que llegue a la pestaña que realmente
+ * está descargando aunque haya varias del SRI abiertas.
+ */
+export const CLAVE_CANCELAR = 'legajo:cancelar';
