@@ -33,7 +33,12 @@ bun install
 bun run dev      # Chrome con la extensión cargada y recarga en caliente
 bun run check    # typecheck + tests + build
 bun run icons    # regenera public/icon/*.png desde design/icon/*.svg
+bun run e2e      # prueba real con el portal (abre Chromium; el login lo haces tú)
+bun run validar-zip [ruta]   # valida el último legajo_*.zip de ~/Downloads
+bun run registro [--errores] [--ultimos N]   # lee el registro de diagnóstico de tus perfiles de Chrome
 ```
+
+El registro de diagnóstico vive en `chrome.storage.local` (en disco: `<perfil de Chrome>/Local Extension Settings/<id>/`). Guarda hasta 2000 entradas por parte de la extensión, con RUC y claves enmascarados.
 
 - [docs/REFERENCE.md](docs/REFERENCE.md): anatomía de las pantallas del SRI.
 - [docs/ARQUITECTURA.md](docs/ARQUITECTURA.md): piezas de la extensión y estado de cada una.
