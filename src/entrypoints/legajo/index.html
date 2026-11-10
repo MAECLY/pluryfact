@@ -1,0 +1,188 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="color-scheme" content="light dark" />
+    <title>Legajo</title>
+  </head>
+  <body>
+    <div class="app">
+      <aside class="lateral">
+        <div class="marca">
+          <img src="/icon/48.png" width="28" height="28" alt="" />
+          <span>Legajo</span>
+        </div>
+        <nav class="secciones" aria-label="Secciones">
+          <a href="#nueva" data-seccion="nueva">Nueva descarga</a>
+          <a href="#descargas" data-seccion="descargas">Descargas<i id="nav-indicador" class="indicador" hidden></i></a>
+          <a href="#avanzado" data-seccion="avanzado">Avanzado</a>
+          <a href="#acerca" data-seccion="acerca">Acerca de</a>
+        </nav>
+        <div class="conexion" id="conexion" aria-live="polite">
+          <p id="conexion-texto">Buscando la pestaña del SRI…</p>
+          <button type="button" id="ir-sri" class="enlace" hidden>Ir a SRI en Línea</button>
+        </div>
+        <a class="by" href="https://maecly.com" target="_blank" rel="noopener">
+          <img class="sym-claro" src="/brand/maecly-symbol.svg" width="24" height="24" alt="" />
+          <img class="sym-oscuro" src="/brand/maecly-symbol-dark.svg" width="24" height="24" alt="" />
+          <span>by MAECLY</span>
+        </a>
+      </aside>
+
+      <main class="contenido">
+        <section id="sec-nueva" class="seccion" aria-labelledby="h-nueva">
+          <header class="encabezado">
+            <h1 id="h-nueva">Nueva descarga</h1>
+            <p class="entrada">Elige qué comprobantes bajar. Legajo consulta el SRI en tu pestaña con sesión y arma un ZIP ordenado por año y mes.</p>
+          </header>
+          <div class="nueva">
+            <div id="formulario" class="formulario"></div>
+            <aside class="resumen" aria-labelledby="h-resumen">
+              <h2 id="h-resumen">Antes de empezar</h2>
+              <p id="plan" class="plan"></p>
+              <p id="estimacion" class="estimacion"></p>
+              <p id="comprobacion" class="comprobacion"></p>
+              <button id="descargar" type="button" class="boton boton-principal" disabled>Descargar</button>
+              <p class="cerrar-aviso">
+                <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 1.5a6.5 6.5 0 1 0 0 13 6.5 6.5 0 0 0 0-13Zm3.2 4.7-3.9 4.3a.75.75 0 0 1-1.1 0L4.8 9a.75.75 0 1 1 1.1-1l1 1.1 3.3-3.7a.75.75 0 0 1 1.1 1Z" fill="currentColor" /></svg>
+                <span>Cuando empiece puedes cerrar esta pestaña y el popup: la descarga sigue. Solo deja abierta la pestaña del SRI.</span>
+              </p>
+            </aside>
+          </div>
+        </section>
+
+        <section id="sec-descargas" class="seccion" aria-labelledby="h-descargas" hidden>
+          <header class="encabezado">
+            <h1 id="h-descargas">Descargas</h1>
+          </header>
+          <div id="activa" class="activa" hidden>
+            <section id="tarjeta-activa" class="progreso grande" aria-live="polite"></section>
+            <div class="acciones-activa">
+              <button id="cancelar" type="button" class="boton boton-secundario">Cancelar descarga</button>
+              <p class="cerrar-aviso">
+                <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 1.5a6.5 6.5 0 1 0 0 13 6.5 6.5 0 0 0 0-13Zm3.2 4.7-3.9 4.3a.75.75 0 0 1-1.1 0L4.8 9a.75.75 0 1 1 1.1-1l1 1.1 3.3-3.7a.75.75 0 0 1 1.1 1Z" fill="currentColor" /></svg>
+                <span>Puedes cerrar esta pestaña: la descarga sigue. No cierres la pestaña del SRI ni cierres sesión.</span>
+              </p>
+            </div>
+          </div>
+          <div class="barra-historial" id="barra-historial" hidden>
+            <label class="buscar"><span class="oculto">Buscar</span><input id="buscar" class="campo" type="search" placeholder="Buscar por periodo, tipo o RUC" /></label>
+            <div class="filtros" role="group" aria-label="Filtrar">
+              <button type="button" data-filtro="todas" aria-pressed="true">Todas <span></span></button>
+              <button type="button" data-filtro="problemas" aria-pressed="false">Con problemas <span></span></button>
+              <button type="button" data-filtro="completas" aria-pressed="false">Completas <span></span></button>
+            </div>
+          </div>
+          <div id="historial" class="historial"></div>
+          <p id="sin-historial" class="vacio" hidden>Aún no hay descargas terminadas. Las que hagas aparecerán aquí, con su detalle mes a mes.</p>
+        </section>
+
+        <section id="sec-avanzado" class="seccion" aria-labelledby="h-avanzado" hidden>
+          <header class="encabezado">
+            <h1 id="h-avanzado">Avanzado</h1>
+            <p class="entrada">Los cambios se guardan solos y se aplican a la próxima descarga.</p>
+          </header>
+          <div class="ajustes">
+            <fieldset class="ajuste">
+              <legend>Ritmo de consulta</legend>
+              <label><input type="radio" name="ritmo" value="normal" /> Normal</label>
+              <label><input type="radio" name="ritmo" value="amable" /> Amable con el SRI <span class="ayuda">Pausas el doble de largas. Úsalo si el portal está lento o te pide verificaciones.</span></label>
+            </fieldset>
+            <fieldset class="ajuste">
+              <legend>Avisos</legend>
+              <label><input type="checkbox" id="aj-notificaciones" /> Avisarme cuando termine una descarga o si la sesión del SRI caduca</label>
+            </fieldset>
+            <fieldset class="ajuste">
+              <legend><label for="aj-dias">Historial de Descargas</label></legend>
+              <select id="aj-dias" class="campo corto">
+                <option value="7">Guardar 7 días</option>
+                <option value="30">Guardar 30 días</option>
+                <option value="90">Guardar 90 días</option>
+                <option value="365">Guardar un año</option>
+              </select>
+            </fieldset>
+            <fieldset class="ajuste">
+              <legend>Diagnóstico</legend>
+              <p class="ayuda">Si algo falla, copia el registro y envíalo con tu reporte. No incluye tu RUC ni claves de acceso completas.</p>
+              <div class="fila-botones">
+                <button type="button" id="copiar-registro" class="boton boton-secundario">Copiar registro</button>
+                <button type="button" id="bajar-registro" class="boton boton-secundario">Descargar registro (.txt)</button>
+              </div>
+              <p id="registro-estado" class="ayuda" aria-live="polite"></p>
+            </fieldset>
+            <fieldset class="ajuste">
+              <legend>Datos de Legajo en este navegador</legend>
+              <p class="ayuda">Borrar no toca los ZIP que ya descargaste.</p>
+              <div class="fila-botones">
+                <button type="button" id="borrar-historial" class="boton boton-secundario">Borrar historial</button>
+                <button type="button" id="borrar-todo" class="boton boton-peligro">Borrar todos los datos</button>
+              </div>
+              <p id="borrar-estado" class="ayuda" aria-live="polite"></p>
+            </fieldset>
+          </div>
+        </section>
+
+        <section id="sec-acerca" class="seccion" aria-labelledby="h-acerca" hidden>
+          <header class="encabezado acerca-cabecera">
+            <img src="/icon/128.png" width="64" height="64" alt="" />
+            <div>
+              <h1 id="h-acerca">Legajo</h1>
+              <p class="entrada">Descarga en lote tus comprobantes electrónicos de SRI en Línea: XML, RIDE y reporte, ordenados por año y mes.</p>
+              <p class="version" id="version"></p>
+            </div>
+          </header>
+
+          <section class="bloque" aria-labelledby="h-empezar">
+            <h2 id="h-empezar">Cómo empezar</h2>
+            <ol class="pasos-inicio">
+              <li>Inicia sesión en <a href="https://srienlinea.sri.gob.ec/sri-en-linea/inicio/NAT" target="_blank" rel="noopener">SRI en Línea</a> como siempre.</li>
+              <li>Desde el menú, entra a Facturación electrónica → Comprobantes electrónicos recibidos o emitidos.</li>
+              <li>Abre Legajo, elige qué bajar en Nueva descarga y pulsa Descargar.</li>
+            </ol>
+          </section>
+
+          <section class="bloque" aria-labelledby="h-datos">
+            <h2 id="h-datos">Cómo cuida tus datos</h2>
+            <ul class="promesas">
+              <li><strong>No pide tu clave.</strong> Usa la sesión que ya abriste en SRI en Línea y nunca la guarda.</li>
+              <li><strong>Todo ocurre en tu navegador.</strong> Legajo no tiene servidores ni analítica: tus comprobantes van del SRI a tu carpeta de descargas.</li>
+              <li><strong>Solo habla con el SRI.</strong> srienlinea.sri.gob.ec, con tu sesión, y cel.sri.gob.ec, el servicio público de autorización de comprobantes.</li>
+              <li><strong>Código abierto.</strong> Licencia AGPL-3.0: cualquiera puede revisar qué hace.</li>
+            </ul>
+          </section>
+
+          <section class="bloque" aria-labelledby="h-permisos">
+            <h2 id="h-permisos">Permisos que pide y por qué</h2>
+            <table class="tabla-permisos">
+              <tbody>
+                <tr><th scope="row">Leer y cambiar datos en srienlinea.sri.gob.ec</th><td>Pulsar Consultar y bajar los archivos en la pantalla de comprobantes, con tu sesión.</td></tr>
+                <tr><th scope="row">Conectarse a cel.sri.gob.ec</th><td>Pedir el XML autorizado de cada clave de acceso al servicio público del SRI.</td></tr>
+                <tr><th scope="row">Almacenamiento</th><td>Guardar el avance, el historial y tus ajustes en este navegador.</td></tr>
+                <tr><th scope="row">Scripts</th><td>Activar Legajo en una pestaña del SRI que ya estaba abierta.</td></tr>
+                <tr><th scope="row">Notificaciones</th><td>Avisarte cuando termina una descarga o si tu sesión caduca.</td></tr>
+              </tbody>
+            </table>
+          </section>
+
+          <section class="bloque aviso-legal" aria-label="Aviso">
+            <p>Legajo no es una herramienta oficial del SRI. Los RIDE son representaciones impresas; el documento con validez tributaria es el XML autorizado.</p>
+          </section>
+
+          <section class="bloque creditos" aria-labelledby="h-creditos">
+            <h2 id="h-creditos" class="oculto">Créditos</h2>
+            <img class="sym-claro" src="/brand/maecly-wordmark.svg" height="32" alt="MAECLY" />
+            <img class="sym-oscuro" src="/brand/maecly-wordmark-dark.svg" height="32" alt="MAECLY" />
+            <p>Legajo es un producto de MAECLY, hecho en Quito.</p>
+            <p class="enlaces">
+              <a href="https://maecly.com" target="_blank" rel="noopener">maecly.com</a>
+              <a href="https://github.com/MAECLY/legajo" target="_blank" rel="noopener">Código fuente</a>
+              <a href="https://github.com/MAECLY/legajo/issues/new" target="_blank" rel="noopener">Reportar un problema</a>
+            </p>
+          </section>
+        </section>
+      </main>
+    </div>
+    <script type="module" src="./main.ts"></script>
+  </body>
+</html>
