@@ -64,7 +64,7 @@ try {
       if (p && Number(p.actualizado) > Date.now() - 6 * 3600_000)
         console.log(
           enmascarar(
-            `${p.fase} · consulta ${p.consultasHechas}/${p.consultasTotal} · ${p.encontrados} comprobantes · ${p.descargados} archivos · ${p.fallidos} fallidos · ${p.mensaje}`,
+            `${p.fase} · consulta ${p.consultasHechas}/${p.consultasTotal} · ${(p.consultasFallidas as string[] | undefined)?.length ?? 0} consultas fallidas · ${p.encontrados} comprobantes · ${p.descargados} archivos · ${p.fallidos} archivos fallidos · ${p.mensaje}`,
           ),
         );
       continue;
