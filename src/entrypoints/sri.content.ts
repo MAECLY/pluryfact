@@ -134,14 +134,21 @@ export default defineContentScript({
           log.info(`ZIP ${nombre}: ${r.archivos.length} archivos, ${zip.length} bytes`);
           base.zip = nombre;
         }
-        const fase = r.progreso.fase === 'cancelado' ? 'cancelado' : r.detenidaPor ? 'error' : 'listo';
-        const mensaje = r.detenidaPor
+        // Si todas las consultas fallaron, NO es "no hay comprobantes": es un error.
+        const todasFallaron = r.progreso.consultasTotal > 0 && r.consultasFallidas.length >= r.progreso.consultasTotal;
+        const algunasFallaron = r.consultasFallidas.length > 0;
+        const fase = r.progreso.fase === 'cancelado' ? 'cancelado' : r.detenidaPor || todasFallaron ? 'error' : 'listo';
+        const mensaje = todasFallaron
+          ? `No se pudo consultar al SRI: fallaron las ${r.consultasFallidas.length} consultas. ${r.consultasFallidas[0]?.split(': ').slice(1).join(': ') ?? ''}`
+          : r.detenidaPor
           ? `${r.detenidaPor}${r.archivos.length ? ` Se guardó lo ya descargado (${r.archivos.length} archivos).` : ''}`
           : r.archivos.length
           ? `ZIP con ${r.archivos.length} archivos`
           : fase === 'cancelado'
             ? 'Descarga cancelada'
-            : 'No hay comprobantes para ese periodo y filtro';
+            : algunasFallaron
+              ? `Sin comprobantes descargados; ${r.consultasFallidas.length} consultas fallaron`
+              : 'El SRI no tiene comprobantes para ese periodo y filtro';
         const actividad = [...r.progreso.actividad, { t: Date.now(), texto: mensaje, nivel: fase === 'listo' ? ('info' as const) : ('aviso' as const) }].slice(-40);
         await guardar({ ...r.progreso, ...base, fase, mensaje, actividad, esperaHasta: null, verificacion: false, actualizado: Date.now() });
       } catch (e) {
