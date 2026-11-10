@@ -179,7 +179,9 @@ export async function consultar(win: Window, c: ConsultaPortal, alVerificar: () 
     boton = byId(doc, 'frmPrincipal:btnConsultar');
   }
   if (!boton) return { estado: 'error', mensaje: 'No se encontró el botón Consultar' };
-  if ((boton as HTMLButtonElement).disabled) return { estado: 'timeout', mensaje: 'El portal sigue procesando la consulta anterior' };
+  if (!(await botonLibre(win, boton as HTMLButtonElement))) {
+    return { estado: 'timeout', mensaje: 'El botón Consultar del portal sigue bloqueado' };
+  }
 
   const btn = boton as HTMLButtonElement;
   // En recibidos, Consultar se deshabilita al pulsar y solo el onsuccess de la
@@ -215,6 +217,29 @@ export async function consultar(win: Window, c: ConsultaPortal, alVerificar: () 
     estado: 'error',
     mensaje: `Sin filas ni mensaje del portal tras ${Date.now() - t0} ms (${diag.ajax} respuestas, ${diag.listado} del listado, botón ${btn.disabled ? 'deshabilitado' : 'habilitado'})`,
   };
+}
+
+const ESPERA_BOTON_MS = 15_000;
+
+/**
+ * El portal deshabilita Consultar al pulsarlo y SOLO lo rehabilita cuando la
+ * consulta termina bien (reactivarBoton en el onsuccess). Si una petición
+ * anterior falló, queda bloqueado para siempre (visto en vivo: 12 consultas
+ * seguidas fallidas). Se espera un poco y, si sigue así, se libera con la
+ * propia función del portal; es solo el estado del botón en la página.
+ */
+export async function botonLibre(win: Window, btn: HTMLButtonElement, espera = ESPERA_BOTON_MS): Promise<boolean> {
+  const inicio = Date.now();
+  while (btn.disabled && Date.now() - inicio < espera) await new Promise((r) => setTimeout(r, 250));
+  if (!btn.disabled) return true;
+  const reactivar = (win as unknown as { reactivarBoton?: (id: string) => void }).reactivarBoton;
+  if (typeof reactivar === 'function') reactivar(btn.id);
+  else {
+    btn.disabled = false;
+    btn.classList.remove('ui-state-disabled');
+  }
+  registrar(win, `Consultar seguía bloqueado tras ${espera} ms; liberado con ${typeof reactivar === 'function' ? 'reactivarBoton' : 'disabled=false'}`);
+  return !btn.disabled;
 }
 
 function registrar(win: Window, log: string) {

@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { bandejaDePagina, consultar, siguientePagina } from '../src/lib/conductor';
+import { bandejaDePagina, botonLibre, consultar, siguientePagina } from '../src/lib/conductor';
 
 const fx = (n: string) => readFileSync(resolve(process.cwd(), 'test/fixtures', n), 'utf8');
 
@@ -130,6 +130,26 @@ describe('conductor', () => {
     const w = ventana(conBoton(fx('recibidos-tabla.html'), 'frmPrincipal:btnBuscar'), () => {});
     const r = await consultar(w, { bandeja: 'recibidos', tipoCombo: '1', anio: 2019, mes: 1, dia: 0 }, () => {});
     expect(r.estado).toBe('rechazada');
+  });
+
+  it('libera un Consultar que quedó bloqueado usando la función del portal', async () => {
+    document.body.innerHTML = '<button id="frmPrincipal:btnBuscar" disabled class="ui-state-disabled">Consultar</button>';
+    const btn = document.getElementById('frmPrincipal:btnBuscar') as HTMLButtonElement;
+    let llamado = '';
+    (window as unknown as { reactivarBoton: (id: string) => void }).reactivarBoton = (id) => {
+      llamado = id;
+      btn.disabled = false;
+    };
+    expect(await botonLibre(window, btn, 300)).toBe(true);
+    expect(llamado).toBe('frmPrincipal:btnBuscar');
+    delete (window as unknown as { reactivarBoton?: unknown }).reactivarBoton;
+  });
+
+  it('espera a que el botón se libere solo antes de forzarlo', async () => {
+    document.body.innerHTML = '<button id="b" disabled>Consultar</button>';
+    const btn = document.getElementById('b') as HTMLButtonElement;
+    setTimeout(() => (btn.disabled = false), 100);
+    expect(await botonLibre(window, btn, 2000)).toBe(true);
   });
 
   it('sin control "siguiente" habilitado no hay más páginas', async () => {
