@@ -1,4 +1,4 @@
-import { Cancelado, ejecutar, type Dependencias, type Progreso, type Trabajo } from '@/lib/cola';
+import { Cancelado, ejecutar, SesionCaducada, type Dependencias, type Progreso, type Trabajo } from '@/lib/cola';
 import { bandejaDePagina, CANAL, type MensajeCanal, type Orden, type Respuesta } from '@/lib/conductor';
 import { parseTabla } from '@/lib/extract';
 import { cuerpoDescarga, esAdjunto } from '@/lib/jsf';
@@ -71,6 +71,10 @@ export default defineContentScript({
     const formulario = () => byId(document, 'frmPrincipal') as HTMLFormElement | null;
     const ruc = () => (byId(document, 'frmPrincipal:txtParametro') as HTMLInputElement | null)?.value.trim() ?? '';
 
+    /** La respuesta es la página de login de SRI en Línea (Keycloak). */
+    const esLogin = (url: string, html: string, titulo: string) =>
+      /\/auth\/realms\//.test(url) || /login/i.test(titulo) || /kc-form-login|openid-connect\/auth/i.test(html);
+
     async function postArchivo(idEnlace: string): Promise<Uint8Array> {
       const form = formulario();
       if (!form) throw new Error('No se encontró el formulario del portal');
@@ -85,6 +89,7 @@ export default defineContentScript({
         log.aviso(
           `POST ${idEnlace.split(':').slice(-2).join(':')}: ${r.status} ${r.headers.get('content-type') ?? ''} sin adjunto · ${html.length} B · título="${titulo.slice(0, 60)}" · pistas=${pistas || 'ninguna'} · url=${new URL(r.url).pathname.split('/').pop()}`,
         );
+        if (esLogin(r.url, html, titulo)) throw new SesionCaducada();
         throw new Error('El portal no devolvió el archivo');
       }
       return new Uint8Array(await r.arrayBuffer());
@@ -114,7 +119,7 @@ export default defineContentScript({
       cancelar = false;
       verificacion = false;
       const rucActual = ruc();
-      const base = { ruc: rucActual, bandeja: t.bandeja, consultasFallidas: [] as string[], zip: null as string | null };
+      const base = { ruc: rucActual, bandeja: t.bandeja, zip: null as string | null, trabajo: t, pendientes: [] as number[] };
       let ultimo: Progreso | null = null;
       // Borra el resultado de la descarga anterior antes de empezar.
       await guardar({
@@ -124,7 +129,8 @@ export default defineContentScript({
         encontrados: 0,
         descargados: 0,
         fallidos: 0,
-        mensaje: 'Preparando la descarga',
+        consultasFallidas: [],
+        mensaje: t.soloIndices?.length ? `Reanudando ${t.soloIndices.length} consultas pendientes…` : 'Preparando la descarga',
         errores: [],
         inicio: Date.now(),
         pasos: [],
@@ -162,12 +168,20 @@ export default defineContentScript({
         },
         cancelado: () => cancelar,
         registro: log,
+        sesionActiva: async () => {
+          try {
+            await postArchivo(LINK_REPORTE);
+            return true;
+          } catch (e) {
+            return !(e instanceof SesionCaducada);
+          }
+        },
       };
       try {
         const r = await ejecutar(t, d);
-        base.consultasFallidas = r.consultasFallidas;
+        base.pendientes = r.pendientes;
         if (r.archivos.length) {
-          const nombre = nombreZip(rucActual, t.bandeja, etiquetaPeriodo(t.periodo));
+          const nombre = nombreZip(rucActual, t.bandeja, `${etiquetaPeriodo(t.periodo)}${t.soloIndices?.length ? '_reanudado' : ''}`);
           const zip = armarZip(r.archivos);
           descargar(zip, nombre);
           log.info(`ZIP ${nombre}: ${r.archivos.length} archivos, ${zip.length} bytes`);
@@ -205,6 +219,7 @@ export default defineContentScript({
               pasos: [],
               actividad: [],
               esperaHasta: null,
+              consultasFallidas: [],
             }),
             ...base,
             fase: 'error',

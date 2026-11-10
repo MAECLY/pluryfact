@@ -21,6 +21,10 @@ export interface EstadoTrabajo extends Progreso {
   consultasFallidas: string[];
   zip: string | null;
   actualizado: number;
+  /** El trabajo tal como se pidió (para «Reanudar»). */
+  trabajo?: Trabajo;
+  /** Índices del plan completo que quedaron sin terminar. */
+  pendientes?: number[];
 }
 
 export const CLAVE_PROGRESO = 'legajo:progreso';
