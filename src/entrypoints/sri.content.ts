@@ -73,6 +73,19 @@ export default defineContentScript({
       const rucActual = ruc();
       const base = { ruc: rucActual, bandeja: t.bandeja, consultasFallidas: [] as string[], zip: null as string | null };
       let ultimo: Progreso | null = null;
+      // Borra el resultado de la descarga anterior antes de empezar.
+      await guardar({
+        fase: 'consultando',
+        consultasHechas: 0,
+        consultasTotal: 0,
+        encontrados: 0,
+        descargados: 0,
+        fallidos: 0,
+        mensaje: 'Preparando la descarga',
+        ...base,
+        verificacion: false,
+        actualizado: Date.now(),
+      });
       const d: Dependencias = {
         hoy: hoyEcuador(),
         rucContribuyente: rucActual,
