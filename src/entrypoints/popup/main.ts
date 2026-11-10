@@ -141,20 +141,46 @@ function actualizarBoton() {
   b.disabled = !enCurso && (!pagina?.bandeja || !planOk);
 }
 
+const pedirEstado = async (id: number) => {
+  try {
+    return (await browser.tabs.sendMessage(id, { tipo: 'estado' } satisfies Peticion)) as EstadoPagina;
+  } catch {
+    return null;
+  }
+};
+
+/** Activa Legajo en una pestaña del SRI abierta antes de instalar o recargar la extensión. */
+async function inyectar(id: number) {
+  await browser.scripting.executeScript({ target: { tabId: id }, files: ['/content-scripts/conductor.js'], world: 'MAIN' });
+  await browser.scripting.executeScript({ target: { tabId: id }, files: ['/content-scripts/sri.js'] });
+}
+
 async function conectar() {
-  const tabs = await browser.tabs.query({ url: PATRON_SRI });
-  const t = tabs.find((x) => x.active) ?? tabs[0];
+  // Primero la pestaña activa de esta ventana, si es del SRI; si no, cualquier pestaña del SRI.
+  const [activa] = await browser.tabs.query({ active: true, currentWindow: true });
+  const delSri = await browser.tabs.query({ url: PATRON_SRI });
+  const t = delSri.find((x) => x.id === activa?.id) ?? delSri.find((x) => x.active) ?? delSri[0];
   pestana = t?.id ?? null;
   pagina = null;
   if (pestana !== null) {
-    try {
-      pagina = (await browser.tabs.sendMessage(pestana, { tipo: 'estado' } satisfies Peticion)) as EstadoPagina;
-    } catch {
-      pagina = null;
+    pagina = await pedirEstado(pestana);
+    if (!pagina) {
+      estado('Activando Legajo en la pestaña del SRI…');
+      try {
+        await inyectar(pestana);
+        await new Promise((r) => setTimeout(r, 300));
+        pagina = await pedirEstado(pestana);
+      } catch (e) {
+        estado(`No se pudo activar Legajo en la pestaña del SRI: ${e instanceof Error ? e.message : String(e)}`, 'err');
+      }
     }
   }
-  if (!pagina?.bandeja) {
-    estado('Abre SRI en Línea → Facturación electrónica → Comprobantes recibidos o emitidos.', 'warn');
+  if (pestana === null) {
+    estado('No hay ninguna pestaña de SRI en Línea. Ábrela → Facturación electrónica → Comprobantes recibidos o emitidos.', 'warn');
+  } else if (!pagina) {
+    estado('La pestaña del SRI no responde. Vuelve a entrar desde el menú del portal a Comprobantes recibidos o emitidos.', 'warn');
+  } else if (!pagina.bandeja) {
+    estado('La pestaña del SRI no está en Comprobantes recibidos ni emitidos. Entra desde el menú del portal.', 'warn');
   } else {
     bandeja = pagina.bandeja;
     pulsar('bandeja', bandeja);
