@@ -72,6 +72,8 @@ export interface Dependencias {
   progreso(p: Progreso): void;
   /** true si el usuario canceló. */
   cancelado(): boolean;
+  /** Registro de diagnóstico (opcional). */
+  registro?: { info(m: string): void; aviso(m: string): void; error(m: string): void };
 }
 
 export class Cancelado extends Error {
@@ -163,10 +165,13 @@ export async function ejecutar(t: Trabajo, d: Dependencias): Promise<Resumen> {
     Object.assign(p, cambios);
     d.progreso({ ...p });
   };
+  const log = d.registro;
   const anotarError = (e: unknown) => {
     const m = e instanceof Error ? e.message : String(e);
     p.errores = [...p.errores, m].slice(-5);
+    log?.error(m);
   };
+  log?.info(`Trabajo ${t.bandeja} ${JSON.stringify(t.periodo)} tipos=${t.tipos.join(',')} formatos=${Object.entries(t.formatos).filter(([, v]) => v).map(([k]) => k).join(',')} emisor=${t.emisor ? 'sí' : 'no'} · ${plan.length} consultas`);
   const revisar = () => {
     if (d.cancelado()) throw new Cancelado();
   };
@@ -180,16 +185,20 @@ export async function ejecutar(t: Trabajo, d: Dependencias): Promise<Resumen> {
       const etiqueta = etiquetaConsulta(consulta);
       avisar({ fase: 'consultando', mensaje: `Consultando ${etiqueta}` });
 
+      const t0 = Date.now();
       let r = await d.consultar(consulta);
+      log?.info(`Consulta ${etiqueta}: ${r.estado} en ${Date.now() - t0} ms ${r.mensaje}`);
       if (r.estado === 'timeout' || r.estado === 'error') {
         await d.esperar(5000);
         revisar();
         r = await d.consultar(consulta);
+        log?.aviso(`Reintento ${etiqueta}: ${r.estado} ${r.mensaje}`);
       } else if (r.estado === 'captcha') {
         avisar({ mensaje: 'El SRI pidió repetir la verificación; reintento en un minuto' });
         await pausa(RITMO.captcha);
         revisar();
         r = await d.consultar(consulta);
+        log?.aviso(`Reintento por captcha ${etiqueta}: ${r.estado} ${r.mensaje}`);
       }
       if (r.estado === 'captcha') {
         consultasFallidas.push(`${etiqueta}: ${r.mensaje || 'Captcha incorrecta'}`);
@@ -215,6 +224,7 @@ export async function ejecutar(t: Trabajo, d: Dependencias): Promise<Resumen> {
           !vistos.has(f.clave.clave),
       );
       filas.forEach((f) => vistos.add(f.clave.clave));
+      log?.info(`Reporte ${etiqueta}: ${reporte.filas.length} filas, ${reporte.descartadas} descartadas, ${filas.length} tras filtros (${bytes.length} bytes)`);
       avisar({
         fase: 'descargando',
         encontrados: p.encontrados + filas.length,
@@ -231,6 +241,7 @@ export async function ejecutar(t: Trabajo, d: Dependencias): Promise<Resumen> {
         await enParalelo(filas, XML_EN_PARALELO, async (f) => {
           revisar();
           let xml: string | null = null;
+          const tx = Date.now();
           try {
             xml = await conLimite(d.xml(f.clave.clave), LIMITE_XML_MS, 'El servicio web no respondió a tiempo');
             if (!xml) anotarError(`Sin autorización en el SRI: ${f.serie || f.clave.secuencial}`);
@@ -238,6 +249,7 @@ export async function ejecutar(t: Trabajo, d: Dependencias): Promise<Resumen> {
             anotarError(e);
           }
           hechos++;
+          if (xml) log?.info(`XML ${f.clave.secuencial} ok en ${Date.now() - tx} ms`);
           const mensaje = `XML ${hechos} de ${filas.length} · ${etiqueta}`;
           if (xml) {
             archivos.push({ ruta: `${carpeta(d.rucContribuyente, t.bandeja, f)}/${nombreArchivo(f, 'xml')}`, datos: xml });
@@ -249,6 +261,7 @@ export async function ejecutar(t: Trabajo, d: Dependencias): Promise<Resumen> {
       if (t.formatos.pdf && filas.length) await descargarRides(t.bandeja, filas, d, archivos, avisar, revisar, pausa, p, anotarError);
       avisar({ consultasHechas: p.consultasHechas + 1 });
     }
+    log?.info(`Fin: ${p.encontrados} comprobantes, ${p.descargados} descargados, ${p.fallidos} fallidos, ${archivos.length} archivos${detenidaPor ? ` · detenida: ${detenidaPor}` : ''}`);
     avisar({ fase: 'empaquetando', mensaje: detenidaPor ?? 'Armando el ZIP' });
     return { archivos, progreso: { ...p }, consultasFallidas, detenidaPor };
   } catch (e) {
@@ -276,7 +289,9 @@ async function descargarRides(
   const pendientes = new Map(filas.map((f) => [f.clave.clave, f]));
   await d.primeraPagina();
   for (let pagina = 0; pagina < MAX_PAGINAS && pendientes.size; pagina++) {
-    for (const fila of d.leerTabla().filas) {
+    const tabla = d.leerTabla();
+    d.registro?.info(`RIDE página ${tabla.paginaActual}/${tabla.totalPaginas}: ${tabla.filas.length} filas, ${pendientes.size} pendientes`);
+    for (const fila of tabla.filas) {
       const pedida = pendientes.get(fila.clave.clave);
       if (!pedida || !fila.enlaces.pdf) continue;
       revisar();
@@ -293,5 +308,8 @@ async function descargarRides(
     }
     if (!pendientes.size || !(await d.siguientePagina())) break;
   }
-  if (pendientes.size) avisar({ fallidos: p.fallidos + pendientes.size });
+  if (pendientes.size) {
+    d.registro?.aviso(`RIDE sin encontrar en la tabla: ${pendientes.size}`);
+    avisar({ fallidos: p.fallidos + pendientes.size });
+  }
 }
