@@ -89,6 +89,34 @@ describe('conductor', () => {
     expect(r.estado).toBe('ok');
   });
 
+  it('recibidos: termina cuando el portal vuelve a habilitar Consultar', async () => {
+    const w = ventana(
+      conBoton(fx('recibidos-tabla.html').replace(/<tr data-ri[\s\S]*?<\/tr>/g, ''), 'frmPrincipal:btnBuscar'),
+      (doc) => {
+        const b = doc.getElementById('frmPrincipal:btnBuscar') as HTMLButtonElement;
+        b.disabled = true; // deshabilitarBoton(this)
+        // Respuesta inmediata del botón: repinta el panel vacío (no debe contar).
+        doc.getElementById('frmPrincipal:tablaCompRecibidos_data')!.innerHTML = '';
+        setTimeout(() => {
+          doc.getElementById('frmPrincipal:tablaCompRecibidos_data')!.innerHTML = '<tr data-ri="0"><td>1</td></tr>';
+          b.disabled = false; // reactivarBoton en el onsuccess de rcBuscar
+        }, 600);
+      },
+      [BOTON_SOLO],
+    );
+    const t0 = Date.now();
+    const r = await consultar(w, { bandeja: 'recibidos', tipoCombo: '1', anio: 2026, mes: 11, dia: 0 }, () => {});
+    expect(r.estado).toBe('ok');
+    expect(Date.now() - t0).toBeGreaterThanOrEqual(600);
+  });
+
+  it('sin filas ni mensaje del portal es un error con diagnóstico', async () => {
+    const w = ventana(conBoton(fx('emitidos-tabla.html').replace(/<tr data-ri[\s\S]*?<\/tr>/g, ''), 'frmPrincipal:btnConsultar'), () => {});
+    const r = await consultar(w, { bandeja: 'emitidos', tipoCombo: '1', fecha: '06/11/2026' }, () => {});
+    expect(r.estado).toBe('error');
+    expect(r.mensaje).toMatch(/Sin filas ni mensaje/);
+  });
+
   it('día sin datos según el mensaje del portal', async () => {
     const w = ventana(conBoton(fx('emitidos-tabla.html'), 'frmPrincipal:btnConsultar'), (doc) => {
       doc.getElementById('frmPrincipal:tablaCompEmitidos_data')!.innerHTML = '';

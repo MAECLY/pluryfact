@@ -69,6 +69,8 @@ function pulsarYEsperar(
   alVerificar: () => void,
   esLaRespuesta: (opciones?: { data?: unknown }) => boolean = () => true,
   idsQueCambian: string[] = [],
+  listo?: () => boolean,
+  diag?: { ajax: number; listado: number },
 ): Promise<'ok' | 'timeout'> {
   const $ = (win as unknown as { jQuery?: JQ }).jQuery;
   return new Promise((resolver) => {
@@ -88,7 +90,11 @@ function pulsarYEsperar(
     };
     // Pequeña espera para que PrimeFaces pinte la respuesta antes de leerla.
     const alCompletar: AlCompletar = (_ev, _xhr, opciones) => {
-      if (esLaRespuesta(opciones)) setTimeout(() => fin('ok'), 200);
+      if (diag) diag.ajax++;
+      const real = esLaRespuesta(opciones);
+      if (real && diag) diag.listado++;
+      // Con una condición propia (`listo`), el ajaxComplete solo informa.
+      if (real && !listo) setTimeout(() => fin('ok'), 200);
     };
     $?.(win.document).on('ajaxComplete', alCompletar);
     // Respaldo: PrimeFaces reemplaza el panel del listado o los mensajes al
@@ -98,7 +104,7 @@ function pulsarYEsperar(
         if (idsQueCambian.includes(el.id)) return true;
       return false;
     };
-    const observador = idsQueCambian.length
+    const observador = idsQueCambian.length && !listo
       ? new MutationObserver((cambios: MutationRecord[]) => {
           const relevante = cambios.some(
             (c) => tocaIds(c.target) || Array.from(c.addedNodes).some((n) => n instanceof Element && (idsQueCambian.includes(n.id) || !!n.querySelector?.(idsQueCambian.map((i) => `[id="${i}"]`).join(',')))),
@@ -110,6 +116,9 @@ function pulsarYEsperar(
       : null;
     observador?.observe(win.document.body, { childList: true, subtree: true, characterData: true });
     const reloj = setInterval(() => {
+      if (listo?.()) {
+        setTimeout(() => fin('ok'), 300);
+      }
       if (desafioVisible(win.document)) {
         limiteActual = Math.max(limiteActual, TIEMPO.verificacion);
         if (!avisado) {
@@ -118,7 +127,7 @@ function pulsarYEsperar(
         }
       }
       if (Date.now() - inicio > limiteActual) fin('timeout');
-    }, 500);
+    }, 250);
     boton.click();
   });
 }
@@ -171,17 +180,35 @@ export async function consultar(win: Window, c: ConsultaPortal, alVerificar: () 
   if (!boton) return { estado: 'error', mensaje: 'No se encontró el botón Consultar' };
   if ((boton as HTMLButtonElement).disabled) return { estado: 'timeout', mensaje: 'El portal sigue procesando la consulta anterior' };
 
-  const r = await pulsarYEsperar(win, boton, TIEMPO.consulta, alVerificar, actualizaListado, [
-    'frmPrincipal:panelListaComprobantes',
-    'formMessages:messages',
-  ]);
+  const btn = boton as HTMLButtonElement;
+  // En recibidos, Consultar se deshabilita al pulsar y solo el onsuccess de la
+  // consulta real (rcBuscar → reactivarBoton) lo vuelve a habilitar.
+  const listo = c.bandeja === 'recibidos' ? () => !btn.disabled : undefined;
+  const diag = { ajax: 0, listado: 0 };
+  const t0 = Date.now();
+  const r = await pulsarYEsperar(
+    win,
+    boton,
+    TIEMPO.consulta,
+    alVerificar,
+    actualizaListado,
+    ['frmPrincipal:panelListaComprobantes', 'formMessages:messages'],
+    listo,
+    diag,
+  );
   const mensaje = textoMensajes(doc);
   const tipo = clasificarMensaje(mensaje);
+  const filas = filasVisibles(doc, c.bandeja);
   if (tipo === 'sin-datos') return { estado: 'sin-datos', mensaje };
   if (tipo === 'fecha-actual') return { estado: 'rechazada', mensaje };
-  if (r === 'timeout') return { estado: 'timeout', mensaje: 'El portal no respondió a tiempo' };
-  if (filasVisibles(doc, c.bandeja) > 0) return { estado: 'ok', mensaje: '' };
-  return tipo === 'otro' ? { estado: 'rechazada', mensaje } : { estado: 'sin-datos', mensaje };
+  if (r === 'timeout') return { estado: 'timeout', mensaje: `El portal no respondió a tiempo (${diag.ajax} respuestas, ${diag.listado} del listado)` };
+  if (filas > 0) return { estado: 'ok', mensaje: '' };
+  if (tipo === 'otro') return { estado: 'rechazada', mensaje };
+  // Sin filas y sin el mensaje "No existen datos": no es un día vacío confiable.
+  return {
+    estado: 'error',
+    mensaje: `Sin filas ni mensaje del portal tras ${Date.now() - t0} ms (${diag.ajax} respuestas, ${diag.listado} del listado, botón ${btn.disabled ? 'deshabilitado' : 'habilitado'})`,
+  };
 }
 
 function controlPaginador(doc: Document, b: Bandeja, clase: string): HTMLElement | null {
