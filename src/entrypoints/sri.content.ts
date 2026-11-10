@@ -27,12 +27,17 @@ export default defineContentScript({
     let cancelar = false;
     let verificacion = false;
     let siguienteId = 1;
+    let conductor: string | null = null;
     const pendientes = new Map<number, (r: Respuesta) => void>();
 
     window.addEventListener('message', (ev: MessageEvent<MensajeCanal>) => {
       const m = ev.data;
       if (ev.source !== window || m?.canal !== CANAL) return;
-      if (m.tipo === 'respuesta' && m.id && m.respuesta) {
+      if (m.tipo === 'hola' && m.conductor) {
+        if (conductor !== m.conductor) logConductor.info(`Conductor activo: ${m.conductor.split(':')[0]}`);
+        conductor = m.conductor;
+      } else if (m.tipo === 'respuesta' && m.id && m.respuesta) {
+        if (m.conductor && conductor && m.conductor !== conductor) return; // respuesta de un conductor viejo
         pendientes.get(m.id)?.(m.respuesta);
         pendientes.delete(m.id);
       } else if (m.tipo === 'evento' && m.evento === 'verificacion') {
@@ -43,12 +48,25 @@ export default defineContentScript({
       }
     });
 
-    const ordenar = (orden: Orden) =>
-      new Promise<Respuesta>((resolver) => {
+    window.postMessage({ canal: CANAL, tipo: 'quien' } satisfies MensajeCanal, location.origin);
+
+    async function esperarConductor(): Promise<string> {
+      for (let i = 0; i < 20 && !conductor; i++) {
+        window.postMessage({ canal: CANAL, tipo: 'quien' } satisfies MensajeCanal, location.origin);
+        await new Promise((r) => setTimeout(r, 100));
+      }
+      if (!conductor) throw new Error('El conductor de Legajo no está activo en la página. Vuelve a entrar desde el menú del portal.');
+      return conductor;
+    }
+
+    const ordenar = async (orden: Orden) => {
+      const para = await esperarConductor();
+      return new Promise<Respuesta>((resolver) => {
         const id = siguienteId++;
         pendientes.set(id, resolver);
-        window.postMessage({ canal: CANAL, tipo: 'orden', id, orden } satisfies MensajeCanal, location.origin);
+        window.postMessage({ canal: CANAL, tipo: 'orden', id, para, orden } satisfies MensajeCanal, location.origin);
       });
+    };
 
     const formulario = () => byId(document, 'frmPrincipal') as HTMLFormElement | null;
     const ruc = () => (byId(document, 'frmPrincipal:txtParametro') as HTMLInputElement | null)?.value.trim() ?? '';
@@ -64,8 +82,11 @@ export default defineContentScript({
       return new Uint8Array(await r.arrayBuffer());
     }
 
-    async function guardar(estado: EstadoTrabajo) {
-      await browser.storage.local.set({ [CLAVE_PROGRESO]: estado });
+    // Escrituras en orden: los avisos concurrentes no deben pisarse con estados viejos.
+    let cola: Promise<void> = Promise.resolve();
+    function guardar(estado: EstadoTrabajo) {
+      cola = cola.then(() => browser.storage.local.set({ [CLAVE_PROGRESO]: estado })).catch(() => {});
+      return cola;
     }
 
     function descargar(bytes: Uint8Array, nombre: string) {
