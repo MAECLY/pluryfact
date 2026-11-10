@@ -16,7 +16,12 @@ export default defineContentScript({
   matches: ['https://srienlinea.sri.gob.ec/comprobantes-electronicos-internet/*'],
   runAt: 'document_idle',
   main() {
+    // El popup puede reinyectar este script (pestaña abierta antes de recargar la extensión).
+    const marca = document.documentElement;
+    if (marca.dataset.legajo === browser.runtime.id) return;
+    marca.dataset.legajo = browser.runtime.id;
     const log = crearRegistro('content', browser.storage.local);
+    log.info(`Content script activo en ${location.pathname.split('/').pop()}`);
     const logConductor = crearRegistro('conductor', browser.storage.local);
     let ocupado = false;
     let cancelar = false;
