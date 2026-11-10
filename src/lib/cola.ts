@@ -414,17 +414,59 @@ async function recorrerPaginas(
 ) {
   const pdfPendientes = new Map(filasPdf.map((f) => [f.clave.clave, f]));
   const quedan = () => pdfPendientes.size + sinXml.size;
-  const bajar = async (fila: FilaReporte, tipo: 'pdf' | 'xml', obtener: () => Promise<Uint8Array | string>) => {
+  let fallosSeguidos = 0;
+
+  /** Una descarga con un reintento; devuelve false si falló las dos veces. */
+  const bajar = async (fila: FilaReporte, tipo: 'pdf' | 'xml', obtener: () => Promise<Uint8Array | string>, ultimoIntento: boolean) => {
     revisar();
-    try {
-      const datos = await conLimite(obtener(), LIMITE_PDF_MS, `El portal no entregó el ${tipo === 'pdf' ? 'RIDE' : 'XML'} a tiempo`);
-      archivos.push({ ruta: `${carpeta(d.rucContribuyente, bandeja, fila)}/${nombreArchivo(fila, tipo)}`, datos });
-      avisar({ descargados: p.descargados + 1 });
-    } catch (e) {
-      anotar(e);
-      avisar({ fallidos: p.fallidos + 1 });
+    for (let intento = 1; intento <= 2; intento++) {
+      try {
+        const datos = await conLimite(obtener(), LIMITE_PDF_MS, `El portal no entregó el ${tipo === 'pdf' ? 'RIDE' : 'XML'} a tiempo`);
+        archivos.push({ ruta: `${carpeta(d.rucContribuyente, bandeja, fila)}/${nombreArchivo(fila, tipo)}`, datos });
+        avisar({ descargados: p.descargados + 1 });
+        fallosSeguidos = 0;
+        await pausa(RITMO.descarga);
+        return true;
+      } catch (e) {
+        if (intento === 2) {
+          fallosSeguidos++;
+          if (ultimoIntento) {
+            anotar(e);
+            avisar({ fallidos: p.fallidos + 1 });
+          }
+        } else await d.esperar(2000);
+      }
     }
     await pausa(RITMO.descarga);
+    return false;
+  };
+
+  /** Recorre la página visible; devuelve cuántas descargas fallaron (quedan pendientes para resincronizar). */
+  const procesarPagina = async (ultimoIntento: boolean) => {
+    let fallidas = 0;
+    for (const fila of d.leerTabla().filas) {
+      const clave = fila.clave.clave;
+      const pdf = pdfPendientes.get(clave);
+      if (pdf && fila.enlaces.pdf) {
+        const id = fila.enlaces.pdf;
+        if ((await bajar(pdf, 'pdf', () => d.pdf(id), ultimoIntento)) || ultimoIntento) pdfPendientes.delete(clave);
+        else fallidas++;
+      }
+      const xml = sinXml.get(clave);
+      if (xml && fila.enlaces.xml && d.xmlPortal) {
+        const id = fila.enlaces.xml;
+        if ((await bajar(xml, 'xml', () => d.xmlPortal!(id), ultimoIntento)) || ultimoIntento) sinXml.delete(clave);
+        else fallidas++;
+      }
+      if (fallosSeguidos >= 3 && !ultimoIntento) break; // el portal se desincronizó: resincronizar
+    }
+    return fallidas;
+  };
+
+  /** Vuelve a la página 1 y avanza hasta `destino` para que el servidor vuelva a esa página. */
+  const irA = async (destino: number) => {
+    await d.primeraPagina();
+    for (let i = 1; i < destino; i++) if (!(await d.siguientePagina())) break;
   };
 
   await d.primeraPagina();
@@ -432,20 +474,14 @@ async function recorrerPaginas(
     const tabla = d.leerTabla();
     d.registro?.info(`Página ${tabla.paginaActual}/${tabla.totalPaginas}: ${tabla.filas.length} filas, ${pdfPendientes.size} RIDE y ${sinXml.size} XML pendientes`);
     contar(`Portal: página ${tabla.paginaActual} de ${tabla.totalPaginas} (${quedan()} archivos pendientes)`);
-    for (const fila of tabla.filas) {
-      const clave = fila.clave.clave;
-      const pdf = pdfPendientes.get(clave);
-      if (pdf && fila.enlaces.pdf) {
-        const id = fila.enlaces.pdf;
-        await bajar(pdf, 'pdf', () => d.pdf(id));
-        pdfPendientes.delete(clave);
-      }
-      const xml = sinXml.get(clave);
-      if (xml && fila.enlaces.xml && d.xmlPortal) {
-        const id = fila.enlaces.xml;
-        await bajar(xml, 'xml', () => d.xmlPortal!(id));
-        sinXml.delete(clave);
-      }
+    fallosSeguidos = 0;
+    if ((await procesarPagina(false)) > 0) {
+      contar(`El portal dejó de entregar archivos en la página ${tabla.paginaActual}; se vuelve a cargar y se reintenta`, 'aviso');
+      d.registro?.aviso(`Resincronizando en página ${tabla.paginaActual}`);
+      await d.esperar(3000);
+      await irA(tabla.paginaActual);
+      fallosSeguidos = 0;
+      await procesarPagina(true);
     }
     if (!quedan() || !(await d.siguientePagina())) break;
   }

@@ -170,6 +170,22 @@ describe('ejecutar', () => {
     expect(d.xmlPortal).not.toHaveBeenCalled(); // la tabla del fixture no tiene estas claves: quedan como no encontradas
   });
 
+  it('reintenta y resincroniza la página cuando el portal deja de entregar archivos', async () => {
+    let fallar = true;
+    const pdf = vi.fn(async () => {
+      if (fallar) throw new Error('El portal no devolvió el archivo');
+      return new TextEncoder().encode('%PDF');
+    });
+    let cargas = 0;
+    const primeraPagina = vi.fn(async () => {
+      if (++cargas > 1) fallar = false; // al volver a cargar (resincronizar), el portal se recupera
+    });
+    const { d } = deps({ pdf, primeraPagina, xml: vi.fn(async () => '<x/>') });
+    const r = await ejecutar({ ...base, formatos: { xml: true, pdf: true, txt: false } }, d);
+    expect(primeraPagina).toHaveBeenCalledTimes(2); // inicio + resincronización
+    expect(r.progreso).toMatchObject({ fallidos: 0, descargados: 4 });
+  });
+
   it('cuenta como fallido un XML que el SRI no tiene autorizado', async () => {
     const { d } = deps({ xml: vi.fn(async () => null) });
     const r = await ejecutar({ ...base, formatos: { xml: true, pdf: false, txt: false } }, d);
