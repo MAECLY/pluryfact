@@ -16,6 +16,8 @@ import { enmascarar, PREFIJO_REGISTRO, type Entrada } from '../src/lib/registro'
 const args = process.argv.slice(2);
 const ultimos = Number(args[args.indexOf('--ultimos') + 1]) || 200;
 const soloErrores = args.includes('--errores');
+/** --progreso: solo una línea con el estado del último trabajo de cada perfil (para seguir una descarga). */
+const soloProgreso = args.includes('--progreso');
 
 const RAICES = [
   join(homedir(), 'Library/Application Support/Google/Chrome'),
@@ -57,6 +59,16 @@ try {
     }
     if (!entradas.length && !progreso) continue;
     encontradas++;
+    if (soloProgreso) {
+      const p = progreso as Record<string, unknown> | null;
+      if (p && Number(p.actualizado) > Date.now() - 6 * 3600_000)
+        console.log(
+          enmascarar(
+            `${p.fase} · consulta ${p.consultasHechas}/${p.consultasTotal} · ${p.encontrados} comprobantes · ${p.descargados} archivos · ${p.fallidos} fallidos · ${p.mensaje}`,
+          ),
+        );
+      continue;
+    }
     console.log(`\n=== ${base.replace(homedir(), '~').replace(/Local Extension Settings\/(\w{6})\w+/, 'Local Extension Settings/$1…')}`);
     if (progreso) console.log(`Último trabajo: ${enmascarar(JSON.stringify(progreso))}`);
     const lista = entradas
