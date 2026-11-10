@@ -18,18 +18,22 @@ export const normalizar = (s: string) =>
     .trim()
     .toLowerCase();
 
-export function coincideEmisor(f: FilaComprobante, consulta: string): boolean {
+/** RUC (prefijo de 10–13 dígitos) o parte de la razón social. */
+export function coincideTexto(ruc: string, razonSocial: string | undefined, consulta: string): boolean {
   const q = consulta.trim();
   if (!q) return true;
-  // En emitidos no hay columna de emisor: el emisor siempre es el contribuyente.
-  const ruc = f.emisor?.ruc ?? f.clave.ruc;
   if (/^\d{10,13}$/.test(q)) return ruc.startsWith(q);
-  const nombre = f.emisor?.razonSocial;
+  const nombre = razonSocial;
   if (!nombre) return false;
   const n = normalizar(nombre);
   const b = normalizar(q);
   // "andinos sa" debe encontrar "ANDINOS S. A.": se compara también sin espacios.
   return n.includes(b) || n.replace(/ /g, '').includes(b.replace(/ /g, ''));
+}
+
+export function coincideEmisor(f: FilaComprobante, consulta: string): boolean {
+  // En emitidos no hay columna de emisor: el emisor siempre es el contribuyente.
+  return coincideTexto(f.emisor?.ruc ?? f.clave.ruc, f.emisor?.razonSocial, consulta);
 }
 
 export function filtrar(filas: FilaComprobante[], filtro: Filtro): FilaComprobante[] {
