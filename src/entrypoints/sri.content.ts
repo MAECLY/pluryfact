@@ -4,6 +4,7 @@ import { parseTabla } from '@/lib/extract';
 import { cuerpoDescarga, esAdjunto } from '@/lib/jsf';
 import { CLAVE_PROGRESO, type EstadoPagina, type EstadoTrabajo, type Peticion } from '@/lib/mensajeria';
 import { etiquetaPeriodo } from '@/lib/periodo-etiqueta';
+import { crearRegistro } from '@/lib/registro';
 import { byId, LINK_REPORTE } from '@/lib/selectors';
 import { hoyEcuador } from '@/entrypoints/popup/estado';
 import { armarZip, nombreZip } from '@/lib/zip';
@@ -15,6 +16,8 @@ export default defineContentScript({
   matches: ['https://srienlinea.sri.gob.ec/comprobantes-electronicos-internet/*'],
   runAt: 'document_idle',
   main() {
+    const log = crearRegistro('content', browser.storage.local);
+    const logConductor = crearRegistro('conductor', browser.storage.local);
     let ocupado = false;
     let cancelar = false;
     let verificacion = false;
@@ -29,6 +32,9 @@ export default defineContentScript({
         pendientes.delete(m.id);
       } else if (m.tipo === 'evento' && m.evento === 'verificacion') {
         verificacion = true;
+        logConductor.aviso('reCAPTCHA mostró un desafío visible');
+      } else if (m.tipo === 'log' && m.log) {
+        logConductor.info(m.log);
       }
     });
 
@@ -46,7 +52,10 @@ export default defineContentScript({
       const form = formulario();
       if (!form) throw new Error('No se encontró el formulario del portal');
       const r = await fetch(form.action, { method: 'POST', body: cuerpoDescarga(form, idEnlace), credentials: 'same-origin' });
-      if (!r.ok || !esAdjunto(r.headers)) throw new Error('El portal no devolvió el archivo');
+      if (!r.ok || !esAdjunto(r.headers)) {
+        log.aviso(`POST ${idEnlace.split(':').slice(-2).join(':')}: ${r.status} ${r.headers.get('content-type') ?? ''} sin adjunto`);
+        throw new Error('El portal no devolvió el archivo');
+      }
       return new Uint8Array(await r.arrayBuffer());
     }
 
@@ -109,13 +118,16 @@ export default defineContentScript({
           verificacion = false;
         },
         cancelado: () => cancelar,
+        registro: log,
       };
       try {
         const r = await ejecutar(t, d);
         base.consultasFallidas = r.consultasFallidas;
         if (r.archivos.length) {
           const nombre = nombreZip(rucActual, t.bandeja, etiquetaPeriodo(t.periodo));
-          descargar(armarZip(r.archivos), nombre);
+          const zip = armarZip(r.archivos);
+          descargar(zip, nombre);
+          log.info(`ZIP ${nombre}: ${r.archivos.length} archivos, ${zip.length} bytes`);
           base.zip = nombre;
         }
         const fase = r.progreso.fase === 'cancelado' ? 'cancelado' : r.detenidaPor ? 'error' : 'listo';
@@ -128,6 +140,7 @@ export default defineContentScript({
             : 'No hay comprobantes para ese periodo y filtro';
         await guardar({ ...r.progreso, ...base, fase, mensaje, verificacion: false, actualizado: Date.now() });
       } catch (e) {
+        log.error(`Trabajo interrumpido: ${e instanceof Error ? e.stack ?? e.message : String(e)}`);
         if (!(e instanceof Cancelado)) {
           await guardar({
             ...(ultimo ?? { consultasHechas: 0, consultasTotal: 0, encontrados: 0, descargados: 0, fallidos: 0, errores: [] }),
@@ -140,6 +153,7 @@ export default defineContentScript({
         }
       } finally {
         ocupado = false;
+        await Promise.all([log.volcar(), logConductor.volcar()]);
       }
     }
 
