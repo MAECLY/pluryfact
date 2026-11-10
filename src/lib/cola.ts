@@ -94,6 +94,11 @@ export interface Dependencias {
   siguientePagina(): Promise<boolean>;
   leerTabla(): ResultadoTabla;
   pdf(idEnlace: string): Promise<Uint8Array>;
+  /**
+   * XML desde el enlace de la tabla del portal (solo recibidos tiene ese enlace).
+   * Respaldo cuando el servicio web no entrega el XML de una clave.
+   */
+  xmlPortal?(idEnlace: string): Promise<string>;
   /** XML autorizado (formato del portal) o null si el SRI no lo tiene autorizado. */
   xml(clave: string): Promise<string | null>;
   esperar(ms: number): Promise<void>;
@@ -310,19 +315,21 @@ export async function ejecutar(t: Trabajo, d: Dependencias): Promise<Resumen> {
         archivos.push({ ruta: `legajo/${d.rucContribuyente}/${t.bandeja}/reportes/${tipo}_${etiqueta}.txt`, datos: bytes });
       }
 
+      const sinXml = new Map<string, FilaReporte>();
       if (t.formatos.xml && filas.length) {
         contar(`Pidiendo ${filas.length} XML al servicio web del SRI…`);
         let hechos = 0;
         let fallidosAqui = 0;
+        const conRespaldo = t.bandeja === 'recibidos' && !!d.xmlPortal;
         await enParalelo(filas, XML_EN_PARALELO, async (f) => {
           revisar();
           let xml: string | null = null;
           const tx = Date.now();
           try {
             xml = await conLimite(d.xml(f.clave.clave), LIMITE_XML_MS, 'El servicio web no respondió a tiempo');
-            if (!xml) anotarError(`Sin autorización en el SRI: ${f.serie || f.clave.secuencial}`);
+            if (!xml) log?.aviso(`Servicio web sin XML para ${f.serie || f.clave.secuencial}`);
           } catch (e) {
-            anotarError(e);
+            log?.aviso(`Servicio web falló para ${f.serie || f.clave.secuencial}: ${e instanceof Error ? e.message : String(e)}`);
           }
           hechos++;
           if (xml) log?.info(`XML ${f.clave.secuencial} ok en ${Date.now() - tx} ms`);
@@ -330,20 +337,28 @@ export async function ejecutar(t: Trabajo, d: Dependencias): Promise<Resumen> {
           if (xml) {
             archivos.push({ ruta: `${carpeta(d.rucContribuyente, t.bandeja, f)}/${nombreArchivo(f, 'xml')}`, datos: xml });
             avisar({ descargados: p.descargados + 1, mensaje });
+          } else if (conRespaldo) {
+            sinXml.set(f.clave.clave, f);
+            avisar({ mensaje });
           } else {
             fallidosAqui++;
+            anotarError(`Sin XML del SRI: ${f.serie || f.clave.secuencial}`);
             avisar({ fallidos: p.fallidos + 1, mensaje });
           }
         });
         contar(
-          `XML de ${nombre}: ${hechos - fallidosAqui} listos${fallidosAqui ? `, ${fallidosAqui} fallidos` : ''}`,
+          `XML de ${nombre}: ${hechos - fallidosAqui - sinXml.size} por servicio web${sinXml.size ? `, ${sinXml.size} se bajarán desde el portal` : ''}${fallidosAqui ? `, ${fallidosAqui} fallidos` : ''}`,
           fallidosAqui ? 'aviso' : 'info',
         );
       }
 
-      if (t.formatos.pdf && filas.length) {
-        contar(`Descargando ${filas.length} RIDE de ${nombre} desde el portal…`);
-        await descargarRides(t.bandeja, filas, d, archivos, avisar, revisar, pausa, p, anotarError, contar);
+      const pedirPdf = t.formatos.pdf && filas.length > 0;
+      if (pedirPdf || sinXml.size) {
+        contar(
+          [pedirPdf ? `${filas.length} RIDE` : '', sinXml.size ? `${sinXml.size} XML` : ''].filter(Boolean).join(' y ') +
+            ` de ${nombre} desde el portal…`,
+        );
+        await recorrerPaginas(t.bandeja, pedirPdf ? filas : [], sinXml, d, archivos, avisar, revisar, pausa, p, anotarError, contar);
       }
       marcar(i, { estado: 'ok' });
       avisar({ consultasHechas: p.consultasHechas + 1 });
@@ -361,10 +376,14 @@ export async function ejecutar(t: Trabajo, d: Dependencias): Promise<Resumen> {
   }
 }
 
-/** Recorre las páginas del portal (sin captcha) y baja el RIDE de las filas pedidas. */
-async function descargarRides(
+/**
+ * Recorre las páginas del portal (sin captcha) y baja, de las filas pedidas,
+ * el RIDE y, como respaldo, el XML que el servicio web no entregó.
+ */
+async function recorrerPaginas(
   bandeja: Bandeja,
-  filas: FilaReporte[],
+  filasPdf: FilaReporte[],
+  sinXml: Map<string, FilaReporte>,
   d: Dependencias,
   archivos: Archivo[],
   avisar: (c: Partial<Progreso>) => void,
@@ -374,32 +393,46 @@ async function descargarRides(
   anotar: (e: unknown) => void,
   contar: (texto: string, nivel?: Actividad['nivel']) => void,
 ) {
-  const pendientes = new Map(filas.map((f) => [f.clave.clave, f]));
-  await d.primeraPagina();
-  for (let pagina = 0; pagina < MAX_PAGINAS && pendientes.size; pagina++) {
-    const tabla = d.leerTabla();
-    d.registro?.info(`RIDE página ${tabla.paginaActual}/${tabla.totalPaginas}: ${tabla.filas.length} filas, ${pendientes.size} pendientes`);
-    contar(`RIDE: página ${tabla.paginaActual} de ${tabla.totalPaginas} del portal (${pendientes.size} pendientes)`);
-    for (const fila of tabla.filas) {
-      const pedida = pendientes.get(fila.clave.clave);
-      if (!pedida || !fila.enlaces.pdf) continue;
-      revisar();
-      try {
-        const pdf = await conLimite(d.pdf(fila.enlaces.pdf), LIMITE_PDF_MS, 'El portal no entregó el RIDE a tiempo');
-        archivos.push({ ruta: `${carpeta(d.rucContribuyente, bandeja, pedida)}/${nombreArchivo(pedida, 'pdf')}`, datos: pdf });
-        avisar({ descargados: p.descargados + 1 });
-      } catch (e) {
-        anotar(e);
-        avisar({ fallidos: p.fallidos + 1 });
-      }
-      pendientes.delete(fila.clave.clave);
-      await pausa(RITMO.descarga);
+  const pdfPendientes = new Map(filasPdf.map((f) => [f.clave.clave, f]));
+  const quedan = () => pdfPendientes.size + sinXml.size;
+  const bajar = async (fila: FilaReporte, tipo: 'pdf' | 'xml', obtener: () => Promise<Uint8Array | string>) => {
+    revisar();
+    try {
+      const datos = await conLimite(obtener(), LIMITE_PDF_MS, `El portal no entregó el ${tipo === 'pdf' ? 'RIDE' : 'XML'} a tiempo`);
+      archivos.push({ ruta: `${carpeta(d.rucContribuyente, bandeja, fila)}/${nombreArchivo(fila, tipo)}`, datos });
+      avisar({ descargados: p.descargados + 1 });
+    } catch (e) {
+      anotar(e);
+      avisar({ fallidos: p.fallidos + 1 });
     }
-    if (!pendientes.size || !(await d.siguientePagina())) break;
+    await pausa(RITMO.descarga);
+  };
+
+  await d.primeraPagina();
+  for (let pagina = 0; pagina < MAX_PAGINAS && quedan(); pagina++) {
+    const tabla = d.leerTabla();
+    d.registro?.info(`Página ${tabla.paginaActual}/${tabla.totalPaginas}: ${tabla.filas.length} filas, ${pdfPendientes.size} RIDE y ${sinXml.size} XML pendientes`);
+    contar(`Portal: página ${tabla.paginaActual} de ${tabla.totalPaginas} (${quedan()} archivos pendientes)`);
+    for (const fila of tabla.filas) {
+      const clave = fila.clave.clave;
+      const pdf = pdfPendientes.get(clave);
+      if (pdf && fila.enlaces.pdf) {
+        const id = fila.enlaces.pdf;
+        await bajar(pdf, 'pdf', () => d.pdf(id));
+        pdfPendientes.delete(clave);
+      }
+      const xml = sinXml.get(clave);
+      if (xml && fila.enlaces.xml && d.xmlPortal) {
+        const id = fila.enlaces.xml;
+        await bajar(xml, 'xml', () => d.xmlPortal!(id));
+        sinXml.delete(clave);
+      }
+    }
+    if (!quedan() || !(await d.siguientePagina())) break;
   }
-  if (pendientes.size) {
-    d.registro?.aviso(`RIDE sin encontrar en la tabla: ${pendientes.size}`);
-    contar(`${pendientes.size} RIDE no aparecieron en la tabla del portal`, 'aviso');
-    avisar({ fallidos: p.fallidos + pendientes.size });
+  if (quedan()) {
+    d.registro?.aviso(`Sin encontrar en la tabla: ${pdfPendientes.size} RIDE, ${sinXml.size} XML`);
+    contar(`${quedan()} archivos no aparecieron en la tabla del portal`, 'aviso');
+    avisar({ fallidos: p.fallidos + quedan() });
   }
 }

@@ -68,8 +68,8 @@ describe('ejecutar', () => {
     expect(r.progreso).toMatchObject({ encontrados: 2, descargados: 4, fallidos: 0, consultasHechas: 1, fase: 'empaquetando' });
     const textos = progresos.at(-1)!.actividad.map((a) => a.texto);
     expect(textos).toContain('noviembre 2026: 2 comprobantes');
-    expect(textos).toContain('XML de noviembre 2026: 2 listos');
-    expect(textos.some((x) => x.startsWith('RIDE: página 1 de 1'))).toBe(true);
+    expect(textos).toContain('XML de noviembre 2026: 2 por servicio web');
+    expect(textos.some((x) => x.startsWith('Portal: página 1 de 1'))).toBe(true);
     expect(progresos.at(-1)!.pasos).toEqual([{ etiqueta: 'noviembre 2026', estado: 'ok', comprobantes: 2 }]);
     expect(d.consultar).toHaveBeenCalledTimes(1);
   });
@@ -137,7 +137,18 @@ describe('ejecutar', () => {
     const r = await promesa;
     vi.useRealTimers();
     expect(r.progreso).toMatchObject({ descargados: 0, fallidos: 2 });
-    expect(r.progreso.errores).toContain('El servicio web no respondió a tiempo');
+    expect(r.progreso.errores.some((e) => e.startsWith('Sin XML del SRI'))).toBe(true);
+  });
+
+  it('recibidos: si el servicio web no da el XML, lo baja desde la tabla del portal', async () => {
+    const xmlPortal = vi.fn(async (id: string) => `<autorizacion>${id}</autorizacion>`);
+    const { d, progresos } = deps({ xml: vi.fn(async () => null), xmlPortal });
+    const r = await ejecutar({ ...base, formatos: { xml: true, pdf: true, txt: false } }, d);
+    expect(xmlPortal).toHaveBeenCalledTimes(2);
+    expect(xmlPortal).toHaveBeenCalledWith('frmPrincipal:tablaCompRecibidos:0:lnkXml');
+    expect(r.archivos.filter((a) => a.ruta.endsWith('.xml'))).toHaveLength(2);
+    expect(r.progreso).toMatchObject({ descargados: 4, fallidos: 0 });
+    expect(progresos.at(-1)!.actividad.map((a) => a.texto)).toContain('XML de noviembre 2026: 0 por servicio web, 2 se bajarán desde el portal');
   });
 
   it('cuenta como fallido un XML que el SRI no tiene autorizado', async () => {
