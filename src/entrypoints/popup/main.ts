@@ -1,4 +1,6 @@
 import './style.css';
+import type { Trabajo } from '@/lib/cola';
+import { CLAVE_PROGRESO, type EstadoPagina, type EstadoTrabajo, type Peticion } from '@/lib/mensajeria';
 import { consultasEmitidos, consultasRecibidos, type Periodo } from '@/lib/periodo';
 import { ETIQUETA_TIPO, type Bandeja, type Fecha, type TipoComprobante } from '@/lib/types';
 import { construirPeriodo, hoyEcuador, type TipoPeriodo } from './estado';
@@ -89,6 +91,7 @@ function pintarPlan() {
     plan.className = plan.className.replace(/text-\w+/g, 'text-err');
     plan.textContent = e instanceof Error ? e.message : String(e);
   }
+  if (typeof actualizarBoton === 'function') actualizarBoton();
 }
 
 function pulsar(grupo: string, valor: string) {
@@ -115,6 +118,127 @@ document.querySelectorAll<HTMLButtonElement>('[data-periodo]').forEach((b) =>
   }),
 );
 
+// ---- Conexión con la pestaña del portal y progreso ----
+
+const PATRON_SRI = 'https://srienlinea.sri.gob.ec/comprobantes-electronicos-internet/*';
+const NOMBRE_PANTALLA: Record<Bandeja, string> = { recibidos: 'Comprobantes recibidos', emitidos: 'Comprobantes emitidos' };
+let pestana: number | null = null;
+let pagina: EstadoPagina | null = null;
+let enCurso = false;
+
+function estado(texto: string, tono: 'muted' | 'warn' | 'err' | 'ok' = 'muted') {
+  const el = $('#estado');
+  el.textContent = texto;
+  el.className = `text-[12px] text-${tono}`;
+}
+
+function actualizarBoton() {
+  const b = $<HTMLButtonElement>('#descargar');
+  b.textContent = enCurso ? 'Cancelar' : 'Descargar ZIP';
+  b.className = `btn ${enCurso ? 'btn-s' : 'btn-p'} flex-1`;
+  const planOk = !$('#plan').className.includes('text-err');
+  b.disabled = !enCurso && (!pagina?.bandeja || !planOk);
+}
+
+async function conectar() {
+  const tabs = await browser.tabs.query({ url: PATRON_SRI });
+  const t = tabs.find((x) => x.active) ?? tabs[0];
+  pestana = t?.id ?? null;
+  pagina = null;
+  if (pestana !== null) {
+    try {
+      pagina = (await browser.tabs.sendMessage(pestana, { tipo: 'estado' } satisfies Peticion)) as EstadoPagina;
+    } catch {
+      pagina = null;
+    }
+  }
+  if (!pagina?.bandeja) {
+    estado('Abre SRI en Línea → Facturación electrónica → Comprobantes recibidos o emitidos.', 'warn');
+  } else {
+    bandeja = pagina.bandeja;
+    pulsar('bandeja', bandeja);
+    document.querySelectorAll<HTMLButtonElement>('[data-bandeja]').forEach((b) => {
+      b.disabled = b.dataset.bandeja !== bandeja;
+      b.title = b.disabled ? 'Cambia de pantalla en el portal' : '';
+    });
+    $('#sec-emisor').hidden = bandeja === 'emitidos';
+    pintarTipos();
+    pintarPlan();
+    estado(`Conectado · ${pagina.ruc} · ${NOMBRE_PANTALLA[bandeja]}`, 'ok');
+  }
+  enCurso = !!pagina?.ocupado;
+  actualizarBoton();
+}
+
+function pintarProgreso(p: EstadoTrabajo | undefined) {
+  const caja = $('#progreso');
+  if (!p) {
+    caja.hidden = true;
+    return;
+  }
+  caja.hidden = false;
+  enCurso = ['consultando', 'descargando', 'empaquetando'].includes(p.fase) && (pagina?.ocupado ?? true);
+  const pct = p.consultasTotal ? Math.round((p.consultasHechas / p.consultasTotal) * 100) : 0;
+  $('#prog-consultas').textContent = `Consulta ${p.consultasHechas} de ${p.consultasTotal}`;
+  $('#prog-pct').textContent = `${pct} %`;
+  $('#prog-barra').style.width = `${p.fase === 'listo' ? 100 : pct}%`;
+  $('#prog-cifras').textContent = `${p.encontrados} comprobantes · ${p.descargados} archivos${p.fallidos ? ` · ${p.fallidos} fallidos` : ''}`;
+  const msg = $('#prog-mensaje');
+  msg.textContent = p.verificacion ? 'El SRI pide verificar el captcha en la pestaña del portal.' : p.mensaje;
+  msg.className = `text-[12px] text-${p.fase === 'error' ? 'err' : p.fase === 'listo' ? 'ok' : p.verificacion ? 'warn' : 'muted'}`;
+  $('#prog-fallidas').innerHTML = '';
+  for (const f of p.consultasFallidas ?? []) {
+    const li = document.createElement('li');
+    li.textContent = f;
+    $('#prog-fallidas').append(li);
+  }
+  actualizarBoton();
+}
+
+function leerTrabajo(): Trabajo {
+  return {
+    bandeja,
+    periodo: leerPeriodo(),
+    tipos: [...tiposMarcados],
+    emisor: bandeja === 'recibidos' ? $<HTMLInputElement>('#emisor').value.trim() : '',
+    formatos: {
+      xml: $<HTMLInputElement>('#f-xml').checked,
+      pdf: $<HTMLInputElement>('#f-pdf').checked,
+      txt: $<HTMLInputElement>('#f-txt').checked,
+    },
+  };
+}
+
+$('#descargar').addEventListener('click', async () => {
+  if (pestana === null) return;
+  if (enCurso) {
+    await browser.tabs.sendMessage(pestana, { tipo: 'cancelar' } satisfies Peticion);
+    estado('Cancelando…', 'warn');
+    return;
+  }
+  const t = leerTrabajo();
+  if (!t.formatos.xml && !t.formatos.pdf && !t.formatos.txt) {
+    estado('Elige al menos un formato.', 'err');
+    return;
+  }
+  const r = (await browser.tabs.sendMessage(pestana, { tipo: 'iniciar', trabajo: t } satisfies Peticion)) as { ok: boolean; error?: string };
+  if (!r?.ok) {
+    estado(r?.error ?? 'No se pudo iniciar la descarga', 'err');
+    return;
+  }
+  enCurso = true;
+  if (pagina) pagina.ocupado = true;
+  actualizarBoton();
+});
+
+browser.storage.onChanged.addListener((cambios, area) => {
+  if (area === 'local' && cambios[CLAVE_PROGRESO]) pintarProgreso(cambios[CLAVE_PROGRESO].newValue as EstadoTrabajo | undefined);
+});
+
 pintarCamposPeriodo();
 pintarTipos();
 pintarPlan();
+void conectar().then(async () => {
+  const guardado = await browser.storage.local.get(CLAVE_PROGRESO);
+  pintarProgreso(guardado[CLAVE_PROGRESO] as EstadoTrabajo | undefined);
+});

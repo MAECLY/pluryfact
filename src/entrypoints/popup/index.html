@@ -48,11 +48,21 @@
         </div>
       </section>
 
+      <section id="progreso" class="flex flex-col gap-2 rounded-lg border border-line p-2.5" hidden aria-live="polite">
+        <div class="flex justify-between font-mono text-[11.5px] text-muted tabular-nums">
+          <span id="prog-consultas"></span><span id="prog-pct"></span>
+        </div>
+        <div class="h-1.5 overflow-hidden rounded-full bg-bg"><i id="prog-barra" class="block h-full w-0 bg-gradient-to-r from-accent to-manila transition-[width]"></i></div>
+        <p id="prog-cifras" class="font-mono text-[11.5px] tabular-nums"></p>
+        <p id="prog-mensaje" class="text-[12px] text-muted"></p>
+        <ul id="prog-fallidas" class="list-disc pl-4 text-[11.5px] text-err"></ul>
+      </section>
+
       <p id="plan" class="rounded-lg border border-line bg-bg px-2.5 py-2 font-mono text-[11.5px] text-muted tabular-nums" aria-live="polite"></p>
     </main>
 
     <footer class="flex flex-col gap-2 border-t border-line bg-bg px-3.5 py-3">
-      <p id="estado" class="text-[12px] text-warn">Abre SRI en Línea con tu sesión iniciada para empezar.</p>
+      <p id="estado" class="text-[12px] text-muted">Buscando la pestaña de SRI en Línea…</p>
       <div class="flex gap-2">
         <button id="descargar" type="button" class="btn btn-p flex-1" disabled>Descargar ZIP</button>
       </div>
