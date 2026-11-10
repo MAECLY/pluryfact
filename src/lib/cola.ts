@@ -475,7 +475,7 @@ async function recorrerPaginas(
         await pausa(RITMO.descarga);
         return true;
       } catch (e) {
-        if (e instanceof SesionCaducada) throw e;
+        if (e instanceof SesionCaducada || e instanceof Cancelado) throw e;
         if (intento === 2) {
           fallosSeguidos++;
           if (ultimoIntento) {

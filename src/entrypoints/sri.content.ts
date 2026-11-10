@@ -2,7 +2,7 @@ import { Cancelado, ejecutar, SesionCaducada, type Dependencias, type Progreso, 
 import { bandejaDePagina, CANAL, type MensajeCanal, type Orden, type Respuesta } from '@/lib/conductor';
 import { parseTabla } from '@/lib/extract';
 import { cuerpoDescarga, esAdjunto } from '@/lib/jsf';
-import { CLAVE_PROGRESO, type EstadoPagina, type EstadoTrabajo, type Peticion } from '@/lib/mensajeria';
+import { CLAVE_CANCELAR, CLAVE_PROGRESO, type EstadoPagina, type EstadoTrabajo, type Peticion } from '@/lib/mensajeria';
 import { etiquetaPeriodo } from '@/lib/periodo-etiqueta';
 import { CLAVE_AJUSTES, factorRitmo, normalizarAjustes } from '@/lib/ajustes';
 import { agregar, CLAVE_HISTORIAL, type EntradaHistorial } from '@/lib/historial';
@@ -28,6 +28,23 @@ export default defineContentScript({
     const logConductor = crearRegistro('conductor', browser.storage.local);
     let ocupado = false;
     let cancelar = false;
+    let inicioTrabajo = 0;
+    /** Se cumple al pedir cancelar: corta en el acto cualquier consulta o espera en curso. */
+    let alCancelar: () => void = () => {};
+    let pedidoCancelar = new Promise<void>((r) => (alCancelar = r));
+    const pedirCancelar = () => {
+      if (!ocupado || cancelar) return;
+      cancelar = true;
+      log.info('Cancelación pedida');
+      alCancelar();
+    };
+    /** Corre `p`, pero si el usuario cancela, rechaza de inmediato con Cancelado. */
+    const cortable = <T>(p: Promise<T>) =>
+      Promise.race([p, pedidoCancelar.then(() => Promise.reject(new Cancelado()))]);
+    browser.storage.onChanged.addListener((cambios, area) => {
+      const pedido = cambios[CLAVE_CANCELAR]?.newValue as number | undefined;
+      if (area === 'local' && pedido !== undefined && pedido >= inicioTrabajo) pedirCancelar();
+    });
     let verificacion = false;
     let siguienteId = 1;
     let conductor: string | null = null;
@@ -126,6 +143,8 @@ export default defineContentScript({
       const factor = factorRitmo(ajustes);
       ocupado = true;
       cancelar = false;
+      inicioTrabajo = Date.now();
+      pedidoCancelar = new Promise<void>((r) => (alCancelar = r));
       verificacion = false;
       const rucActual = ruc();
       const base = { ruc: rucActual, bandeja: t.bandeja, zip: null as string | null, trabajo: t, pendientes: [] as number[] };
@@ -152,7 +171,7 @@ export default defineContentScript({
       const d: Dependencias = {
         hoy: hoyEcuador(),
         rucContribuyente: rucActual,
-        consultar: async (c) => (await ordenar({ accion: 'consultar', consulta: c })) as Awaited<ReturnType<Dependencias['consultar']>>,
+        consultar: async (c) => (await cortable(ordenar({ accion: 'consultar', consulta: c }))) as Awaited<ReturnType<Dependencias['consultar']>>,
         reporte: () => postArchivo(LINK_REPORTE),
         primeraPagina: async () => void (await ordenar({ accion: 'primera-pagina', bandeja: t.bandeja })),
         siguientePagina: async () => ((await ordenar({ accion: 'siguiente-pagina', bandeja: t.bandeja })) as { hay: boolean }).hay,
@@ -169,7 +188,7 @@ export default defineContentScript({
           return r.xml ?? null;
         },
         // Ritmo "amable" (Avanzado): pausas el doble de largas.
-        esperar: (ms) => new Promise((r) => setTimeout(r, ms * factor)),
+        esperar: (ms) => cortable(new Promise<void>((r) => setTimeout(r, ms * factor))),
         azar: Math.random,
         progreso: (p) => {
           ultimo = p;
@@ -258,7 +277,7 @@ export default defineContentScript({
           responder({ ok: true });
         }
       } else if (msg?.tipo === 'cancelar') {
-        cancelar = true;
+        pedirCancelar();
         responder({ ok: true });
       } else return false;
       return false;

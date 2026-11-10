@@ -219,6 +219,21 @@ describe('ejecutar', () => {
     expect(r.pendientes).toEqual([0]);
   });
 
+  it('cancelar durante una consulta larga corta en el acto y conserva lo descargado', async () => {
+    const { Cancelado } = await import('../src/lib/cola');
+    let consultas = 0;
+    // Primera consulta ok; la segunda "se cuelga" y el usuario cancela mientras tanto.
+    const consultar = vi.fn(async () => {
+      if (++consultas === 1) return { estado: 'ok' as const, mensaje: '' };
+      throw new Cancelado();
+    });
+    const { d } = deps({ consultar, xml: vi.fn(async () => '<x/>') });
+    const r = await ejecutar({ ...base, periodo: { tipo: 'rango', desde: { anio: 2026, mes: 10, dia: 1 }, hasta: hoy }, formatos: { xml: true, pdf: false, txt: false } }, d);
+    expect(r.progreso.fase).toBe('cancelado');
+    expect(r.archivos).toHaveLength(2);
+    expect(r.pendientes).toEqual([1]);
+  });
+
   it('cuenta como fallido un XML que el SRI no tiene autorizado', async () => {
     const { d } = deps({ xml: vi.fn(async () => null) });
     const r = await ejecutar({ ...base, formatos: { xml: true, pdf: false, txt: false } }, d);
