@@ -79,6 +79,7 @@ Base: `https://srienlinea.sri.gob.ec/comprobantes-electronicos-internet/`. Menú
 - **Requiere la cabecera `SOAPAction: ""`**; sin ella responde una página HTML de redirección.
 - Sin sesión ni captcha, ~100–200 ms por clave. Comprobante escapado con entidades dentro de `<comprobante>`. Clave inexistente → `<numeroComprobantes>0</numeroComprobantes><autorizaciones/>`.
 - Un primer intento dio timeout transitorio: hace falta reintento.
+- **Solo responde por comprobantes recientes.** Con claves de enero 2025 (consultado el 2026-11-09) devuelve `<estado>RECHAZADA</estado>` con el mensaje `80 ERROR EN LA ESTRUCTURA DE LA CLAVE DE ACCESO … la fecha de emision esta fuera del rango permitido`. Con octubre 2026 funcionó. Para meses antiguos el XML sale del enlace `lnkXml` de la tabla de recibidos (respaldo de Legajo). Emitidos no tiene ese enlace: los XML antiguos de emitidos quedan pendientes de otra vía.
 
 ### reCAPTCHA en navegador automatizado (2026-11-09)
 
