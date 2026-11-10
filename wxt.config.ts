@@ -8,19 +8,22 @@ import { defineConfig } from 'wxt';
 // clave de acceso sin sesión ni captcha. El host del portal permite al popup
 // encontrar la pestaña del SRI sin el permiso amplio `tabs`. `scripting`
 // permite al popup activar Legajo en una pestaña del SRI que ya estaba
-// abierta antes de instalar o recargar la extensión.
+// abierta antes de instalar o recargar la extensión. `notifications` avisa
+// al terminar o si la sesión del SRI caduca, con el popup ya cerrado.
 export default defineConfig({
   srcDir: 'src',
   manifest: {
     name: 'Legajo',
     description:
       'Descarga en lote tus comprobantes electrónicos de SRI en Línea: XML, RIDE y reporte.',
-    permissions: ['storage', 'scripting'],
+    permissions: ['storage', 'scripting', 'notifications'],
     host_permissions: [
       'https://cel.sri.gob.ec/*',
       'https://srienlinea.sri.gob.ec/comprobantes-electronicos-internet/*',
     ],
     action: { default_title: 'Legajo' },
+    // La página completa también es la página de opciones (chrome://extensions → Detalles → Opciones).
+    options_ui: { page: 'legajo.html', open_in_tab: true },
   },
   vite: () => ({
     plugins: [tailwindcss()],
