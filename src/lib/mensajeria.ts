@@ -7,8 +7,14 @@ export type Peticion =
   | { tipo: 'iniciar'; trabajo: Trabajo }
   | { tipo: 'cancelar' }
   | { tipo: 'xml'; clave: string }
-  /** Página → pestaña del SRI: manda a PluryPrint el último resultado que sigue en memoria. */
-  | { tipo: 'imprimir'; inicio: number; confirmado: boolean };
+  /**
+   * Página → pestaña del SRI: manda a PluryPrint el último resultado que sigue
+   * en memoria. Con `soloResumen` solo responde qué se imprimiría.
+   */
+  | { tipo: 'imprimir'; inicio: number; confirmado: boolean; soloResumen?: boolean };
+
+/** Respuesta a `imprimir`. */
+export type RespuestaImprimir = { ok: true; resumen?: { principal: string; avisos: string[]; archivos: number } } | { ok: false; error: string };
 
 export interface EstadoPagina {
   bandeja: Bandeja | null;
