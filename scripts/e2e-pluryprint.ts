@@ -24,7 +24,10 @@
  *    con su sha256; y que sin host registrado la página dice «no instalado».
  *
  * Variables: PLURYPRINT_BRIDGE_BIN, PLURYPRINT_BRIDGE_NO_LAUNCH, E2E_VENTANA=1
- * (con ventana), E2E_CAPTURAS=<carpeta> (guarda capturas de Avanzado y Descargas).
+ * (con ventana), E2E_CAPTURAS=<carpeta> (guarda capturas de Avanzado y Descargas),
+ * E2E_CONSERVAR=1 (no borra la carpeta temporal aunque todo pase: con el puente
+ * real deja inbox/ y handoff/ para pasarlos por PluryPrint, ver
+ * docs/INTEGRACION-PLURYPRINT.md §9).
  */
 import { spawnSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
@@ -43,6 +46,7 @@ const root = fileURLToPath(new URL('..', import.meta.url));
 const ext = join(root, '.output-e2e', 'chrome-mv3');
 const puenteReal = process.env.PLURYPRINT_BRIDGE_BIN;
 const capturas = process.env.E2E_CAPTURAS;
+const conservar = process.env.E2E_CONSERVAR === '1';
 
 const fallos: string[] = [];
 const comprobar = (ok: boolean, msg: string, detalle = '') => {
@@ -209,8 +213,8 @@ try {
   fallos.push(String(e));
 } finally {
   await ctx.close();
-  if (!fallos.length) rmSync(tmp, { recursive: true, force: true });
-  else console.log(`Perfil y archivos de la prueba conservados en ${tmp}`);
+  if (!fallos.length && !conservar) rmSync(tmp, { recursive: true, force: true });
+  else console.log(`Perfil y archivos de la prueba conservados en ${tmp}${puenteReal ? ` (datos del puente: ${datosPuente})` : ''}`);
   codigo = fallos.length ? 1 : 0;
 }
 console.log(fallos.length ? `\n${fallos.length} comprobaciones fallaron.` : '\nTodo bien.');
