@@ -1,10 +1,10 @@
 {
   "v": 1,
-  "id": "9",
+  "id": "24",
   "type": "putFile",
   "ok": false,
   "error": {
     "code": "too_large",
-    "message": "File exceeds maxFileBytes (52428800)."
+    "message": "documents are limited to 52428800 bytes"
   }
 }

@@ -1,10 +1,10 @@
 {
   "v": 1,
-  "id": "9",
+  "id": "32",
   "type": "listPrinters",
   "ok": false,
   "error": {
     "code": "internal",
-    "message": "Internal error."
+    "message": "the printers could not be listed"
   }
 }

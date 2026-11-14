@@ -1,15 +1,21 @@
-# Fixtures del protocolo PluryFact ↔ PluryPrint (v1)
+# Bridge protocol v1 — canonical fixtures
 
-Copia byte a byte de `pluryprint/src-tauri/tests/fixtures/bridge-protocol/*.json`,
-que es la fuente canónica. Un archivo por intercambio:
+One JSON file per message of the protocol between PluryFact and
+`pluryprint-bridge` (`src-tauri/src/bridge/protocol.rs`,
+`docs/04-architecture/ipc-and-cli.md` §6, ADR-0016):
 
-- `<tipo>.request.json` y `<tipo>.response.json` para `hello`, `listPrinters`,
-  `listProfiles`, `beginJob`, `putFile`, `commitJob` y `abortJob`.
-- `error-<código>.response.json` para cada código de error del protocolo.
+- `<type>.request.json` / `<type>.response.json` — a successful exchange.
+  `beginJob`, `putFile` (one PDF, one XML, one TXT document), `commitJob`
+  form one job; `beginJob.queue`, `putFile.chunk-0` and `abortJob` a second,
+  chunked one that is aborted.
+- `error.<code>.response.json` — one reply per error code, and
+  `error.<code>.request.json` where a single request produces it.
 
-`test/pluryprint-contrato.test.ts` valida que el cliente de Pluryfact produce y
-entiende exactamente estos mensajes y, si el repositorio hermano `../pluryprint`
-está al lado, que los `.json` son idénticos byte a byte. Si cambias el protocolo,
-cámbialo primero en PluryPrint y vuelve a copiar la carpeta.
+These files are the **source of truth** for both repositories. PluryFact
+keeps a byte-for-byte copy in `test/fixtures/pluryprint-protocol/`; change
+them here first, then copy them over. `src-tauri/tests/bridge_protocol_contract.rs`
+checks that the Rust types read and write every file exactly and replays the
+exchanges against the real state machine.
 
-Datos ficticios: RUC `0999999999001`, nunca claves reales.
+Every document in them is fictitious: RUC `0999999999001`, made-up access
+key, a minimal PDF.

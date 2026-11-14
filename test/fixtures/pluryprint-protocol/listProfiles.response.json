@@ -6,12 +6,22 @@
   "profiles": [
     {
       "id": "builtin-quick",
-      "name": "Quick print",
+      "name": "Rápido",
       "isDefault": true
     },
     {
       "id": "builtin-duplex-bw",
-      "name": "Duplex black and white",
+      "name": "Dúplex B/N",
+      "isDefault": false
+    },
+    {
+      "id": "builtin-photo-color",
+      "name": "Foto color",
+      "isDefault": false
+    },
+    {
+      "id": "019a2c11-4f3e-7a10-b2c4-5d6e7f809a1b",
+      "name": "Facturas A4 dúplex",
       "isDefault": false
     }
   ]

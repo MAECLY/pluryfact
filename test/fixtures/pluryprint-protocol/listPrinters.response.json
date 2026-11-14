@@ -5,22 +5,31 @@
   "ok": true,
   "printers": [
     {
-      "id": "office-laser",
-      "name": "Office Laser",
+      "id": "HP_LaserJet_Pro_M404",
+      "name": "HP LaserJet Pro M404",
       "isDefault": true,
       "capabilities": {
         "duplex": true,
         "color": false,
         "papers": [
-          "a4",
-          "letter"
+          "A4",
+          "Letter",
+          "Legal"
         ]
       }
     },
     {
-      "id": "photo-inkjet",
-      "name": "Photo Inkjet",
-      "isDefault": false
+      "id": "Brother_HL_L3270CDW",
+      "name": "Brother HL-L3270CDW",
+      "isDefault": false,
+      "capabilities": {
+        "duplex": true,
+        "color": true,
+        "papers": [
+          "A4",
+          "Letter"
+        ]
+      }
     }
   ]
 }

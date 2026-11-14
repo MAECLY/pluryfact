@@ -1,10 +1,10 @@
 {
   "v": 1,
-  "id": "9",
+  "id": "25",
   "type": "beginJob",
   "ok": false,
   "error": {
     "code": "too_many_files",
-    "message": "expectedFiles exceeds maxFiles (5000)."
+    "message": "a job holds at most 5000 documents"
   }
 }
