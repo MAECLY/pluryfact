@@ -365,11 +365,20 @@ Notas:
 | Unit | `test/seleccion-impresion.test.ts` | Qué y en qué orden, rutas hostiles, ZIP, textos. |
 | Unit | `test/ajustes-pluryprint.test.ts` | Defectos, migración desde la 0.1.0 y formas viejas, regla de 50 documentos. |
 | DOM | `test/formulario-pluryprint.test.ts` | La casilla de Nueva descarga y los formatos que fija. |
-| E2E | `bun run e2e:pluryprint` | Chromium real + host nativo (falso o `PLURYPRINT_BRIDGE_BIN`): no instalado, conectar, «Imprimir un ZIP…» con un ZIP ficticio y verificación de lo recibido (orden, tipo y sha256). |
+| E2E | `bun run e2e:pluryprint` | Chromium real + host nativo (falso, o el puente real con `PLURYPRINT_BRIDGE_BIN`): no instalado, conectar, «Imprimir un ZIP…» con un ZIP ficticio y verificación de lo recibido (orden, tipo y sha256; con el puente real, en su `inbox/`). |
+
+Verificado en esta Mac (14 de noviembre de 2026): `bun run e2e:pluryprint` pasa
+con el host falso y con el puente real compilado de la rama
+`feat/pluryfact-bridge` de PluryPrint
+(`PLURYPRINT_BRIDGE_BIN=…/target/debug/pluryprint-bridge`, en su modo de prueba
+`PLURYPRINT_BRIDGE_DATA_DIR` + `PLURYPRINT_BRIDGE_NO_LAUNCH=1`): los 5 archivos
+llegan a `inbox/<jobId>/` en orden y con el mismo sha256, y el puente escribe el
+handoff `pluryfact-<jobId>.json`.
 
 Pendiente de probar a mano: el flujo con la pestaña real del SRI (resultado en
-memoria y envío al terminar), el puente real de PluryPrint en Windows y macOS, y
-una impresora o PDF virtual de verdad.
+memoria y envío al terminar), el puente instalado de verdad (registro del
+manifiesto y apertura de la app) en Windows y macOS, y una impresora o PDF
+virtual de verdad. Windows no se puede probar desde esta Mac.
 
 ## 10. Versiones y publicación
 
