@@ -110,6 +110,38 @@ body {
 .conexion p[data-ok='true'] {
   color: var(--pf-ok);
 }
+/* PluryPrint en la barra lateral: un punto de estado y el texto, enlaza a Avanzado. */
+.pp-lateral {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  margin-top: 10px;
+  color: var(--pf-muted);
+  text-decoration: none;
+}
+.pp-lateral::before {
+  content: '';
+  flex: none;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  border: 1.5px solid var(--pf-muted);
+  box-sizing: border-box;
+}
+.pp-lateral:hover {
+  color: var(--pf-ink);
+}
+.pp-lateral[data-estado='conectado'] {
+  color: var(--pf-ok);
+}
+.pp-lateral[data-estado='conectado']::before {
+  background: var(--pf-ok);
+  border-color: var(--pf-ok);
+}
+.pp-lateral[data-estado='problema']::before {
+  background: var(--pf-err);
+  border-color: var(--pf-err);
+}
 .by img {
   width: 24px;
   height: 24px;
@@ -161,6 +193,12 @@ body {
   max-width: 62ch;
   color: var(--pf-muted);
   font-size: 15px;
+}
+.encabezado-accion {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
 }
 .vacio {
   text-align: left;
@@ -244,6 +282,72 @@ body {
 }
 
 /* Descargas. */
+/* Panel «Imprimir con PluryPrint»: el mismo papel que el resumen de Nueva descarga. */
+.pp-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 18px 20px;
+  background: var(--pf-bg);
+  border-radius: var(--pf-radius-lg);
+}
+.pp-panel h2 {
+  margin: 0;
+  font-family: var(--pf-font-display);
+  font-size: 18px;
+}
+.pp-panel p {
+  margin: 0;
+}
+.pp-panel-origen {
+  font-size: 12.5px;
+  color: var(--pf-muted);
+  overflow-wrap: anywhere;
+}
+.pp-panel-resumen {
+  font-size: 15px;
+}
+.pp-panel-avisos {
+  margin: 0;
+  padding-left: 18px;
+  font-size: 13px;
+  color: color-mix(in srgb, var(--pf-warn) 82%, var(--pf-ink));
+}
+.pp-panel-avisos:empty {
+  display: none;
+}
+.pp-panel progress {
+  appearance: none;
+  width: 100%;
+  max-width: 420px;
+  height: 6px;
+  border: 0;
+  border-radius: var(--pf-radius);
+  background: var(--pf-line);
+  overflow: hidden;
+}
+.pp-panel progress::-webkit-progress-bar {
+  background: var(--pf-line);
+}
+.pp-panel progress::-webkit-progress-value {
+  background: var(--pf-accent);
+}
+.pp-panel-estado:empty {
+  display: none;
+}
+.pp-panel-estado[data-estado='entregado'] {
+  color: var(--pf-ok);
+}
+.pp-panel-estado[data-estado='error'] {
+  color: var(--pf-err);
+}
+.pp-panel .fila-botones {
+  margin-top: 6px;
+}
+.plan-impresion {
+  padding-top: 10px;
+  border-top: 1px solid var(--pf-line);
+}
 .progreso.grande .titulo {
   font-size: 20px;
 }
@@ -416,6 +520,49 @@ body {
 }
 .campo.corto {
   width: auto;
+}
+/* PluryPrint en Avanzado. */
+.pp-estado {
+  margin: 0;
+}
+.pp-estado[data-estado='conectado'] {
+  color: var(--pf-ok);
+}
+.pp-estado[data-estado='problema'] {
+  color: var(--pf-err);
+}
+.pp-opciones {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  margin-top: 10px;
+}
+.pp-opciones .grupo > label {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 8px;
+}
+.pp-opciones .grupo > label .ayuda {
+  flex-basis: 100%;
+  padding-left: 22px;
+}
+.pp-opciones .grupo > label:has(input:disabled) {
+  color: var(--pf-muted);
+}
+.pp-opciones input[type='radio'],
+.pp-opciones input[type='checkbox'] {
+  accent-color: var(--pf-accent);
+}
+.pp-campos {
+  max-width: 460px;
+}
+.pp-opciones .campo.corto {
+  align-self: flex-start;
+}
+.opcional {
+  font-weight: 400;
+  color: var(--pf-muted);
 }
 /* Selector de tema: una ficha por tema con su nombre en su tipografía y tres
    muestras (acento, pliego, tinta). */
