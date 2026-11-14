@@ -168,7 +168,8 @@ export function puertoHaciaPuente(p: PuertoRuntime): PuertoNativo {
           else fn(m);
         }),
     },
-    onDisconnect: { addListener: (fn) => p.onDisconnect.addListener(() => fn(motivo)) },
+    // Se difiere un turno para que el mensaje de control con el motivo llegue antes.
+    onDisconnect: { addListener: (fn) => p.onDisconnect.addListener(() => void setTimeout(() => fn(motivo), 0)) },
     disconnect: () => p.disconnect(),
   };
 }
