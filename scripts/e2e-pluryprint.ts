@@ -17,13 +17,13 @@
  *        PLURYPRINT_BRIDGE_NO_LAUNCH=0 para que la abra).
  *      - sin esa variable → scripts/pluryprint-host-falso.ts (bun), que implementa
  *        el protocolo y guarda lo recibido.
- * 4. En pluryfact.html: Avanzado → «Conectar con Pluryprint», elige RIDE con XML
+ * 4. En pluryfact.html: Integraciones → Pluryprint → «Conectar con Pluryprint», elige RIDE con XML
  *    de respaldo y reporte, Descargas → «Imprimir un ZIP…» con un ZIP ficticio
  *    (RUC 0999999999001), revisa el resumen y envía.
  * 5. Verifica que el host recibió exactamente los archivos esperados, en orden,
  *    con su sha256; y que sin host registrado la página dice «no instalado».
  * 6. Con el puente real, además:
- *      - un segundo trabajo con «El XML» en Avanzado: «Se imprimirán 4 XML + el
+ *      - un segundo trabajo con «El XML» en Integraciones → Pluryprint: «Se imprimirán 4 XML + el
  *        reporte.» (una es una retención);
  *      - compara cada archivo del inbox byte a byte con su entrada del ZIP y
  *        revisa el handoff (source, acción, etiqueta, rutas en orden);
@@ -50,7 +50,7 @@
  * Variables: PLURYPRINT_BRIDGE_BIN, PLURYPRINT_BRIDGE_NO_LAUNCH,
  * PLURYPRINT_REGISTRO=cli, PLURYPRINT_CLI_BIN (por defecto, pluryprint-cli junto
  * al puente), PLURYPRINT_SRC_TAURI, PLURYPRINT_VALIDAR_HANDOFF=0, E2E_VENTANA=1
- * (con ventana), E2E_CAPTURAS=<carpeta> (guarda capturas de Avanzado y Descargas),
+ * (con ventana), E2E_CAPTURAS=<carpeta> (guarda capturas de Integraciones y Descargas),
  * E2E_CONSERVAR=1 (no borra la carpeta temporal aunque todo pase: con el puente
  * real deja inbox/, handoff/ y los PDF que generó Pluryprint en impreso/, ver
  * docs/INTEGRACION-PLURYPRINT.md §9.1).
@@ -269,7 +269,7 @@ try {
   for (const p of ctx.pages()) if (p !== page) await p.close();
 
   // --- Sin host registrado: la página debe decir que no está instalado.
-  await page.goto(`chrome-extension://${id}/pluryfact.html#avanzado`);
+  await page.goto(`chrome-extension://${id}/pluryfact.html#integraciones/pluryprint`);
   await page.click('#pp-conectar');
   await page.waitForSelector('#pp-estado[data-estado="problema"]', { timeout: 20_000 });
   comprobar((await page.textContent('#pp-estado'))?.includes('Pluryprint no está instalado') ?? false, 'sin host: «Pluryprint no está instalado»', (await page.textContent('#pp-estado')) ?? '');
@@ -281,7 +281,7 @@ try {
   await page.waitForSelector('#pp-estado[data-estado="conectado"]', { timeout: 30_000 });
   comprobar(true, 'Conectar con Pluryprint', (await page.textContent('#pp-estado')) ?? '');
   comprobar((await page.textContent('#pp-lateral')) === 'Pluryprint: conectado', 'barra lateral «conectado»');
-  comprobar((await page.locator('#pp-perfil option').count()) > 1, 'Avanzado lista los perfiles de Pluryprint');
+  comprobar((await page.locator('#pp-perfil option').count()) > 1, 'Integraciones → Pluryprint lista los perfiles');
 
   // Ajustes: RIDE (por defecto) con XML de respaldo (por defecto) + reporte.
   await page.check('#pp-reporte');
@@ -293,7 +293,18 @@ try {
     else await page.screenshot({ path: join(capturas, `${nombre}.png`), fullPage: true });
   };
   await page.setViewportSize({ width: 1180, height: 900 });
-  await capturar('avanzado-pluryprint', '#aj-pluryprint');
+  await capturar('integraciones-pluryprint');
+  comprobar((await page.textContent('#pp-ficha-estado'))?.startsWith('Conectado') ?? false, 'Integraciones: la ficha de Pluryprint dice «Conectado»', (await page.textContent('#pp-ficha-estado')) ?? '');
+  comprobar(await page.isVisible('#sec-integraciones') && !(await page.isVisible('#sec-avanzado')), '#integraciones/pluryprint abre la pestaña Integraciones');
+  comprobar((await page.locator('#sec-avanzado #pp-conectar').count()) === 0, 'Avanzado ya no tiene los ajustes de Pluryprint');
+  if (capturas) {
+    await page.emulateMedia({ colorScheme: 'dark' });
+    await capturar('integraciones-pluryprint-oscuro');
+    await page.setViewportSize({ width: 390, height: 844 });
+    await capturar('integraciones-pluryprint-390');
+    await page.emulateMedia({ colorScheme: 'light' });
+    await page.setViewportSize({ width: 1180, height: 900 });
+  }
 
   // --- Imprimir un ZIP…
   const { archivos } = descargaFicticia();
@@ -397,9 +408,9 @@ try {
   } else {
     verificarPuente(esperado, 'RIDE con XML de respaldo y reporte');
 
-    // --- Segundo trabajo: solo XML (Avanzado → «El XML»). Pluryprint arma la
+    // --- Segundo trabajo: solo XML (Integraciones → Pluryprint → «El XML»). Pluryprint arma la
     // representación impresa de cada comprobante, retención incluida.
-    await page.goto(`chrome-extension://${id}/pluryfact.html#avanzado`);
+    await page.goto(`chrome-extension://${id}/pluryfact.html#integraciones/pluryprint`);
     await page.check('input[name="pp-contenido"][value="xml"]');
     await page.reload();
     await page.waitForFunction(() => document.querySelector<HTMLInputElement>('input[name="pp-contenido"][value="xml"]')?.checked);

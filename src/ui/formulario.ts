@@ -31,7 +31,7 @@ export interface Formulario {
   /**
    * Muestra la casilla «Enviar a Pluryprint al terminar» si Pluryprint está
    * conectado (null la oculta). Al marcarla fija los formatos que hacen falta
-   * para imprimir lo elegido en Avanzado.
+   * para imprimir lo elegido en Integraciones → Pluryprint.
    */
   ponerPluryprint(a: AjustesPluryprint | null): void;
   /** true si la casilla de Pluryprint está visible y marcada. */
@@ -80,7 +80,7 @@ export function montarFormulario(raiz: HTMLElement, alCambiar: () => void): Form
   /** Lo que el usuario había marcado antes de que la casilla de Pluryprint fijara formatos. */
   const marcadoAntes: Record<'xml' | 'pdf' | 'txt', boolean | null> = { xml: null, pdf: null, txt: null };
 
-  /** Formatos que exige imprimir lo elegido en Avanzado: RIDE si incluye RIDE, XML si es solo XML, TXT si pide el reporte. */
+  /** Formatos que exige imprimir lo elegido en Integraciones → Pluryprint: RIDE si incluye RIDE, XML si es solo XML, TXT si pide el reporte. */
   function fijarFormatos() {
     const activa = !!pluryprint && id<HTMLInputElement>('f-pluryprint').checked;
     const exigidos = {

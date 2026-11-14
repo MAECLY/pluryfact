@@ -15,12 +15,19 @@ import { montarPluryprint } from './pluryprint';
 import { hora, miles, tituloTrabajo } from '@/ui/textos';
 
 // Página completa de Pluryfact: Nueva descarga, Descargas (como chrome://downloads),
-// Avanzado y Acerca de. Todo el estado vive en storage.local y se sincroniza
+// Integraciones, Avanzado y Acerca de. Todo el estado vive en storage.local y se sincroniza
 // con el popup por storage.onChanged.
 
 const $ = <T extends HTMLElement>(sel: string) => document.querySelector<T>(sel)!;
-type Seccion = 'nueva' | 'descargas' | 'avanzado' | 'acerca';
-const SECCIONES: Seccion[] = ['nueva', 'descargas', 'avanzado', 'acerca'];
+type Seccion = 'nueva' | 'descargas' | 'integraciones' | 'avanzado' | 'acerca';
+const SECCIONES: Seccion[] = ['nueva', 'descargas', 'integraciones', 'avanzado', 'acerca'];
+const TITULOS: Record<Seccion, string> = {
+  nueva: 'Nueva descarga',
+  descargas: 'Descargas',
+  integraciones: 'Integraciones',
+  avanzado: 'Avanzado',
+  acerca: 'Acerca de',
+};
 
 let conexion: Conexion = { pestana: null, pagina: null, problema: null };
 let actual: EstadoTrabajo | undefined;
@@ -35,9 +42,13 @@ function mostrar(s: Seccion) {
     $(`#sec-${x}`).hidden = x !== s;
     document.querySelector(`[data-seccion="${x}"]`)?.toggleAttribute('aria-current', x === s);
   }
-  document.title = `Pluryfact · ${s === 'nueva' ? 'Nueva descarga' : s === 'descargas' ? 'Descargas' : s === 'avanzado' ? 'Avanzado' : 'Acerca de'}`.replace(' · ', ': ');
+  document.title = `Pluryfact: ${TITULOS[s]}`;
 }
-const desdeHash = (): Seccion => (SECCIONES.includes(location.hash.slice(1) as Seccion) ? (location.hash.slice(1) as Seccion) : 'nueva');
+/** La sección del hash. Una integración lleva su nombre detrás («#integraciones/pluryprint»). */
+const desdeHash = (): Seccion => {
+  const s = location.hash.slice(1).split('/')[0] as Seccion;
+  return SECCIONES.includes(s) ? s : 'nueva';
+};
 window.addEventListener('hashchange', () => mostrar(desdeHash()));
 
 // --------------------------------------------------------------- conexión

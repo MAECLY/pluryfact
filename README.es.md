@@ -127,7 +127,7 @@ ver [docs/INTEGRACION-PLURYPRINT.md](docs/INTEGRACION-PLURYPRINT.md).
 | `storage` | Guardar el avance, el historial y tus ajustes en este navegador. |
 | `scripting` | Activar Pluryfact en una pestaña del SRI que ya estaba abierta. |
 | `notifications` | Avisarte cuando termina una descarga o si tu sesión caduca. |
-| `nativeMessaging` (opcional, desde la 0.2.0) | Solo si conectas Pluryprint en Avanzado: entregarle, en tu equipo, los RIDE, XML y reporte que eliges imprimir. Chrome lo pide aparte; Desconectar lo quita. |
+| `nativeMessaging` (opcional, desde la 0.2.0) | Solo si conectas Pluryprint en Integraciones: entregarle, en tu equipo, los RIDE, XML y reporte que eliges imprimir. Chrome lo pide aparte; Desconectar lo quita. |
 
 Y nada más: no pide acceso a otros sitios, a tus pestañas, a tu historial ni a
 tus cookies.

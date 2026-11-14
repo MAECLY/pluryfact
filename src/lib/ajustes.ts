@@ -6,7 +6,7 @@ export type ContenidoImpresion = 'ride' | 'xml' | 'ambos';
 export type OrdenImpresion = 'portal' | 'fecha' | 'emisor' | 'tipo';
 export type AccionImpresion = 'configure' | 'queue' | 'print-default';
 
-/** Integración con Pluryprint (Avanzado → Pluryprint). */
+/** Integración con Pluryprint (Integraciones → Pluryprint). */
 export interface AjustesPluryprint {
   /** true cuando el usuario conectó Pluryprint con éxito al menos una vez. */
   activado: boolean;
