@@ -130,7 +130,7 @@ paper is used. It arrives with Pluryfact 0.2 and Pluryprint 0.0.6; see
 | `storage` | Keep progress, history and your settings in this browser. |
 | `scripting` | Activate Pluryfact in an SRI tab that was already open. |
 | `notifications` | Tell you when a download finishes or your session expires. |
-| `nativeMessaging` (optional, from 0.2.0) | Only if you connect Pluryprint in Advanced: hand it, on your computer, the RIDEs, XMLs and report you choose to print. Chrome asks for it separately; Disconnect removes it. |
+| `nativeMessaging` (optional, from 0.2.0) | Only if you connect Pluryprint in Integrations: hand it, on your computer, the RIDEs, XMLs and report you choose to print. Chrome asks for it separately; Disconnect removes it. |
 
 Nothing else: no access to other sites, your tabs, your history or your
 cookies.

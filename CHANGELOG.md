@@ -17,7 +17,8 @@ it needs Pluryprint 0.0.6, which must ship both the native host
   the optional TXT report, to the Pluryprint desktop app over Chrome Native
   Messaging. Files travel as validated bytes in 8 MiB chunks with a SHA-256
   each; nothing goes over the network and no paths are shared.
-- Advanced → Pluryprint: connect (asks for the optional permission and greets
+- **Integrations** tab, with one card per MAECLY tool (Pluryprint today) and
+  its own settings below it. Integrations → Pluryprint: connect (asks for the optional permission and greets
   the host), what to print, XML when a RIDE is missing, report, order (issue
   date, issuer, type or portal order), what Pluryprint does (open to review and
   confirm by default, queue, or print directly with a confirmation above 50

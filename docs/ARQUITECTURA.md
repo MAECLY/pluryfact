@@ -31,7 +31,7 @@ la extensión no pide `downloads` y no conoce la ruta donde Chrome lo guardó.
 3. Background: **XML** de cada clave por el servicio web público (`lib/sri-ws`), en paralelo moderado y con reintentos. Sin captcha.
 4. Si se pidió **RIDE**: el conductor vuelve a la página 1 y recorre páginas con el paginador del portal; el content script descarga `lnkPdf` de las filas de cada página. Sin captcha.
 5. Content script: ZIP con fflate y descarga con un enlace `<a download>` (blob URL).
-6. Si se marcó «Enviar a Pluryprint al terminar» y la descarga quedó lista: el content script manda a Pluryprint lo elegido en Avanzado a través del puente del background (ver [INTEGRACION-PLURYPRINT.md](INTEGRACION-PLURYPRINT.md)).
+6. Si se marcó «Enviar a Pluryprint al terminar» y la descarga quedó lista: el content script manda a Pluryprint lo elegido en Integraciones → Pluryprint a través del puente del background (ver [INTEGRACION-PLURYPRINT.md](INTEGRACION-PLURYPRINT.md)).
 
 Emitidos sigue el mismo flujo, pero con una consulta por día (sin captcha).
 

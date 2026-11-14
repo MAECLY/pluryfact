@@ -84,7 +84,7 @@ pluryfact.html (Descargas: «Imprimir un ZIP…»)        pestaña del SRI (cont
 | `src/lib/seleccion-impresion.ts` | Qué archivos se imprimen y en qué orden; lectura segura del ZIP; textos del resumen. |
 | `src/lib/envio-pluryprint.ts` | Envío con los ajustes del usuario; regla de confirmación de más de 50 documentos. |
 | `src/lib/ajustes.ts` | Sección `pluryprint` con normalización y migración. |
-| `src/entrypoints/pluryfact/pluryprint.ts` | UI de la página: barra lateral, Avanzado y panel de Descargas. |
+| `src/entrypoints/pluryfact/pluryprint.ts` | UI de la página: barra lateral, Integraciones → Pluryprint y panel de Descargas. |
 | `src/entrypoints/sri.content.ts` | Conserva el último resultado y lo envía (a pedido o al terminar). |
 | `scripts/pluryprint-host-falso.ts` | Host falso del protocolo, para tests y E2E. |
 | `test/fixtures/pluryprint-protocol/` | Copia byte a byte de los fixtures canónicos de Pluryprint. |
@@ -125,7 +125,7 @@ Reglas del lado de Pluryfact:
 | Código | Origen | Texto en Pluryfact |
 |---|---|---|
 | `no_instalado` | Chrome: «Specified native messaging host not found.» | Pluryprint no está instalado en este equipo, o no está conectado con este navegador. (+ enlace de descarga) |
-| `sin_permiso` | Falta el permiso opcional | Pluryfact no tiene permiso para comunicarse con Pluryprint. Pulsa «Conectar con Pluryprint» en Avanzado. |
+| `sin_permiso` | Falta el permiso opcional | Pluryfact no tiene permiso para comunicarse con Pluryprint. Pulsa «Conectar con Pluryprint» en Integraciones → Pluryprint. |
 | `origin_not_allowed` | Chrome («…forbidden») o el host | Pluryprint no reconoce esta copia de Pluryfact… (`pluryprint-cli bridge install --extra-origin`) |
 | `version_incompatible` | Saludo sin protocolo 1 o sin capacidades | Actualiza Pluryprint: esta versión no sabe recibir comprobantes de Pluryfact. |
 | `unsupported_version`, `unknown_type` | Host | Actualiza Pluryprint (y Pluryfact). |
@@ -218,7 +218,7 @@ empaqueta en una carpeta temporal por eso mismo.
 
 ## 7. Interfaz
 
-- **Avanzado → Pluryprint.** Estado (no conectado / conectado vX / no instalado,
+- **Integraciones → Pluryprint** (pestaña propia, pensada para sumar otras herramientas de MAECLY; cada una tiene su ficha con estado y su división de ajustes). Estado (no conectado / conectado vX / no instalado,
   con enlace a https://pluryprint.maecly.com/), «Conectar con Pluryprint»
   (permiso + saludo), «Comprobar de nuevo», «Desconectar», y las opciones: qué
   imprimir (RIDE, XML o ambos), XML si falta el RIDE, reporte, orden, acción,
@@ -297,7 +297,7 @@ Notas:
 
 1. **Perfil o impresora por bandeja** (por ejemplo, emitidos a la impresora de
    la oficina y recibidos a otra). Hoy hay un solo perfil e impresora en
-   Avanzado; el protocolo ya admite `profileId`/`printerId` por trabajo, así que
+   Integraciones → Pluryprint; el protocolo ya admite `profileId`/`printerId` por trabajo, así que
    es solo UI de Pluryfact.
 2. **Copias por bandeja** (emitidos: cliente + archivo). Igual que la nota 1.
 3. **Año completo con «Imprimir directo»:** con más de 50 documentos Pluryfact
@@ -403,7 +403,7 @@ Qué comprueba, en orden:
 2. **Protocolo y página**: «no instalado» antes de registrar, `hello`,
    `listProfiles`, y dos «Imprimir un ZIP…» del ZIP ficticio (RUC
    0999999999001): «Se imprimirán 3 RIDE + 1 XML + el reporte.» y, tras elegir
-   «El XML» en Avanzado, «Se imprimirán 4 XML + el reporte.» (una es una
+   «El XML» en Integraciones → Pluryprint, «Se imprimirán 4 XML + el reporte.» (una es una
    retención).
 3. **Inbox y handoff** de cada trabajo: cada archivo de `inbox/<jobId>/` es byte
    a byte su entrada del ZIP (comparado contra el ZIP descomprimido, no contra
