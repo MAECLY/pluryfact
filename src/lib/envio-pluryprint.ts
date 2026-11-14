@@ -15,7 +15,7 @@ import {
 import type { Seleccion } from './seleccion-impresion';
 
 /**
- * Orquesta un envío a PluryPrint con los ajustes del usuario. Lo usan la
+ * Orquesta un envío a Pluryprint con los ajustes del usuario. Lo usan la
  * página (ZIP elegido en Descargas) y el content script del SRI (resultado en
  * memoria al terminar una descarga).
  */
@@ -25,7 +25,7 @@ export const UMBRAL_CONFIRMAR = 50;
 
 /**
  * `print-default` con muchos documentos y sin confirmación pasa a `configure`:
- * PluryPrint se abre y nada se imprime sin que el usuario lo vea.
+ * Pluryprint se abre y nada se imprime sin que el usuario lo vea.
  */
 export function accionEfectiva(accion: AccionPluryprint, documentos: number, confirmado: boolean): AccionPluryprint {
   return accion === 'print-default' && documentos > UMBRAL_CONFIRMAR && !confirmado ? 'configure' : accion;
@@ -92,7 +92,7 @@ export async function consultarPluryprint(abrirPuerto: () => PuertoNativo, clien
 /** Texto final tras entregar el trabajo, según la acción. */
 export function textoEntregado(n: number, accion: AccionPluryprint): string {
   const docs = `${n.toLocaleString('es-EC')} ${n === 1 ? 'archivo' : 'archivos'}`;
-  if (accion === 'configure') return `PluryPrint recibió ${docs}. Revísalos y confirma la impresión en PluryPrint.`;
-  if (accion === 'queue') return `PluryPrint recibió ${docs} y los dejó en su cola.`;
-  return `PluryPrint recibió ${docs} y empezó a imprimirlos.`;
+  if (accion === 'configure') return `Pluryprint recibió ${docs}. Revísalos y confirma la impresión en Pluryprint.`;
+  if (accion === 'queue') return `Pluryprint recibió ${docs} y los dejó en su cola.`;
+  return `Pluryprint recibió ${docs} y empezó a imprimirlos.`;
 }

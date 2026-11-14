@@ -8,7 +8,7 @@ import { crearRegistro } from '@/lib/registro';
 import { xmlPorClave } from '@/lib/ws-reintentos';
 
 // El background hace de puente al servicio web del SRI (el content script no
-// puede llamarlo por CORS) y a PluryPrint (es el único contexto que abre
+// puede llamarlo por CORS) y a Pluryprint (es el único contexto que abre
 // Native Messaging), mantiene la insignia del icono y avisa con
 // notificaciones del sistema cuando el trabajo termina o necesita atención.
 export default defineBackground(() => {
@@ -30,7 +30,7 @@ export default defineBackground(() => {
     return true;
   });
 
-  // Puente a PluryPrint: la página y el content script del SRI abren un
+  // Puente a Pluryprint: la página y el content script del SRI abren un
   // runtime.Port «pluryprint»; aquí se valida quién llama y se reenvía al host.
   browser.runtime.onConnect.addListener((puerto) => {
     atenderPuerto(puerto as unknown as PuertoRuntime, {

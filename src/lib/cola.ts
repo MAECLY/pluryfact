@@ -22,7 +22,7 @@ export interface Trabajo {
   formatos: { xml: boolean; pdf: boolean; txt: boolean };
   /** Al reanudar: índices del plan completo que faltan. */
   soloIndices?: number[];
-  /** Enviar a PluryPrint al terminar (ver lib/envio-pluryprint). */
+  /** Enviar a Pluryprint al terminar (ver lib/envio-pluryprint). */
   imprimir?: boolean;
 }
 

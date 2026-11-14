@@ -9,8 +9,8 @@ import { lineaImpresion } from '@/ui/tarjeta';
 import { miles, problemaPluryprintCorto, tituloTrabajo } from '@/ui/textos';
 
 /**
- * PluryPrint en la página completa: el estado en la barra lateral, la sección
- * de Avanzado y el panel «Imprimir con PluryPrint» de Descargas (para un ZIP
+ * Pluryprint en la página completa: el estado en la barra lateral, la sección
+ * de Avanzado y el panel «Imprimir con Pluryprint» de Descargas (para un ZIP
  * elegido por el usuario o para el último resultado que sigue en memoria de
  * la pestaña del SRI).
  */
@@ -32,8 +32,8 @@ export interface Contexto {
 const $ = <T extends HTMLElement>(sel: string) => document.querySelector<T>(sel)!;
 
 const TEXTO_ACCION: Record<AjustesPluryprint['accion'], string> = {
-  configure: 'PluryPrint se abrirá para que revises y confirmes antes de imprimir.',
-  queue: 'Quedarán en la cola de PluryPrint, sin imprimirse todavía.',
+  configure: 'Pluryprint se abrirá para que revises y confirmes antes de imprimir.',
+  queue: 'Quedarán en la cola de Pluryprint, sin imprimirse todavía.',
   'print-default': 'Se imprimirán directo con el perfil elegido.',
 };
 
@@ -71,7 +71,7 @@ export function montarPluryprint(ctx: Contexto) {
   $('#pp-conectar').addEventListener('click', async () => {
     const concedido = await pedirPermisoNativo();
     if (!concedido)
-      return ponerEstado({ tipo: 'problema', codigo: 'sin_permiso', mensaje: 'Chrome no concedió el permiso. Sin él, Pluryfact no puede hablar con PluryPrint.' });
+      return ponerEstado({ tipo: 'problema', codigo: 'sin_permiso', mensaje: 'Chrome no concedió el permiso. Sin él, Pluryfact no puede hablar con Pluryprint.' });
     ponerEstado({ tipo: 'comprobando' });
     try {
       const r = await consultarPluryprint(abrirPuertoPluryprint, versionPluryfact());
@@ -108,7 +108,7 @@ export function montarPluryprint(ctx: Contexto) {
   $('#pp-duplex').addEventListener('change', (ev) => ctx.guardar({ duplex: ((ev.target as HTMLSelectElement).value || null) as AjustesPluryprint['duplex'] }));
   $('#pp-color').addEventListener('change', (ev) => ctx.guardar({ color: ((ev.target as HTMLSelectElement).value || null) as AjustesPluryprint['color'] }));
 
-  /** Opciones de un select de perfil o impresora: el vacío, las conocidas y la guardada aunque PluryPrint no responda. */
+  /** Opciones de un select de perfil o impresora: el vacío, las conocidas y la guardada aunque Pluryprint no responda. */
   function llenar(sel: HTMLSelectElement, vacio: string, items: Array<{ id: string; name: string; isDefault: boolean }>, actual: string | null) {
     sel.textContent = '';
     sel.add(new Option(vacio, ''));
@@ -126,26 +126,26 @@ export function montarPluryprint(ctx: Contexto) {
     lat.dataset.estado = estado.tipo === 'problema' ? 'problema' : estado.tipo;
     lat.textContent =
       estado.tipo === 'conectado'
-        ? 'PluryPrint: conectado'
+        ? 'Pluryprint: conectado'
         : estado.tipo === 'comprobando'
-          ? 'PluryPrint: comprobando…'
+          ? 'Pluryprint: comprobando…'
           : estado.tipo === 'problema'
             ? problemaPluryprintCorto(estado.codigo)
-            : 'PluryPrint: no conectado';
-    lat.title = estado.tipo === 'conectado' ? `PluryPrint ${estado.version}` : estado.tipo === 'problema' ? estado.mensaje : '';
+            : 'Pluryprint: no conectado';
+    lat.title = estado.tipo === 'conectado' ? `Pluryprint ${estado.version}` : estado.tipo === 'problema' ? estado.mensaje : '';
 
     // Avanzado: estado y botones
     const est = $('#pp-estado');
     est.dataset.estado = estado.tipo;
     est.textContent = '';
     if (estado.tipo === 'no-conectado')
-      est.textContent = 'No conectado. Al conectar, Chrome te pedirá permiso para «comunicarse con aplicaciones nativas que cooperan»; Pluryfact solo lo usa con PluryPrint.';
-    else if (estado.tipo === 'comprobando') est.textContent = 'Buscando PluryPrint en este equipo…';
-    else if (estado.tipo === 'conectado') est.textContent = `Conectado con PluryPrint ${estado.version}.`;
+      est.textContent = 'No conectado. Al conectar, Chrome te pedirá permiso para «comunicarse con aplicaciones nativas que cooperan»; Pluryfact solo lo usa con Pluryprint.';
+    else if (estado.tipo === 'comprobando') est.textContent = 'Buscando Pluryprint en este equipo…';
+    else if (estado.tipo === 'conectado') est.textContent = `Conectado con Pluryprint ${estado.version}.`;
     else {
       est.append(estado.mensaje);
       if (estado.codigo === 'no_instalado' || estado.codigo === 'version_incompatible' || estado.codigo === 'unknown_type') {
-        const enlace = Object.assign(document.createElement('a'), { href: URL_PLURYPRINT, target: '_blank', rel: 'noopener', textContent: 'Descargar PluryPrint' });
+        const enlace = Object.assign(document.createElement('a'), { href: URL_PLURYPRINT, target: '_blank', rel: 'noopener', textContent: 'Descargar Pluryprint' });
         est.append(' ', enlace, '.');
       }
     }
@@ -163,7 +163,7 @@ export function montarPluryprint(ctx: Contexto) {
     $<HTMLInputElement>('#pp-reporte').checked = a.incluirReporte;
     $<HTMLSelectElement>('#pp-orden').value = a.orden;
     const conectado = estado.tipo === 'conectado' ? estado : null;
-    llenar($<HTMLSelectElement>('#pp-perfil'), 'El predeterminado de PluryPrint', conectado?.perfiles ?? [], a.perfilId);
+    llenar($<HTMLSelectElement>('#pp-perfil'), 'El predeterminado de Pluryprint', conectado?.perfiles ?? [], a.perfilId);
     llenar($<HTMLSelectElement>('#pp-impresora'), 'La del perfil', conectado?.impresoras ?? [], a.impresoraId);
     const copias = $<HTMLInputElement>('#pp-copias');
     if (document.activeElement !== copias) copias.value = a.copias === null ? '' : String(a.copias);
@@ -202,7 +202,7 @@ export function montarPluryprint(ctx: Contexto) {
     ponerEstadoPanel('', '');
     enviar.hidden = false;
     enviar.disabled = !n;
-    enviar.textContent = 'Enviar a PluryPrint';
+    enviar.textContent = 'Enviar a Pluryprint';
     cerrarBtn.textContent = 'Cancelar';
     panel.scrollIntoView({ block: 'nearest' });
     enviar.focus();
@@ -245,7 +245,7 @@ export function montarPluryprint(ctx: Contexto) {
       clearTimeout(reloj);
       reloj = setTimeout(() => {
         armado = false;
-        enviar.textContent = 'Enviar a PluryPrint';
+        enviar.textContent = 'Enviar a Pluryprint';
       }, 5000);
       return;
     }
@@ -257,7 +257,7 @@ export function montarPluryprint(ctx: Contexto) {
     if (origen.tipo === 'memoria') {
       const r = await pedirImpresion(ctx.conexion(), Number(origen.entrada.id), confirmar);
       if (!r.ok) return terminar(r.error, 'error');
-      ponerEstadoPanel('Enviando a PluryPrint desde la pestaña del SRI…', 'enviando');
+      ponerEstadoPanel('Enviando a Pluryprint desde la pestaña del SRI…', 'enviando');
       cerrarBtn.textContent = 'Cerrar';
       return; // el avance llega por el historial (alCambiarHistorial)
     }
@@ -267,7 +267,7 @@ export function montarPluryprint(ctx: Contexto) {
     progreso.hidden = false;
     progreso.max = 1;
     progreso.value = 0;
-    ponerEstadoPanel('Conectando con PluryPrint…', 'enviando');
+    ponerEstadoPanel('Conectando con Pluryprint…', 'enviando');
     try {
       const r = await enviarAPluryprint({
         abrirPuerto: abrirPuertoPluryprint,
@@ -284,7 +284,7 @@ export function montarPluryprint(ctx: Contexto) {
       });
       terminar(textoEntregado(r.archivos, r.accion), 'entregado');
     } catch (e) {
-      if (e instanceof ErrorPluryprint && e.codigo === 'cancelado') return terminar('Envío detenido. PluryPrint descartó lo recibido.', 'error');
+      if (e instanceof ErrorPluryprint && e.codigo === 'cancelado') return terminar('Envío detenido. Pluryprint descartó lo recibido.', 'error');
       if (e instanceof ErrorPluryprint && (e.codigo === 'no_instalado' || e.codigo === 'sin_permiso')) ponerEstado(aProblema(e));
       terminar(e instanceof Error ? e.message : String(e), 'error');
     }

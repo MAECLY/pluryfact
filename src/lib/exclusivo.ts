@@ -3,7 +3,7 @@
  * otra sigue en curso, se rechaza al instante. El candado se toma ANTES del
  * primer `await` (el cuerpo de una función async corre síncrono hasta ahí),
  * así dos pedidos casi simultáneos —p. ej. el envío automático al terminar y
- * el botón «Imprimir con PluryPrint»— no pueden pasar los dos.
+ * el botón «Imprimir con Pluryprint»— no pueden pasar los dos.
  */
 export interface Exclusivo<A extends unknown[]> {
   /** `true` mientras una ejecución sigue en curso. */

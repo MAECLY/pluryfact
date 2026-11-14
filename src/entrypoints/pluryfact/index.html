@@ -22,7 +22,7 @@
         <div class="conexion" id="conexion" aria-live="polite">
           <p id="conexion-texto">Buscando la pestaña del SRI…</p>
           <button type="button" id="ir-sri" class="enlace" hidden>Ir a SRI en Línea</button>
-          <a class="pp-lateral" id="pp-lateral" href="#avanzado" data-estado="no-conectado">PluryPrint: no conectado</a>
+          <a class="pp-lateral" id="pp-lateral" href="#avanzado" data-estado="no-conectado">Pluryprint: no conectado</a>
         </div>
         <a class="by" href="https://maecly.com" target="_blank" rel="noopener">
           <img class="sym-claro" src="/brand/maecly-symbol.svg" width="24" height="24" alt="" />
@@ -69,7 +69,7 @@
             <input type="file" id="pp-zip-archivo" accept=".zip,application/zip" hidden />
           </header>
           <section id="pp-panel" class="pp-panel" aria-labelledby="pp-panel-titulo" hidden>
-            <h2 id="pp-panel-titulo">Imprimir con PluryPrint</h2>
+            <h2 id="pp-panel-titulo">Imprimir con Pluryprint</h2>
             <p id="pp-panel-origen" class="pp-panel-origen"></p>
             <p id="pp-panel-resumen" class="pp-panel-resumen"></p>
             <ul id="pp-panel-avisos" class="pp-panel-avisos"></ul>
@@ -77,7 +77,7 @@
             <progress id="pp-panel-progreso" max="1" value="0" hidden></progress>
             <p id="pp-panel-estado" class="pp-panel-estado" aria-live="polite"></p>
             <div class="fila-botones">
-              <button type="button" id="pp-panel-enviar" class="boton boton-principal boton-chico">Enviar a PluryPrint</button>
+              <button type="button" id="pp-panel-enviar" class="boton boton-principal boton-chico">Enviar a Pluryprint</button>
               <button type="button" id="pp-panel-cerrar" class="boton boton-secundario boton-chico">Cancelar</button>
             </div>
           </section>
@@ -132,11 +132,11 @@
               <label><input type="checkbox" id="aj-notificaciones" /> Avisarme cuando termine una descarga o si la sesión del SRI caduca</label>
             </fieldset>
             <fieldset class="ajuste" id="aj-pluryprint">
-              <legend>PluryPrint</legend>
-              <p class="ayuda">Imprime en lote los RIDE, los XML y el reporte que descargas con <a href="https://pluryprint.maecly.com/" target="_blank" rel="noopener">PluryPrint</a>, la app de impresión de MAECLY para Windows y macOS. Pluryfact le entrega los archivos dentro de tu equipo: nada sale a internet.</p>
+              <legend>Pluryprint</legend>
+              <p class="ayuda">Imprime en lote los RIDE, los XML y el reporte que descargas con <a href="https://pluryprint.maecly.com/" target="_blank" rel="noopener">Pluryprint</a>, la app de impresión de MAECLY para Windows y macOS. Pluryfact le entrega los archivos dentro de tu equipo: nada sale a internet.</p>
               <p id="pp-estado" class="pp-estado" data-estado="no-conectado" aria-live="polite"></p>
               <div class="fila-botones">
-                <button type="button" id="pp-conectar" class="boton boton-principal">Conectar con PluryPrint</button>
+                <button type="button" id="pp-conectar" class="boton boton-principal">Conectar con Pluryprint</button>
                 <button type="button" id="pp-comprobar" class="boton boton-secundario" hidden>Comprobar de nuevo</button>
                 <button type="button" id="pp-desconectar" class="boton boton-secundario" hidden>Desconectar</button>
               </div>
@@ -144,7 +144,7 @@
                 <fieldset class="grupo">
                   <legend>Qué imprimir de cada comprobante</legend>
                   <label><input type="radio" name="pp-contenido" value="ride" /> El RIDE en PDF</label>
-                  <label><input type="radio" name="pp-contenido" value="xml" /> El XML <span class="ayuda">PluryPrint arma una representación impresa del XML autorizado. No hace falta bajar el RIDE: la descarga es más rápida.</span></label>
+                  <label><input type="radio" name="pp-contenido" value="xml" /> El XML <span class="ayuda">Pluryprint arma una representación impresa del XML autorizado. No hace falta bajar el RIDE: la descarga es más rápida.</span></label>
                   <label><input type="radio" name="pp-contenido" value="ambos" /> El RIDE y el XML</label>
                   <label><input type="checkbox" id="pp-xml-respaldo" /> Si un comprobante no tiene RIDE, imprimir su XML</label>
                   <label><input type="checkbox" id="pp-reporte" /> Incluir el reporte del SRI (TXT), al final</label>
@@ -160,13 +160,13 @@
                 </fieldset>
                 <fieldset class="grupo">
                   <legend>Al enviar</legend>
-                  <label><input type="radio" name="pp-accion" value="configure" /> Abrir PluryPrint para revisar y confirmar <span class="ayuda">Recomendado: no se imprime nada hasta que lo confirmes.</span></label>
-                  <label><input type="radio" name="pp-accion" value="queue" /> Dejarlos en la cola de PluryPrint</label>
+                  <label><input type="radio" name="pp-accion" value="configure" /> Abrir Pluryprint para revisar y confirmar <span class="ayuda">Recomendado: no se imprime nada hasta que lo confirmes.</span></label>
+                  <label><input type="radio" name="pp-accion" value="queue" /> Dejarlos en la cola de Pluryprint</label>
                   <label><input type="radio" name="pp-accion" value="print-default" /> Imprimir directo <span class="ayuda">Con más de 50 documentos, Pluryfact te pide confirmar antes.</span></label>
                 </fieldset>
                 <fieldset class="grupo">
                   <legend>Impresora y ajustes</legend>
-                  <p class="ayuda">Vacío usa lo del perfil de PluryPrint.</p>
+                  <p class="ayuda">Vacío usa lo del perfil de Pluryprint.</p>
                   <div class="campos pp-campos">
                     <label>Perfil<select id="pp-perfil" class="campo"></select></label>
                     <label>Impresora<select id="pp-impresora" class="campo"></select></label>
@@ -239,8 +239,8 @@
             <h2 id="h-datos">Cómo cuida tus datos</h2>
             <ul class="promesas">
               <li><strong>No pide tu clave.</strong> Usa la sesión que ya abriste en SRI en Línea y nunca la guarda.</li>
-              <li><strong>Todo ocurre en tu equipo.</strong> Pluryfact no tiene servidores ni analítica: tus comprobantes van del SRI a tu carpeta de descargas y, si conectas PluryPrint, a PluryPrint en tu propio equipo.</li>
-              <li><strong>En internet, solo habla con el SRI.</strong> srienlinea.sri.gob.ec, con tu sesión, y cel.sri.gob.ec, el servicio público de autorización de comprobantes. Fuera de internet, solo con PluryPrint, y solo si tú lo conectas.</li>
+              <li><strong>Todo ocurre en tu equipo.</strong> Pluryfact no tiene servidores ni analítica: tus comprobantes van del SRI a tu carpeta de descargas y, si conectas Pluryprint, a Pluryprint en tu propio equipo.</li>
+              <li><strong>En internet, solo habla con el SRI.</strong> srienlinea.sri.gob.ec, con tu sesión, y cel.sri.gob.ec, el servicio público de autorización de comprobantes. Fuera de internet, solo con Pluryprint, y solo si tú lo conectas.</li>
               <li><strong>Código abierto.</strong> Licencia AGPL-3.0: cualquiera puede revisar qué hace.</li>
             </ul>
           </section>
@@ -254,13 +254,13 @@
                 <tr><th scope="row">Almacenamiento</th><td>Guardar el avance, el historial y tus ajustes en este navegador.</td></tr>
                 <tr><th scope="row">Scripts</th><td>Activar Pluryfact en una pestaña del SRI que ya estaba abierta.</td></tr>
                 <tr><th scope="row">Notificaciones</th><td>Avisarte cuando termina una descarga o si tu sesión caduca.</td></tr>
-                <tr><th scope="row">Comunicarse con aplicaciones nativas que cooperan <span class="opcional">(opcional)</span></th><td>Solo con PluryPrint, en tu equipo, y solo si lo conectas en Avanzado: entregarle los RIDE, XML y reporte que eliges imprimir. Chrome lo pide aparte; puedes quitarlo con Desconectar.</td></tr>
+                <tr><th scope="row">Comunicarse con aplicaciones nativas que cooperan <span class="opcional">(opcional)</span></th><td>Solo con Pluryprint, en tu equipo, y solo si lo conectas en Avanzado: entregarle los RIDE, XML y reporte que eliges imprimir. Chrome lo pide aparte; puedes quitarlo con Desconectar.</td></tr>
               </tbody>
             </table>
           </section>
 
           <section class="bloque aviso-legal" aria-label="Aviso">
-            <p>Pluryfact no es una herramienta oficial del SRI. Los RIDE, y lo que PluryPrint imprime a partir de un XML, son representaciones impresas; el documento con validez tributaria es el XML autorizado.</p>
+            <p>Pluryfact no es una herramienta oficial del SRI. Los RIDE, y lo que Pluryprint imprime a partir de un XML, son representaciones impresas; el documento con validez tributaria es el XML autorizado.</p>
           </section>
 
           <section class="bloque creditos" aria-labelledby="h-creditos">
@@ -270,7 +270,7 @@
             <p>Pluryfact es un producto de MAECLY, hecho en Quito.</p>
             <p class="enlaces">
               <a href="https://maecly.com" target="_blank" rel="noopener">maecly.com</a>
-              <a href="https://pluryprint.maecly.com/" target="_blank" rel="noopener">PluryPrint</a>
+              <a href="https://pluryprint.maecly.com/" target="_blank" rel="noopener">Pluryprint</a>
               <a href="https://github.com/MAECLY/pluryfact" target="_blank" rel="noopener">Código fuente</a>
               <a href="https://github.com/MAECLY/pluryfact/issues/new" target="_blank" rel="noopener">Reportar un problema</a>
             </p>

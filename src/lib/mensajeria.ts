@@ -8,7 +8,7 @@ export type Peticion =
   | { tipo: 'cancelar' }
   | { tipo: 'xml'; clave: string }
   /**
-   * Página → pestaña del SRI: manda a PluryPrint el último resultado que sigue
+   * Página → pestaña del SRI: manda a Pluryprint el último resultado que sigue
    * en memoria. Con `soloResumen` solo responde qué se imprimiría.
    */
   | { tipo: 'imprimir'; inicio: number; confirmado: boolean; soloResumen?: boolean };
@@ -22,11 +22,11 @@ export interface EstadoPagina {
   ocupado: boolean;
   /** `inicio` del último trabajo cuyos archivos siguen en memoria de la pestaña (para imprimirlos), o null. */
   enMemoria?: number | null;
-  /** true mientras esa pestaña envía archivos a PluryPrint. */
+  /** true mientras esa pestaña envía archivos a Pluryprint. */
   imprimiendo?: boolean;
 }
 
-/** Envío a PluryPrint de un trabajo, visible en Descargas. */
+/** Envío a Pluryprint de un trabajo, visible en Descargas. */
 export interface EstadoImpresion {
   estado: 'enviando' | 'entregado' | 'error';
   /** Archivos del trabajo de impresión. */
@@ -48,7 +48,7 @@ export interface EstadoTrabajo extends Progreso {
   trabajo?: Trabajo;
   /** Índices del plan completo que quedaron sin terminar. */
   pendientes?: number[];
-  /** Último envío a PluryPrint de este trabajo, si lo hubo. */
+  /** Último envío a Pluryprint de este trabajo, si lo hubo. */
   impresion?: EstadoImpresion;
 }
 

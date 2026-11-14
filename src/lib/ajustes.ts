@@ -1,23 +1,23 @@
 import { esTema, TEMA_POR_DEFECTO, type IdTema } from './temas';
 
-/** Qué se manda a PluryPrint de cada comprobante. */
+/** Qué se manda a Pluryprint de cada comprobante. */
 export type ContenidoImpresion = 'ride' | 'xml' | 'ambos';
 /** Orden de impresión; siempre estable. `portal` = el orden en que se descargaron. */
 export type OrdenImpresion = 'portal' | 'fecha' | 'emisor' | 'tipo';
 export type AccionImpresion = 'configure' | 'queue' | 'print-default';
 
-/** Integración con PluryPrint (Avanzado → PluryPrint). */
+/** Integración con Pluryprint (Avanzado → Pluryprint). */
 export interface AjustesPluryprint {
-  /** true cuando el usuario conectó PluryPrint con éxito al menos una vez. */
+  /** true cuando el usuario conectó Pluryprint con éxito al menos una vez. */
   activado: boolean;
-  /** configure = abrir PluryPrint para revisar y confirmar (por defecto: no se gasta papel sin confirmar). */
+  /** configure = abrir Pluryprint para revisar y confirmar (por defecto: no se gasta papel sin confirmar). */
   accion: AccionImpresion;
   contenido: ContenidoImpresion;
-  /** Si un comprobante no tiene RIDE, mandar su XML para que PluryPrint lo represente. */
+  /** Si un comprobante no tiene RIDE, mandar su XML para que Pluryprint lo represente. */
   xmlSiFaltaRide: boolean;
   incluirReporte: boolean;
   orden: OrdenImpresion;
-  /** null = la del perfil o la predeterminada de PluryPrint. */
+  /** null = la del perfil o la predeterminada de Pluryprint. */
   impresoraId: string | null;
   perfilId: string | null;
   /** Ajustes que pisan los del perfil; null = los del perfil. */
@@ -66,7 +66,7 @@ const opcional = <T extends string>(v: unknown, validos: readonly T[]): T | null
 const idOpcional = (v: unknown) => (typeof v === 'string' && v.trim() && v.length <= 200 ? v.trim() : null);
 
 /**
- * Normaliza la sección PluryPrint. Acepta también formas viejas:
+ * Normaliza la sección Pluryprint. Acepta también formas viejas:
  * - un booleano suelto (`pluryprint: true`) → activado;
  * - el borrador inicial sin `contenido` → RIDE, como hacía entonces.
  */

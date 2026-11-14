@@ -299,7 +299,7 @@
   text-underline-offset: 2px;
 }
 
-/* Envío a PluryPrint: una línea bajo el estado, con el pliego como marca. */
+/* Envío a Pluryprint: una línea bajo el estado, con el pliego como marca. */
 .linea-impresion {
   position: relative;
   margin: 0;

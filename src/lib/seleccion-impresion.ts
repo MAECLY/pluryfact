@@ -5,7 +5,7 @@ import type { ArchivoParaImprimir } from './pluryprint';
 import { TIPO_CLAVE } from './types';
 
 /**
- * Qué archivos de una descarga se mandan a PluryPrint y en qué orden.
+ * Qué archivos de una descarga se mandan a Pluryprint y en qué orden.
  * Sirve igual para el resultado en memoria de la pestaña del SRI y para un
  * `pluryfact_*.zip` que el usuario elige en Descargas.
  *
@@ -42,7 +42,7 @@ export interface Seleccion {
   ignorados: number;
 }
 
-/** Mismo límite por archivo que anuncia PluryPrint (`limits.maxFileBytes`). */
+/** Mismo límite por archivo que anuncia Pluryprint (`limits.maxFileBytes`). */
 export const MAX_ARCHIVO = 50 * 1024 * 1024;
 /** Tope del ZIP descomprimido que Pluryfact acepta leer en memoria. */
 export const MAX_ZIP_DESCOMPRIMIDO = 1024 * 1024 * 1024;
@@ -217,6 +217,6 @@ export function textoSeleccion(s: Seleccion): { principal: string; avisos: strin
 /** Plan para "Nueva descarga", antes de saber cuántos comprobantes hay. */
 export function textoPlanImpresion(o: OpcionesSeleccion & { accion: string }): string {
   const que = o.contenido === 'ride' ? `el RIDE de cada comprobante${o.xmlSiFaltaRide ? ' (o su XML si no tiene RIDE)' : ''}` : o.contenido === 'xml' ? 'el XML de cada comprobante, como representación impresa' : 'el RIDE y el XML de cada comprobante';
-  const despues = o.accion === 'configure' ? 'PluryPrint se abrirá para que revises y confirmes.' : o.accion === 'queue' ? 'Quedarán en la cola de PluryPrint.' : 'Se imprimirán directo en la impresora del perfil.';
-  return `Al terminar se enviará a PluryPrint ${que}${o.incluirReporte ? ', más el reporte' : ''}. ${despues}`;
+  const despues = o.accion === 'configure' ? 'Pluryprint se abrirá para que revises y confirmes.' : o.accion === 'queue' ? 'Quedarán en la cola de Pluryprint.' : 'Se imprimirán directo en la impresora del perfil.';
+  return `Al terminar se enviará a Pluryprint ${que}${o.incluirReporte ? ', más el reporte' : ''}. ${despues}`;
 }

@@ -221,10 +221,10 @@ function filaHistorial(e: EntradaHistorial): HTMLElement {
     if (!mismaPantalla) r.title = `Entra a Comprobantes ${e.trabajo.bandeja} en el portal para reanudar`;
     acciones.append(r);
   }
-  // PluryPrint: directo desde la memoria de la pestaña del SRI, o eligiendo el ZIP.
+  // Pluryprint: directo desde la memoria de la pestaña del SRI, o eligiendo el ZIP.
   if (ajustes.pluryprint.activado && e.zip) {
     if (conexion.pagina?.enMemoria === Number(e.id)) {
-      const b = boton('Imprimir con PluryPrint', 'boton boton-secundario boton-chico', () => void pluryprint.abrirPanelMemoria(e));
+      const b = boton('Imprimir con Pluryprint', 'boton boton-secundario boton-chico', () => void pluryprint.abrirPanelMemoria(e));
       b.disabled = !!conexion.pagina.imprimiendo;
       acciones.append(b);
     } else {
@@ -441,7 +441,7 @@ browser.storage.onChanged.addListener((cambios, area) => {
     pintarActiva();
     if (actual?.fase !== faseAntes) {
       pintarHistorial();
-      // Al terminar, la pestaña del SRI guarda el resultado en memoria: se vuelve a preguntar para ofrecer «Imprimir con PluryPrint».
+      // Al terminar, la pestaña del SRI guarda el resultado en memoria: se vuelve a preguntar para ofrecer «Imprimir con Pluryprint».
       if (actual && !enMarcha(actual)) void reconectar();
     }
   }

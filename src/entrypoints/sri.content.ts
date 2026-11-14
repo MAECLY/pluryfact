@@ -53,7 +53,7 @@ export default defineContentScript({
     let verificacion = false;
     /**
      * Archivos del último trabajo, en memoria de esta pestaña, para mandarlos
-     * a PluryPrint sin volver a leer el ZIP. Se sueltan al empezar otro trabajo
+     * a Pluryprint sin volver a leer el ZIP. Se sueltan al empezar otro trabajo
      * o al cerrar la pestaña.
      */
     let resultado: { inicio: number; archivos: Archivo[]; etiqueta: string } | null = null;
@@ -141,7 +141,7 @@ export default defineContentScript({
       setTimeout(() => URL.revokeObjectURL(url), 60_000);
     }
 
-    /** Escribe el estado del envío a PluryPrint en el progreso y en su fila de Descargas. */
+    /** Escribe el estado del envío a Pluryprint en el progreso y en su fila de Descargas. */
     function anotarImpresion(inicio: number, imp: EstadoImpresion) {
       cola = cola
         .then(async () => {
@@ -158,10 +158,10 @@ export default defineContentScript({
     }
 
     /**
-     * Manda a PluryPrint el último resultado en memoria, con los ajustes
+     * Manda a Pluryprint el último resultado en memoria, con los ajustes
      * actuales. De a un envío por vez: el candado se toma antes del primer
      * await (ver lib/exclusivo), así el envío automático al terminar y el botón
-     * «Imprimir con PluryPrint» no pueden abrir dos trabajos.
+     * «Imprimir con Pluryprint» no pueden abrir dos trabajos.
      */
     const envio = exclusivo(async (confirmado: boolean) => {
       const u = resultado;
@@ -169,9 +169,9 @@ export default defineContentScript({
       const aj = normalizarAjustes((await browser.storage.local.get(CLAVE_AJUSTES))[CLAVE_AJUSTES]).pluryprint;
       const sel = seleccionarParaImprimir(u.archivos, aj);
       const base = { archivos: sel.archivos.length, enviados: 0, t: Date.now() };
-      if (!aj.activado) return anotarImpresion(u.inicio, { ...base, estado: 'error', mensaje: 'Conecta PluryPrint en Avanzado para imprimir.' });
+      if (!aj.activado) return anotarImpresion(u.inicio, { ...base, estado: 'error', mensaje: 'Conecta Pluryprint en Avanzado para imprimir.' });
       if (!sel.archivos.length) return anotarImpresion(u.inicio, { ...base, estado: 'error', mensaje: textoSeleccion(sel).principal });
-      log.info(`PluryPrint: enviando ${sel.ride} RIDE, ${sel.xml} XML y ${sel.reportes} reportes (${aj.accion})`);
+      log.info(`Pluryprint: enviando ${sel.ride} RIDE, ${sel.xml} XML y ${sel.reportes} reportes (${aj.accion})`);
       await anotarImpresion(u.inicio, { ...base, estado: 'enviando', mensaje: textoSeleccion(sel).principal });
       let ultimoAviso = 0;
       try {
@@ -188,11 +188,11 @@ export default defineContentScript({
             void anotarImpresion(u.inicio, { ...base, estado: 'enviando', enviados: a.archivo, mensaje: textoSeleccion(sel).principal });
           },
         });
-        const cambio = r.accion !== aj.accion ? ' Eran más de 50: PluryPrint se abrió para que confirmes antes de imprimir.' : '';
-        log.info(`PluryPrint: ${r.archivos} archivos entregados (${r.accion})`);
+        const cambio = r.accion !== aj.accion ? ' Eran más de 50: Pluryprint se abrió para que confirmes antes de imprimir.' : '';
+        log.info(`Pluryprint: ${r.archivos} archivos entregados (${r.accion})`);
         await anotarImpresion(u.inicio, { ...base, estado: 'entregado', enviados: r.archivos, mensaje: textoEntregado(r.archivos, r.accion) + cambio, t: Date.now() });
       } catch (e) {
-        log.aviso(`PluryPrint: ${e instanceof Error ? `${e.message} ${(e as { detalle?: string }).detalle ?? ''}` : String(e)}`);
+        log.aviso(`Pluryprint: ${e instanceof Error ? `${e.message} ${(e as { detalle?: string }).detalle ?? ''}` : String(e)}`);
         await anotarImpresion(u.inicio, { ...base, estado: 'error', mensaje: e instanceof Error ? e.message : String(e), t: Date.now() });
       }
     });
@@ -306,10 +306,10 @@ export default defineContentScript({
         const final: EstadoTrabajo = { ...r.progreso, ...base, fase, mensaje, actividad, esperaHasta: null, verificacion: false, actualizado: Date.now() };
         await guardar(final);
         await archivar(final, ajustes.diasHistorial).catch((e) => log.error(`No se pudo guardar el historial: ${String(e)}`));
-        // «Enviar a PluryPrint al terminar»: solo si la descarga terminó (no si
+        // «Enviar a Pluryprint al terminar»: solo si la descarga terminó (no si
         // se canceló o se cortó: eso se imprime a mano, o tras reanudar). Sin
         // confirmación extra, imprimir directo con más de 50 documentos abre
-        // PluryPrint para revisar (ver envio-pluryprint).
+        // Pluryprint para revisar (ver envio-pluryprint).
         if (t.imprimir && resultado && fase === 'listo') void envio.ejecutar(false);
       } catch (e) {
         log.error(`Trabajo interrumpido: ${e instanceof Error ? e.stack ?? e.message : String(e)}`);
@@ -364,7 +364,7 @@ export default defineContentScript({
             r({ ok: true, resumen: { ...textoSeleccion(sel), archivos: sel.archivos.length } });
           });
           return true;
-        } else if (envio.ocupado) r({ ok: false, error: 'Ya se está enviando a PluryPrint.' });
+        } else if (envio.ocupado) r({ ok: false, error: 'Ya se está enviando a Pluryprint.' });
         else {
           void envio.ejecutar(msg.confirmado);
           r({ ok: true });

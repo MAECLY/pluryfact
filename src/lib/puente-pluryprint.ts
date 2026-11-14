@@ -3,7 +3,7 @@ import type { Registro } from './registro';
 
 /**
  * Puente entre las páginas de Pluryfact (o el content script del SRI) y
- * PluryPrint. Vive en el background, que es el ÚNICO contexto que llama a
+ * Pluryprint. Vive en el background, que es el ÚNICO contexto que llama a
  * `runtime.connectNative`: Chrome no lo ofrece en content scripts y así el
  * permiso opcional se revisa en un solo sitio.
  *
@@ -37,7 +37,7 @@ export interface PuertoRuntime {
   disconnect(): void;
 }
 
-/** Mensaje de control del puente: nunca llega a PluryPrint. */
+/** Mensaje de control del puente: nunca llega a Pluryprint. */
 export interface ControlPuente {
   puente: 'cerrado';
   motivo: string;
@@ -80,7 +80,7 @@ export function atenderPuerto(p: PuertoRuntime, d: DependenciasPuente): boolean 
   if (p.name !== NOMBRE_PUERTO) return false;
   const log = d.registro;
   if (!remitenteValido(p.sender, d.idExtension, d.urlBase)) {
-    log?.aviso(`Puente PluryPrint: remitente rechazado (${p.sender?.url?.split('?')[0] ?? 'sin url'})`);
+    log?.aviso(`Puente Pluryprint: remitente rechazado (${p.sender?.url?.split('?')[0] ?? 'sin url'})`);
     p.disconnect();
     return false;
   }
@@ -92,7 +92,7 @@ export function atenderPuerto(p: PuertoRuntime, d: DependenciasPuente): boolean 
   const cerrar = (motivo: string) => {
     if (cerrado) return;
     cerrado = true;
-    log?.info(`Puente PluryPrint cerrado (${origen}, ${peticiones} peticiones): ${motivo}`);
+    log?.info(`Puente Pluryprint cerrado (${origen}, ${peticiones} peticiones): ${motivo}`);
     try {
       p.postMessage({ puente: 'cerrado', motivo } satisfies ControlPuente);
     } catch {
@@ -126,13 +126,13 @@ export function atenderPuerto(p: PuertoRuntime, d: DependenciasPuente): boolean 
       if (!cerrado) p.postMessage(m);
     });
     nativo.onDisconnect.addListener((motivo) => cerrar(motivo || 'Native host has exited.'));
-    log?.info(`Puente PluryPrint abierto (${origen})`);
+    log?.info(`Puente Pluryprint abierto (${origen})`);
     return nativo;
   })();
 
   p.onMessage.addListener((m) => {
     if (!peticionValida(m)) {
-      log?.aviso('Puente PluryPrint: petición con forma inválida descartada');
+      log?.aviso('Puente Pluryprint: petición con forma inválida descartada');
       const q = m as { id?: unknown; type?: unknown } | null;
       if (q && typeof q.id === 'string' && typeof q.type === 'string')
         p.postMessage({ v: 1, id: q.id, type: q.type, ok: false, error: { code: 'bad_request', message: 'Rejected by the Pluryfact bridge.' } });
@@ -146,7 +146,7 @@ export function atenderPuerto(p: PuertoRuntime, d: DependenciasPuente): boolean 
   p.onDisconnect.addListener(() => {
     if (cerrado) return;
     cerrado = true;
-    log?.info(`Puente PluryPrint: la ${origen} cerró la conexión (${peticiones} peticiones)`);
+    log?.info(`Puente Pluryprint: la ${origen} cerró la conexión (${peticiones} peticiones)`);
     void listo.then((n) => n?.disconnect());
   });
   return true;

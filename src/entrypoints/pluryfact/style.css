@@ -110,7 +110,7 @@ body {
 .conexion p[data-ok='true'] {
   color: var(--pf-ok);
 }
-/* PluryPrint en la barra lateral: un punto de estado y el texto, enlaza a Avanzado. */
+/* Pluryprint en la barra lateral: un punto de estado y el texto, enlaza a Avanzado. */
 .pp-lateral {
   display: inline-flex;
   align-items: center;
@@ -282,7 +282,7 @@ body {
 }
 
 /* Descargas. */
-/* Panel «Imprimir con PluryPrint»: el mismo papel que el resumen de Nueva descarga. */
+/* Panel «Imprimir con Pluryprint»: el mismo papel que el resumen de Nueva descarga. */
 .pp-panel {
   display: flex;
   flex-direction: column;
@@ -521,7 +521,7 @@ body {
 .campo.corto {
   width: auto;
 }
-/* PluryPrint en Avanzado. */
+/* Pluryprint en Avanzado. */
 .pp-estado {
   margin: 0;
 }

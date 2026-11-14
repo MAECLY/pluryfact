@@ -29,12 +29,12 @@ export interface Formulario {
   /** Rellena el formulario con un trabajo anterior ("Repetir con los mismos filtros"). */
   cargar(t: Trabajo): void;
   /**
-   * Muestra la casilla «Enviar a PluryPrint al terminar» si PluryPrint está
+   * Muestra la casilla «Enviar a Pluryprint al terminar» si Pluryprint está
    * conectado (null la oculta). Al marcarla fija los formatos que hacen falta
    * para imprimir lo elegido en Avanzado.
    */
   ponerPluryprint(a: AjustesPluryprint | null): void;
-  /** true si la casilla de PluryPrint está visible y marcada. */
+  /** true si la casilla de Pluryprint está visible y marcada. */
   imprimir(): boolean;
 }
 
@@ -64,7 +64,7 @@ const HTML = `
       <label><input id="f-pdf" type="checkbox" checked />RIDE en PDF</label>
       <label><input id="f-txt" type="checkbox" />Reporte del SRI</label>
     </div>
-    <label class="casilla-pluryprint" data-ref="pluryprint" hidden><input id="f-pluryprint" type="checkbox" />Enviar a PluryPrint al terminar</label>
+    <label class="casilla-pluryprint" data-ref="pluryprint" hidden><input id="f-pluryprint" type="checkbox" />Enviar a Pluryprint al terminar</label>
   </fieldset>`;
 
 export function montarFormulario(raiz: HTMLElement, alCambiar: () => void): Formulario {
@@ -77,7 +77,7 @@ export function montarFormulario(raiz: HTMLElement, alCambiar: () => void): Form
   let bandeja: Bandeja = 'recibidos';
   let tipoPeriodo: TipoPeriodo = 'mes';
   let pluryprint: AjustesPluryprint | null = null;
-  /** Lo que el usuario había marcado antes de que la casilla de PluryPrint fijara formatos. */
+  /** Lo que el usuario había marcado antes de que la casilla de Pluryprint fijara formatos. */
   const marcadoAntes: Record<'xml' | 'pdf' | 'txt', boolean | null> = { xml: null, pdf: null, txt: null };
 
   /** Formatos que exige imprimir lo elegido en Avanzado: RIDE si incluye RIDE, XML si es solo XML, TXT si pide el reporte. */
@@ -94,7 +94,7 @@ export function montarFormulario(raiz: HTMLElement, alCambiar: () => void): Form
         marcadoAntes[f] = c.checked;
         c.checked = true;
         c.disabled = true;
-        c.title = 'Lo necesita la impresión con PluryPrint';
+        c.title = 'Lo necesita la impresión con Pluryprint';
       } else if (!exigidos[f] && c.disabled) {
         c.disabled = false;
         c.title = '';

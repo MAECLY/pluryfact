@@ -64,25 +64,25 @@ export function duracion(ms: number): string {
 export const hora = (t: number) => new Date(t).toLocaleTimeString('es-EC', { hour: '2-digit', minute: '2-digit', hour12: false });
 
 /**
- * Indicador corto de la barra lateral cuando hablar con PluryPrint falló.
+ * Indicador corto de la barra lateral cuando hablar con Pluryprint falló.
  * Solo dice «sin respuesta» si de verdad no respondió; el detalle completo va
  * en el `title` (el mensaje de ErrorPluryprint).
  */
 export function problemaPluryprintCorto(codigo: CodigoError): string {
   switch (codigo) {
     case 'no_instalado':
-      return 'PluryPrint: no instalado';
+      return 'Pluryprint: no instalado';
     case 'sin_permiso':
-      return 'PluryPrint: sin permiso';
+      return 'Pluryprint: sin permiso';
     case 'desconectado':
     case 'tiempo_agotado':
-      return 'PluryPrint: sin respuesta';
+      return 'Pluryprint: sin respuesta';
     case 'version_incompatible':
     case 'unsupported_version':
     case 'unknown_type':
     case 'respuesta_invalida':
-      return 'PluryPrint: actualízalo';
+      return 'Pluryprint: actualízalo';
     default:
-      return 'PluryPrint: con problemas';
+      return 'Pluryprint: con problemas';
   }
 }

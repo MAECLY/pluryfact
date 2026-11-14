@@ -60,7 +60,7 @@ function actualizarAcciones() {
   if (enCurso && pestanaActiva === 'form') return mostrarPestana('descargas');
   $('#cerrar').hidden = !enCurso;
 
-  // PluryPrint: la descarga terminada sigue en memoria de la pestaña del SRI.
+  // Pluryprint: la descarga terminada sigue en memoria de la pestaña del SRI.
   const imprimible =
     pestanaActiva === 'descargas' && !enCurso && !!actual?.zip && ajustes.pluryprint.activado && conexion.pagina?.enMemoria === actual.inicio;
   $('#imprimir').hidden = !imprimible;

@@ -1,5 +1,5 @@
 /**
- * Cliente del protocolo v1 entre Pluryfact y PluryPrint (Chrome Native
+ * Cliente del protocolo v1 entre Pluryfact y Pluryprint (Chrome Native
  * Messaging). Ver docs/INTEGRACION-PLURYPRINT.md.
  *
  * El cliente no sabe de Chrome: habla con un `PuertoNativo` inyectado. En la
@@ -131,26 +131,26 @@ export interface PuertoNativo {
 // ------------------------------------------------------------------ errores
 
 const MENSAJES: Record<CodigoError, string> = {
-  no_instalado: 'PluryPrint no está instalado en este equipo, o no está conectado con este navegador.',
-  sin_permiso: 'Pluryfact no tiene permiso para comunicarse con PluryPrint. Pulsa «Conectar con PluryPrint» en Avanzado.',
-  desconectado: 'PluryPrint cerró la conexión antes de terminar.',
-  tiempo_agotado: 'PluryPrint no respondió a tiempo.',
-  respuesta_invalida: 'PluryPrint respondió algo que Pluryfact no entiende. Actualiza PluryPrint.',
-  version_incompatible: 'Actualiza PluryPrint: esta versión no sabe recibir comprobantes de Pluryfact.',
+  no_instalado: 'Pluryprint no está instalado en este equipo, o no está conectado con este navegador.',
+  sin_permiso: 'Pluryfact no tiene permiso para comunicarse con Pluryprint. Pulsa «Conectar con Pluryprint» en Avanzado.',
+  desconectado: 'Pluryprint cerró la conexión antes de terminar.',
+  tiempo_agotado: 'Pluryprint no respondió a tiempo.',
+  respuesta_invalida: 'Pluryprint respondió algo que Pluryfact no entiende. Actualiza Pluryprint.',
+  version_incompatible: 'Actualiza Pluryprint: esta versión no sabe recibir comprobantes de Pluryfact.',
   cancelado: 'Envío cancelado.',
-  unsupported_version: 'Actualiza PluryPrint y Pluryfact: no hablan la misma versión del protocolo.',
-  unknown_type: 'Actualiza PluryPrint: no reconoce lo que Pluryfact le pidió.',
-  bad_request: 'PluryPrint rechazó el pedido por un dato inválido.',
-  origin_not_allowed: 'PluryPrint no reconoce esta copia de Pluryfact. Si la cargaste a mano, regístrala con «pluryprint-cli bridge install --extra-origin».',
-  too_large: 'Un archivo o el trabajo completo supera el tamaño que acepta PluryPrint.',
-  too_many_files: 'Son demasiados archivos para un solo trabajo de PluryPrint.',
+  unsupported_version: 'Actualiza Pluryprint y Pluryfact: no hablan la misma versión del protocolo.',
+  unknown_type: 'Actualiza Pluryprint: no reconoce lo que Pluryfact le pidió.',
+  bad_request: 'Pluryprint rechazó el pedido por un dato inválido.',
+  origin_not_allowed: 'Pluryprint no reconoce esta copia de Pluryfact. Si la cargaste a mano, regístrala con «pluryprint-cli bridge install --extra-origin».',
+  too_large: 'Un archivo o el trabajo completo supera el tamaño que acepta Pluryprint.',
+  too_many_files: 'Son demasiados archivos para un solo trabajo de Pluryprint.',
   bad_pdf: 'Un RIDE no es un PDF válido.',
-  checksum_mismatch: 'Un archivo llegó dañado a PluryPrint. Vuelve a intentarlo.',
-  unknown_job: 'PluryPrint ya no tiene ese trabajo abierto. Vuelve a intentarlo.',
-  job_incomplete: 'PluryPrint no recibió todos los archivos del trabajo.',
-  io_error: 'PluryPrint no pudo guardar los archivos en tu equipo.',
-  launch_failed: 'PluryPrint recibió los archivos pero no pudo abrirse. Ábrelo a mano.',
-  internal: 'PluryPrint tuvo un error interno.',
+  checksum_mismatch: 'Un archivo llegó dañado a Pluryprint. Vuelve a intentarlo.',
+  unknown_job: 'Pluryprint ya no tiene ese trabajo abierto. Vuelve a intentarlo.',
+  job_incomplete: 'Pluryprint no recibió todos los archivos del trabajo.',
+  io_error: 'Pluryprint no pudo guardar los archivos en tu equipo.',
+  launch_failed: 'Pluryprint recibió los archivos pero no pudo abrirse. Ábrelo a mano.',
+  internal: 'Pluryprint tuvo un error interno.',
 };
 
 export class ErrorPluryprint extends Error {
@@ -262,7 +262,7 @@ interface Pendiente {
 }
 
 /**
- * Una conexión con PluryPrint. Se crea por operación (consultar estado,
+ * Una conexión con Pluryprint. Se crea por operación (consultar estado,
  * listar, enviar un trabajo) y se cierra al terminar: así el host no queda
  * vivo y un trabajo sin `commitJob` se borra solo al cerrarse el puerto.
  */
@@ -342,7 +342,7 @@ export class ClientePluryprint {
     });
   }
 
-  /** Saludo: comprueba que el host es PluryPrint, que habla el protocolo 1 y que sabe recibir trabajos. */
+  /** Saludo: comprueba que el host es Pluryprint, que habla el protocolo 1 y que sabe recibir trabajos. */
   async saludar(): Promise<Hola> {
     const r = validarHola(await this.pedir('hello', { client: 'pluryfact', clientVersion: this.opciones.clientVersion, protocols: [PROTOCOLO] }));
     if (r.protocol !== PROTOCOLO) throw new ErrorPluryprint('version_incompatible', `protocol ${r.protocol}`);

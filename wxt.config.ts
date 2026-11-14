@@ -12,9 +12,9 @@ import { defineConfig } from 'wxt';
 // al terminar o si la sesión del SRI caduca, con el popup ya cerrado.
 //
 // `nativeMessaging` es OPCIONAL: se pide con permissions.request() solo cuando
-// el usuario pulsa «Conectar con PluryPrint» en Avanzado, para entregar los
-// comprobantes que elige imprimir a PluryPrint, en su equipo. Así una
-// actualización no desactiva la extensión a quien no usa PluryPrint.
+// el usuario pulsa «Conectar con Pluryprint» en Avanzado, para entregar los
+// comprobantes que elige imprimir a Pluryprint, en su equipo. Así una
+// actualización no desactiva la extensión a quien no usa Pluryprint.
 // El build de pruebas de punta a punta (PLURYFACT_E2E=1, ver
 // scripts/e2e-pluryprint.ts) lo vuelve obligatorio para probar sin el diálogo
 // de Chrome, y sale a .output-e2e/ para no pisar el build de la tienda.

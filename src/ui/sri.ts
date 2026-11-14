@@ -80,7 +80,7 @@ export async function irAlSri(c: Conexion) {
   if (t?.windowId !== undefined) await browser.windows.update(t.windowId, { focused: true });
 }
 
-/** Pide a la pestaña del SRI que mande a PluryPrint el último resultado que tiene en memoria (o solo su resumen). */
+/** Pide a la pestaña del SRI que mande a Pluryprint el último resultado que tiene en memoria (o solo su resumen). */
 export async function pedirImpresion(c: Conexion, inicio: number, confirmado: boolean, soloResumen = false): Promise<RespuestaImprimir> {
   if (c.pestana === null) return { ok: false, error: c.problema ?? 'Abre la pestaña del SRI.' };
   try {
