@@ -92,5 +92,6 @@ https://pluryfact.maecly.com/privacy/
 ```
 
 La misma política en inglés está en `https://pluryfact.maecly.com/en/privacy/`.
-Su fuente es `site/privacy/index.html` y `site/en/privacy/index.html` en
-[MAECLY/pluryfact-landing](https://github.com/MAECLY/pluryfact-landing).
+Su fuente es `site/privacy/index.html` y `site/en/privacy/index.html` en el
+repositorio del sitio web, que es privado. El código de la extensión sí es
+público, en este repositorio.

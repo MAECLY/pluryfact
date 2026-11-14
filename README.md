@@ -221,7 +221,7 @@ More detail:
 - [docs/CAPTCHA.md](docs/CAPTCHA.md): how the reCAPTCHA works and why Pluryfact leaves it to you.
 - [docs/design-system.md](docs/design-system.md): colours, type, themes and voice.
 
-The website lives in [MAECLY/pluryfact-landing](https://github.com/MAECLY/pluryfact-landing).
+The website, [pluryfact.maecly.com](https://pluryfact.maecly.com/), is built from a private repository.
 
 ## Credits
 
