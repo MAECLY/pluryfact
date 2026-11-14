@@ -28,7 +28,9 @@ it needs PluryPrint 0.0.6, which ships the native host.
   extension, hostile paths ignored), "Print with PluryPrint" for the last job
   while the SRI tab still holds it, and a summary ("3 RIDE + 1 XML + the
   report") before confirming. Each job shows how its PluryPrint delivery went.
-- Sidebar indicator "PluryPrint: connected / not connected / not installed".
+- Sidebar indicator "PluryPrint: connected / not connected / not installed /
+  no permission / no response / update it / problems" (the full message is in
+  the tooltip).
 - `bun run e2e:pluryprint`: end-to-end test in Chromium with a native host
   (a fake one, or the real bridge via `PLURYPRINT_BRIDGE_BIN`).
 

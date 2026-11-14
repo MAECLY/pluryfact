@@ -234,7 +234,7 @@ empaqueta en una carpeta temporal por eso mismo.
   panel resume «Se imprimirán N RIDE + M XML + el reporte» y avisa de lo que no
   entra.
 - **Acerca de.** Fila del permiso opcional y promesas reescritas.
-- **Barra lateral.** «PluryPrint: conectado / no conectado / no instalado».
+- **Barra lateral.** «PluryPrint: conectado / no conectado / no instalado / sin permiso / sin respuesta / actualízalo / con problemas». «Sin respuesta» solo cuando PluryPrint no respondió (se cortó o se agotó el tiempo); el detalle de cualquier problema va en el `title`.
 - **Popup.** La misma casilla y, al terminar, «Imprimir con PluryPrint», que
   abre la página con el resumen.
 

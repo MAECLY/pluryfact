@@ -6,7 +6,7 @@ import { ErrorPluryprint, URL_PLURYPRINT, type CodigoError, type Impresora, type
 import { etiquetaDeZip, leerZip, MAX_ZIP_DESCOMPRIMIDO, seleccionarParaImprimir, textoSeleccion, type Seleccion } from '@/lib/seleccion-impresion';
 import { pedirImpresion, type Conexion } from '@/ui/sri';
 import { lineaImpresion } from '@/ui/tarjeta';
-import { miles, tituloTrabajo } from '@/ui/textos';
+import { miles, problemaPluryprintCorto, tituloTrabajo } from '@/ui/textos';
 
 /**
  * PluryPrint en la página completa: el estado en la barra lateral, la sección
@@ -130,9 +130,7 @@ export function montarPluryprint(ctx: Contexto) {
         : estado.tipo === 'comprobando'
           ? 'PluryPrint: comprobando…'
           : estado.tipo === 'problema'
-            ? estado.codigo === 'no_instalado'
-              ? 'PluryPrint: no instalado'
-              : 'PluryPrint: sin respuesta'
+            ? problemaPluryprintCorto(estado.codigo)
             : 'PluryPrint: no conectado';
     lat.title = estado.tipo === 'conectado' ? `PluryPrint ${estado.version}` : estado.tipo === 'problema' ? estado.mensaje : '';
 
