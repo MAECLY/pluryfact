@@ -1,5 +1,5 @@
 /**
- * Host de Native Messaging FALSO que habla el protocolo v1 de PluryPrint
+ * Host de Native Messaging FALSO que habla el protocolo v1 de Pluryprint
  * (ver docs/INTEGRACION-PLURYPRINT.md). Sirve para:
  *
  * - los tests de Vitest, en memoria (`crearHostFalso`), y

@@ -1,5 +1,5 @@
 /**
- * Prueba de punta a punta de «Imprimir un ZIP…» con PluryPrint
+ * Prueba de punta a punta de «Imprimir un ZIP…» con Pluryprint
  * (`bun run e2e:pluryprint`). No toca el SRI ni datos reales.
  *
  * 1. Compila el build de pruebas (PLURYFACT_E2E=1: `nativeMessaging` es
@@ -9,7 +9,7 @@
  *    (Chromium lee ahí los manifiestos de usuario cuando se usa --user-data-dir),
  *    con el ID de esta extensión en allowed_origins. El host es:
  *      - PLURYPRINT_BRIDGE_BIN=/ruta/a/pluryprint-bridge  → el puente real de
- *        PluryPrint, copiado a la carpeta temporal y con su modo de prueba:
+ *        Pluryprint, copiado a la carpeta temporal y con su modo de prueba:
  *        PLURYPRINT_BRIDGE_DATA_DIR apunta a una carpeta temporal (inbox/,
  *        handoff/ y un manifiesto con este origen, así no hace falta
  *        `bridge install` ni se tocan los manifiestos reales) y
@@ -17,7 +17,7 @@
  *        PLURYPRINT_BRIDGE_NO_LAUNCH=0 para que la abra).
  *      - sin esa variable → scripts/pluryprint-host-falso.ts (bun), que implementa
  *        el protocolo y guarda lo recibido.
- * 4. En pluryfact.html: Avanzado → «Conectar con PluryPrint», elige RIDE con XML
+ * 4. En pluryfact.html: Avanzado → «Conectar con Pluryprint», elige RIDE con XML
  *    de respaldo y reporte, Descargas → «Imprimir un ZIP…» con un ZIP ficticio
  *    (RUC 0999999999001), revisa el resumen y envía.
  * 5. Verifica que el host recibió exactamente los archivos esperados, en orden,
@@ -27,7 +27,7 @@
  *        reporte.» (una es una retención);
  *      - compara cada archivo del inbox byte a byte con su entrada del ZIP y
  *        revisa el handoff (source, acción, etiqueta, rutas en orden);
- *      - si encuentra el repo de PluryPrint (PLURYPRINT_SRC_TAURI, o el
+ *      - si encuentra el repo de Pluryprint (PLURYPRINT_SRC_TAURI, o el
  *        src-tauri del que salió PLURYPRINT_BRIDGE_BIN), corre su test
  *        `bridge_handoff_e2e` sobre lo que dejó el puente, dentro de los 60 s
  *        de frescura: la app acepta el handoff por su misma puerta de «menú
@@ -44,7 +44,7 @@
  * manifiestos de <perfil>/NativeMessagingHosts/, justo donde los escribe el
  * CLI) y recibe ese HOME, así que el puente valida el origen contra el
  * manifiesto que instaló el CLI y deja inbox/ y handoff/ en la carpeta de datos
- * de PluryPrint de ese HOME. No se tocan los manifiestos ni los datos del
+ * de Pluryprint de ese HOME. No se tocan los manifiestos ni los datos del
  * usuario (la prueba lo comprueba).
  *
  * Variables: PLURYPRINT_BRIDGE_BIN, PLURYPRINT_BRIDGE_NO_LAUNCH,
@@ -52,7 +52,7 @@
  * al puente), PLURYPRINT_SRC_TAURI, PLURYPRINT_VALIDAR_HANDOFF=0, E2E_VENTANA=1
  * (con ventana), E2E_CAPTURAS=<carpeta> (guarda capturas de Avanzado y Descargas),
  * E2E_CONSERVAR=1 (no borra la carpeta temporal aunque todo pase: con el puente
- * real deja inbox/, handoff/ y los PDF que generó PluryPrint en impreso/, ver
+ * real deja inbox/, handoff/ y los PDF que generó Pluryprint en impreso/, ver
  * docs/INTEGRACION-PLURYPRINT.md §9.1).
  */
 import { spawnSync } from 'node:child_process';
@@ -103,7 +103,7 @@ if (registroCli) {
   }
 }
 
-// El test de Rust de PluryPrint que valida el handoff como lo haría la app.
+// El test de Rust de Pluryprint que valida el handoff como lo haría la app.
 // Se compila ahora porque el handoff solo vale 60 s después de escrito.
 const srcTauri = (() => {
   if (!puenteReal || process.env.PLURYPRINT_VALIDAR_HANDOFF === '0') return undefined;
@@ -112,7 +112,7 @@ const srcTauri = (() => {
 })();
 let testHandoff = '';
 if (srcTauri) {
-  console.log(`Compilando el test bridge_handoff_e2e de PluryPrint (${srcTauri})…`);
+  console.log(`Compilando el test bridge_handoff_e2e de Pluryprint (${srcTauri})…`);
   const r = spawnSync('cargo', ['test', '--test', 'bridge_handoff_e2e', '--no-run', '--message-format=json'], {
     cwd: srcTauri,
     encoding: 'utf8',
@@ -128,11 +128,11 @@ if (srcTauri) {
     }
   }
   if (r.status !== 0 || !testHandoff) {
-    console.error('No se pudo compilar el test bridge_handoff_e2e de PluryPrint.');
+    console.error('No se pudo compilar el test bridge_handoff_e2e de Pluryprint.');
     process.exit(1);
   }
 } else if (puenteReal) {
-  console.log('INFO sin el repo de PluryPrint (PLURYPRINT_SRC_TAURI): no se valida el handoff con la app.');
+  console.log('INFO sin el repo de Pluryprint (PLURYPRINT_SRC_TAURI): no se valida el handoff con la app.');
 }
 
 console.log('Compilando el build de pruebas (PLURYFACT_E2E=1)…');
@@ -143,7 +143,7 @@ comprobar(manifiestoExt.permissions.includes('nativeMessaging'), 'el build E2E d
 const tmp = mkdtempSync(join(tmpdir(), 'pluryfact-e2e-pp-'));
 const recibido = join(tmp, 'recibido');
 // Con el registro real, todo vive bajo un HOME temporal: el perfil de Chromium
-// es la carpeta de Chrome de ese HOME y los datos del puente, los de PluryPrint.
+// es la carpeta de Chrome de ese HOME y los datos del puente, los de Pluryprint.
 const home = join(tmp, 'home');
 const mac = process.platform === 'darwin';
 const perfil = registroCli
@@ -230,7 +230,7 @@ try {
 
   const dirHosts = join(perfil, 'NativeMessagingHosts');
   const manifiestoHost = join(dirHosts, `${NOMBRE_HOST}.json`);
-  const manifiesto = JSON.stringify({ name: NOMBRE_HOST, description: 'PluryPrint (prueba E2E)', path: binario, type: 'stdio', allowed_origins: [`chrome-extension://${id}/`] }, null, 2);
+  const manifiesto = JSON.stringify({ name: NOMBRE_HOST, description: 'Pluryprint (prueba E2E)', path: binario, type: 'stdio', allowed_origins: [`chrome-extension://${id}/`] }, null, 2);
   const registrar = () => {
     if (registroCli) {
       const origen = `chrome-extension://${id}/`;
@@ -272,16 +272,16 @@ try {
   await page.goto(`chrome-extension://${id}/pluryfact.html#avanzado`);
   await page.click('#pp-conectar');
   await page.waitForSelector('#pp-estado[data-estado="problema"]', { timeout: 20_000 });
-  comprobar((await page.textContent('#pp-estado'))?.includes('PluryPrint no está instalado') ?? false, 'sin host: «PluryPrint no está instalado»', (await page.textContent('#pp-estado')) ?? '');
-  comprobar((await page.textContent('#pp-lateral')) === 'PluryPrint: no instalado', 'sin host: barra lateral «no instalado»');
+  comprobar((await page.textContent('#pp-estado'))?.includes('Pluryprint no está instalado') ?? false, 'sin host: «Pluryprint no está instalado»', (await page.textContent('#pp-estado')) ?? '');
+  comprobar((await page.textContent('#pp-lateral')) === 'Pluryprint: no instalado', 'sin host: barra lateral «no instalado»');
 
   // --- Con host registrado.
   registrar();
   await page.click('#pp-conectar');
   await page.waitForSelector('#pp-estado[data-estado="conectado"]', { timeout: 30_000 });
-  comprobar(true, 'Conectar con PluryPrint', (await page.textContent('#pp-estado')) ?? '');
-  comprobar((await page.textContent('#pp-lateral')) === 'PluryPrint: conectado', 'barra lateral «conectado»');
-  comprobar((await page.locator('#pp-perfil option').count()) > 1, 'Avanzado lista los perfiles de PluryPrint');
+  comprobar(true, 'Conectar con Pluryprint', (await page.textContent('#pp-estado')) ?? '');
+  comprobar((await page.textContent('#pp-lateral')) === 'Pluryprint: conectado', 'barra lateral «conectado»');
+  comprobar((await page.locator('#pp-perfil option').count()) > 1, 'Avanzado lista los perfiles de Pluryprint');
 
   // Ajustes: RIDE (por defecto) con XML de respaldo (por defecto) + reporte.
   await page.check('#pp-reporte');
@@ -309,7 +309,7 @@ try {
     await page.click('#pp-panel-enviar');
     await page.waitForSelector('#pp-panel-estado[data-estado="entregado"], #pp-panel-estado[data-estado="error"]', { timeout: 60_000 });
     const final = (await page.textContent('#pp-panel-estado')) ?? '';
-    comprobar((await page.getAttribute('#pp-panel-estado', 'data-estado')) === 'entregado', 'PluryPrint recibió el trabajo', final);
+    comprobar((await page.getAttribute('#pp-panel-estado', 'data-estado')) === 'entregado', 'Pluryprint recibió el trabajo', final);
     return resumen;
   };
   const sha = (d: Uint8Array) => createHash('sha256').update(d).digest('hex');
@@ -363,8 +363,8 @@ try {
       timeout: 300_000,
     });
     for (const linea of `${r.stdout}\n${r.stderr}`.split('\n')) if (linea.trim() && !linea.startsWith('running ')) console.log(`  │ ${linea}`);
-    comprobar(r.status === 0, `${que}: PluryPrint acepta el handoff como la app y convierte cada archivo (XML → RIDE, TXT → PDF)`, `código ${r.status}`);
-    if (existsSync(salida)) console.log(`INFO PDF generados por PluryPrint: ${readdirSync(salida).join(', ')}`);
+    comprobar(r.status === 0, `${que}: Pluryprint acepta el handoff como la app y convierte cada archivo (XML → RIDE, TXT → PDF)`, `código ${r.status}`);
+    if (existsSync(salida)) console.log(`INFO PDF generados por Pluryprint: ${readdirSync(salida).join(', ')}`);
   };
 
   const resumen = await imprimirZip(() => capturar('descargas-panel'));
@@ -397,7 +397,7 @@ try {
   } else {
     verificarPuente(esperado, 'RIDE con XML de respaldo y reporte');
 
-    // --- Segundo trabajo: solo XML (Avanzado → «El XML»). PluryPrint arma la
+    // --- Segundo trabajo: solo XML (Avanzado → «El XML»). Pluryprint arma la
     // representación impresa de cada comprobante, retención incluida.
     await page.goto(`chrome-extension://${id}/pluryfact.html#avanzado`);
     await page.check('input[name="pp-contenido"][value="xml"]');
@@ -424,7 +424,7 @@ try {
   const huellaDespues = huella();
   comprobar(
     huellaDespues.manifiesto === huellaAntes.manifiesto && huellaDespues.inbox === huellaAntes.inbox,
-    'el manifiesto de Chrome y el inbox de PluryPrint del usuario siguen igual',
+    'el manifiesto de Chrome y el inbox de Pluryprint del usuario siguen igual',
   );
   if (!fallos.length && !conservar) rmSync(tmp, { recursive: true, force: true });
   else console.log(`Perfil y archivos de la prueba conservados en ${tmp}${puenteReal ? ` (datos del puente: ${datosPuente})` : ''}`);

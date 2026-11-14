@@ -116,7 +116,7 @@ describe('background', () => {
     fondo.main();
   });
 
-  it('la página consulta PluryPrint a través del background, que es quien abre connectNative', async () => {
+  it('la página consulta Pluryprint a través del background, que es quien abre connectNative', async () => {
     const r = await consultarPluryprint(abrirPuertoPluryprint, '0.2.0');
     expect(fakeBrowser.runtime.connect).toHaveBeenCalledWith({ name: NOMBRE_PUERTO });
     expect(fakeBrowser.runtime.connectNative).toHaveBeenCalledWith(NOMBRE_HOST);

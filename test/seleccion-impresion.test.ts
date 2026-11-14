@@ -149,7 +149,7 @@ describe('textos', () => {
 
   it('plan en Nueva descarga', () => {
     expect(textoPlanImpresion({ ...base, accion: 'configure' })).toBe(
-      'Al terminar se enviará a PluryPrint el RIDE de cada comprobante (o su XML si no tiene RIDE). PluryPrint se abrirá para que revises y confirmes.',
+      'Al terminar se enviará a Pluryprint el RIDE de cada comprobante (o su XML si no tiene RIDE). Pluryprint se abrirá para que revises y confirmes.',
     );
     expect(textoPlanImpresion({ ...base, contenido: 'xml', incluirReporte: true, accion: 'queue' })).toContain('el XML de cada comprobante, como representación impresa, más el reporte. Quedarán en la cola');
   });

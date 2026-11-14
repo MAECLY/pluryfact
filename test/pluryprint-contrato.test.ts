@@ -6,7 +6,7 @@ import { peticionValida } from '../src/lib/puente-pluryprint';
 import { puertoFalso } from './helpers/puerto-falso';
 
 /**
- * Contrato con PluryPrint. Los fixtures son la fuente de verdad compartida:
+ * Contrato con Pluryprint. Los fixtures son la fuente de verdad compartida:
  * canónicos en pluryprint/src-tauri/tests/fixtures/bridge-protocol y copiados
  * aquí byte a byte. Nombres:
  *   <tipo>[.<variante>].request.json / .response.json  intercambios correctos

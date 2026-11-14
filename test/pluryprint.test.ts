@@ -29,7 +29,7 @@ const cliente = (p: { puerto: ReturnType<typeof puertoFalso>['puerto'] }, trozoM
 afterEach(() => vi.useRealTimers());
 
 describe('saludo', () => {
-  it('acepta un host PluryPrint con protocolo 1 y todas las capacidades', async () => {
+  it('acepta un host Pluryprint con protocolo 1 y todas las capacidades', async () => {
     const p = puertoConHost();
     const h = await cliente(p).saludar();
     expect(h.host).toBe('pluryprint');
@@ -37,11 +37,11 @@ describe('saludo', () => {
     expect(p.enviados[0]).toEqual({ v: 1, id: '1', type: 'hello', client: 'pluryfact', clientVersion: '0.2.0', protocols: [1] });
   });
 
-  it('versión incompatible: otro protocolo o sin capacidades → pide actualizar PluryPrint', async () => {
+  it('versión incompatible: otro protocolo o sin capacidades → pide actualizar Pluryprint', async () => {
     await expect(cliente(puertoConHost({ protocolo: 2 })).saludar()).rejects.toMatchObject({ codigo: 'version_incompatible' });
     const e = await cliente(puertoConHost({ capacidades: ['listPrinters'] })).saludar().catch((x: unknown) => x);
     expect(e).toBeInstanceOf(ErrorPluryprint);
-    expect((e as ErrorPluryprint).message).toMatch(/^Actualiza PluryPrint/);
+    expect((e as ErrorPluryprint).message).toMatch(/^Actualiza Pluryprint/);
   });
 
   it('unsupported_version del host se traduce al español', async () => {
@@ -49,14 +49,14 @@ describe('saludo', () => {
     const e = (await cliente(p).saludar().catch((x: unknown) => x)) as ErrorPluryprint;
     expect(e.codigo).toBe('unsupported_version');
     expect(e.detalle).toBe('nope');
-    expect(e.message).toContain('Actualiza PluryPrint');
+    expect(e.message).toContain('Actualiza Pluryprint');
   });
 
   it('host no instalado: Chrome cierra el puerto con «host not found»', async () => {
     const p = puertoFalso();
     const promesa = cliente(p).saludar();
     p.cerrar('Specified native messaging host not found.');
-    await expect(promesa).rejects.toMatchObject({ codigo: 'no_instalado', message: expect.stringContaining('PluryPrint no está instalado') });
+    await expect(promesa).rejects.toMatchObject({ codigo: 'no_instalado', message: expect.stringContaining('Pluryprint no está instalado') });
   });
 
   it('respuestas ajenas o de otro tipo no se confunden', async () => {

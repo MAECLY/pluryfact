@@ -20,8 +20,8 @@ beforeEach(() => {
   f = montarFormulario(document.getElementById('raiz')!, () => {});
 });
 
-describe('«Enviar a PluryPrint al terminar» en Nueva descarga', () => {
-  it('solo aparece con PluryPrint conectado', () => {
+describe('«Enviar a Pluryprint al terminar» en Nueva descarga', () => {
+  it('solo aparece con Pluryprint conectado', () => {
     const casilla = document.querySelector<HTMLElement>('[data-ref="pluryprint"]')!;
     expect(casilla.hidden).toBe(true);
     f.ponerPluryprint({ ...PLURYPRINT_POR_DEFECTO, activado: false });
@@ -55,7 +55,7 @@ describe('«Enviar a PluryPrint al terminar» en Nueva descarga', () => {
     expect($('f-txt')).toMatchObject({ checked: true, disabled: true });
   });
 
-  it('desconectar PluryPrint desmarca la casilla y libera los formatos', () => {
+  it('desconectar Pluryprint desmarca la casilla y libera los formatos', () => {
     f.ponerPluryprint({ ...PLURYPRINT_POR_DEFECTO, activado: true, contenido: 'ambos' });
     $('f-pluryprint').checked = true;
     $('f-pluryprint').dispatchEvent(new Event('change'));

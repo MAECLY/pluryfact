@@ -2,8 +2,8 @@ import { describe, expect, it } from 'vitest';
 import { AJUSTES_POR_DEFECTO, normalizarAjustes, normalizarPluryprint, PLURYPRINT_POR_DEFECTO } from '../src/lib/ajustes';
 import { accionEfectiva, necesitaConfirmacion, pedidoDesdeAjustes, textoEntregado, UMBRAL_CONFIRMAR } from '../src/lib/envio-pluryprint';
 
-describe('ajustes de PluryPrint', () => {
-  it('por defecto: desactivado, abrir PluryPrint para confirmar, RIDE con XML de respaldo, por fecha, sin overrides', () => {
+describe('ajustes de Pluryprint', () => {
+  it('por defecto: desactivado, abrir Pluryprint para confirmar, RIDE con XML de respaldo, por fecha, sin overrides', () => {
     expect(PLURYPRINT_POR_DEFECTO).toEqual({
       activado: false,
       accion: 'configure',
@@ -64,7 +64,7 @@ describe('ajustes de PluryPrint', () => {
   });
 });
 
-describe('pedido a PluryPrint', () => {
+describe('pedido a Pluryprint', () => {
   it('overrides solo con lo que el usuario fijó', () => {
     expect(pedidoDesdeAjustes(PLURYPRINT_POR_DEFECTO, 'x', 'configure')).toEqual({ label: 'x', action: 'configure', profileId: null, printerId: null });
     expect(pedidoDesdeAjustes({ ...PLURYPRINT_POR_DEFECTO, copias: 2, color: 'mono', impresoraId: 'imp' }, 'x', 'queue')).toEqual({
@@ -76,7 +76,7 @@ describe('pedido a PluryPrint', () => {
     });
   });
 
-  it(`imprimir directo con más de ${UMBRAL_CONFIRMAR} documentos exige confirmación; si no, abre PluryPrint`, () => {
+  it(`imprimir directo con más de ${UMBRAL_CONFIRMAR} documentos exige confirmación; si no, abre Pluryprint`, () => {
     expect(accionEfectiva('print-default', UMBRAL_CONFIRMAR, false)).toBe('print-default');
     expect(accionEfectiva('print-default', UMBRAL_CONFIRMAR + 1, false)).toBe('configure');
     expect(accionEfectiva('print-default', UMBRAL_CONFIRMAR + 1, true)).toBe('print-default');
@@ -86,7 +86,7 @@ describe('pedido a PluryPrint', () => {
   });
 
   it('texto final según la acción', () => {
-    expect(textoEntregado(1, 'configure')).toBe('PluryPrint recibió 1 archivo. Revísalos y confirma la impresión en PluryPrint.');
-    expect(textoEntregado(1200, 'queue')).toBe('PluryPrint recibió 1.200 archivos y los dejó en su cola.');
+    expect(textoEntregado(1, 'configure')).toBe('Pluryprint recibió 1 archivo. Revísalos y confirma la impresión en Pluryprint.');
+    expect(textoEntregado(1200, 'queue')).toBe('Pluryprint recibió 1.200 archivos y los dejó en su cola.');
   });
 });
