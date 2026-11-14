@@ -36,7 +36,7 @@ it('unicos quita claves repetidas', () => {
 
 it('arma carpeta y nombre de archivo', () => {
   const f = filas[1]!;
-  expect(carpeta('1799999999001', 'recibidos', f)).toBe('legajo/1799999999001/recibidos/2026/11');
+  expect(carpeta('1799999999001', 'recibidos', f)).toBe('pluryfact/1799999999001/recibidos/2026/11');
   expect(nombreArchivo(f, 'xml')).toBe(
     'factura_133-007-000223738_0990000002001_0811202601099000000200121330070002237380000000017.xml',
   );

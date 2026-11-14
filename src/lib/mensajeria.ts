@@ -27,10 +27,10 @@ export interface EstadoTrabajo extends Progreso {
   pendientes?: number[];
 }
 
-export const CLAVE_PROGRESO = 'legajo:progreso';
+export const CLAVE_PROGRESO = 'pluryfact:progreso';
 /**
  * Pedido de cancelación: el `inicio` del trabajo a cancelar. Va por storage y
  * no por mensaje a una pestaña, para que llegue a la pestaña que realmente
  * está descargando aunque haya varias del SRI abiertas.
  */
-export const CLAVE_CANCELAR = 'legajo:cancelar';
+export const CLAVE_CANCELAR = 'pluryfact:cancelar';

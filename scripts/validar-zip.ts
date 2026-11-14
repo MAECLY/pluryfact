@@ -1,6 +1,6 @@
 /**
- * Valida un ZIP descargado con Legajo (`bun run validar-zip [ruta]`).
- * Sin ruta, toma el legajo_*.zip más reciente de ~/Downloads.
+ * Valida un ZIP descargado con Pluryfact (`bun run validar-zip [ruta]`).
+ * Sin ruta, toma el pluryfact_*.zip (o legajo_*.zip, de antes del cambio de nombre) más reciente de ~/Downloads.
  * Comprueba XML autorizados con su clave, PDF válidos, un RIDE por XML y
  * rutas por año/mes. No imprime datos personales: solo conteos y secuenciales.
  */
@@ -12,7 +12,7 @@ import { strFromU8, unzipSync } from 'fflate';
 function masReciente(): string | null {
   const dir = join(homedir(), 'Downloads');
   const zips = readdirSync(dir)
-    .filter((f) => /^legajo_.*\.zip$/.test(f))
+    .filter((f) => /^(pluryfact|legajo)_.*\.zip$/.test(f))
     .map((f) => ({ f: join(dir, f), t: statSync(join(dir, f)).mtimeMs }))
     .sort((a, b) => b.t - a.t);
   return zips[0]?.f ?? null;
@@ -20,7 +20,7 @@ function masReciente(): string | null {
 
 const ruta = process.argv[2] ?? masReciente();
 if (!ruta) {
-  console.error('No hay ningún legajo_*.zip en ~/Downloads.');
+  console.error('No hay ningún pluryfact_*.zip en ~/Downloads.');
   process.exit(1);
 }
 const fallos: string[] = [];
@@ -45,8 +45,8 @@ console.log(`Contenido: ${xmls.length} XML, ${pdfs.length} PDF, ${txts.length} T
 const sec = (n: string) => /_(\d{49})\.\w+$/.exec(n)?.[1]?.slice(30, 39) ?? n;
 comprobar(nombres.length > 0, 'el ZIP tiene archivos');
 comprobar(
-  nombres.every((n) => new RegExp(`^legajo/\\d{13}/${bandeja}/(\\d{4}/\\d{2}|reportes)/`).test(n)),
-  'rutas legajo/<RUC>/<bandeja>/<año>/<mes>/',
+  nombres.every((n) => new RegExp(`^(pluryfact|legajo)/\\d{13}/${bandeja}/(\\d{4}/\\d{2}|reportes)/`).test(n)),
+  'rutas pluryfact/<RUC>/<bandeja>/<año>/<mes>/',
 );
 const xmlMalos = xmls.filter((n) => {
   const x = strFromU8(zip[n]!);

@@ -1,12 +1,12 @@
 /**
- * Prueba de punta a punta de Legajo contra SRI en Línea REAL (`bun run e2e`).
+ * Prueba de punta a punta de Pluryfact contra SRI en Línea REAL (`bun run e2e`).
  *
- * 1. Compila la extensión y abre Chromium (con ventana) con Legajo cargado y
+ * 1. Compila la extensión y abre Chromium (con ventana) con Pluryfact cargado y
  *    un perfil propio en .e2e-profile/.
  * 2. Abre el login del SRI y ESPERA a que la persona inicie sesión a mano y
  *    entre desde el menú a «Comprobantes electrónicos emitidos» o «recibidos».
  *    El script nunca escribe credenciales.
- * 3. Abre el popup de Legajo en otra pestaña, configura el periodo y pulsa
+ * 3. Abre el popup de Pluryfact en otra pestaña, configura el periodo y pulsa
  *    «Descargar ZIP».
  * 4. Recibe el ZIP, lo guarda en .e2e-out/ y verifica: XML autorizados con la
  *    clave del nombre, PDF válidos, rutas por año/mes.
@@ -61,7 +61,7 @@ const ctx = await chromium.launchPersistentContext(perfil, {
 });
 const worker = ctx.serviceWorkers()[0] ?? (await ctx.waitForEvent('serviceworker', { timeout: 20_000 }));
 const extId = new URL(worker.url()).host;
-console.log(`Legajo cargado (${extId}).`);
+console.log(`Pluryfact cargado (${extId}).`);
 
 const inicio = ctx.pages()[0] ?? (await ctx.newPage());
 if (!inicio.url().includes(PORTAL)) await inicio.goto(LOGIN);
@@ -175,7 +175,7 @@ async function ronda(sri: Page): Promise<string> {
   const leerEstado = () =>
     popup.evaluate(async () => {
       const g = globalThis as unknown as { chrome: { storage: { local: { get(k: string): Promise<Record<string, unknown>> } } } };
-      return (await g.chrome.storage.local.get('legajo:progreso'))['legajo:progreso'] as
+      return (await g.chrome.storage.local.get('pluryfact:progreso'))['pluryfact:progreso'] as
         | { fase: string; actualizado: number; zip: string | null; mensaje: string }
         | undefined;
     });
@@ -196,14 +196,14 @@ async function ronda(sri: Page): Promise<string> {
   } else {
     const ruta = join(salida, terminado.d.suggestedFilename());
     await terminado.d.saveAs(ruta);
-    comprobar(/^legajo_\d{13}_(emitidos|recibidos)_/.test(terminado.d.suggestedFilename()), 'nombre del ZIP', terminado.d.suggestedFilename().replace(/\d{13}/, '<RUC>'));
+    comprobar(/^pluryfact_\d{13}_(emitidos|recibidos)_/.test(terminado.d.suggestedFilename()), 'nombre del ZIP', terminado.d.suggestedFilename().replace(/\d{13}/, '<RUC>'));
     const zip = unzipSync(new Uint8Array(readFileSync(ruta)));
     const nombres = Object.keys(zip);
     const xmls = nombres.filter((n) => n.endsWith('.xml'));
     const pdfs = nombres.filter((n) => n.endsWith('.pdf'));
     console.log(`ZIP: ${xmls.length} XML, ${pdfs.length} PDF, ${nombres.length - xmls.length - pdfs.length} otros, en ${segundos} s`);
     comprobar(nombres.length > 0, 'el ZIP tiene archivos');
-    comprobar(nombres.every((n) => new RegExp(`^legajo/\\d{13}/${bandeja}/(\\d{4}/\\d{2}|reportes)/`).test(n)), 'rutas legajo/<RUC>/<bandeja>/<año>/<mes>/');
+    comprobar(nombres.every((n) => new RegExp(`^pluryfact/\\d{13}/${bandeja}/(\\d{4}/\\d{2}|reportes)/`).test(n)), 'rutas pluryfact/<RUC>/<bandeja>/<año>/<mes>/');
     const xmlMalos = xmls.filter((n) => {
       const x = strFromU8(zip[n]!);
       const clave = /_(\d{49})\.xml$/.exec(n)?.[1];

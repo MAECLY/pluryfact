@@ -1,6 +1,6 @@
 # reCAPTCHA en Comprobantes recibidos
 
-**Estado:** Legajo no incluye resolución ni evasión automática de captchas. El objetivo de UX es que el usuario **no vea nunca un captcha**, y se logra reduciendo el número de consultas, no burlando el control.
+**Estado:** Pluryfact no incluye resolución ni evasión automática de captchas. El objetivo de UX es que el usuario **no vea nunca un captcha**, y se logra reduciendo el número de consultas, no burlando el control.
 
 ## Qué hay
 
@@ -14,11 +14,11 @@
 - Las descargas (XML, RIDE, reporte TXT) y la paginación **no usan captcha**.
 - El XML de cualquier clave sale del servicio web público del SRI, **sin captcha**.
 
-Por eso el flujo de Legajo pide **un solo token por mes consultado** (la consulta del listado). Un año completo de recibidos son 12 tokens invisibles, repartidos a ritmo humano.
+Por eso el flujo de Pluryfact pide **un solo token por mes consultado** (la consulta del listado). Un año completo de recibidos son 12 tokens invisibles, repartidos a ritmo humano.
 
 ## Enfoque
 
-1. **El token lo genera la página del usuario, como siempre.** El conductor dispara la misma función del portal; Legajo no fabrica ni reutiliza tokens.
+1. **El token lo genera la página del usuario, como siempre.** El conductor dispara la misma función del portal; Pluryfact no fabrica ni reutiliza tokens.
 2. **Menos consultas.** Un mes completo por consulta (`dia=0`): un año de facturas recibidas son 12 tokens, no 365.
 3. **Ritmo humano.** Una consulta a la vez, con pausas aleatorias (p. ej. 4–9 s) y descargas espaciadas. Tope configurable de consultas por minuto.
 4. **Humano en el bucle.** Si aparece el desafío visible o la consulta se rechaza, la cola se pausa, la pestaña del SRI pasa al frente y el popup muestra "Verifica el captcha para continuar". Al resolverlo, la cola sigue sola.

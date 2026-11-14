@@ -1,7 +1,7 @@
 import type { EstadoTrabajo } from './mensajeria';
 
 /** Trabajos terminados, más reciente primero. Vive en storage.local. */
-export const CLAVE_HISTORIAL = 'legajo:historial';
+export const CLAVE_HISTORIAL = 'pluryfact:historial';
 export const MAX_HISTORIAL = 50;
 
 export interface EntradaHistorial extends EstadoTrabajo {

@@ -6,7 +6,7 @@ export const enMarcha = (e: EstadoTrabajo) => ['consultando', 'descargando', 'em
 
 /** Frase principal: qué está pasando o cómo terminó. */
 export function fraseEstado(e: EstadoTrabajo): string {
-  if (e.verificacion) return 'El SRI muestra una verificación en la pestaña del portal. Resuélvela y Legajo seguirá solo.';
+  if (e.verificacion) return 'El SRI muestra una verificación en la pestaña del portal. Resuélvela y Pluryfact seguirá solo.';
   if (enMarcha(e)) return e.mensaje;
   if (e.fase === 'cancelado') return e.zip ? 'Cancelada. Lo que se alcanzó a bajar está en tu carpeta de descargas.' : 'Cancelada.';
   if (e.fase === 'error') return e.zip ? 'Lo que se alcanzó a bajar está en tu carpeta de descargas.' : 'La descarga se detuvo.';

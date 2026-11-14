@@ -1,6 +1,7 @@
 import { CLAVE_AJUSTES, normalizarAjustes } from '@/lib/ajustes';
 import { insignia, notificacion } from '@/lib/aviso-icono';
 import { CLAVE_PROGRESO, type EstadoTrabajo, type Peticion } from '@/lib/mensajeria';
+import { migrarClavesAntiguas } from '@/lib/migracion';
 import { crearRegistro } from '@/lib/registro';
 import { xmlPorClave } from '@/lib/ws-reintentos';
 
@@ -9,6 +10,7 @@ import { xmlPorClave } from '@/lib/ws-reintentos';
 // notificaciones del sistema cuando el trabajo termina o necesita atención.
 export default defineBackground(() => {
   const log = crearRegistro('background', browser.storage.local);
+  void migrarClavesAntiguas(browser.storage.local).then((n) => n && log.info(`Migradas ${n} claves de Legajo a Pluryfact`));
   log.info('Service worker iniciado');
 
   browser.runtime.onMessage.addListener((msg: Peticion, _sender, responder: (r: unknown) => void) => {
@@ -50,16 +52,16 @@ export default defineBackground(() => {
     });
   });
 
-  // Clic en una notificación: abre Descargas en la página de Legajo.
+  // Clic en una notificación: abre Descargas en la página de Pluryfact.
   browser.notifications.onClicked.addListener(async (id) => {
-    if (!id.startsWith('legajo-')) return;
-    await browser.tabs.create({ url: browser.runtime.getURL('/legajo.html#descargas') });
+    if (!id.startsWith('pluryfact-')) return;
+    await browser.tabs.create({ url: browser.runtime.getURL('/pluryfact.html#descargas') });
     await browser.notifications.clear(id);
   });
 
   // Primera instalación: bienvenida en la página completa.
   browser.runtime.onInstalled.addListener(async ({ reason }) => {
-    if (reason === 'install') await browser.tabs.create({ url: browser.runtime.getURL('/legajo.html#acerca') });
+    if (reason === 'install') await browser.tabs.create({ url: browser.runtime.getURL('/pluryfact.html#acerca') });
   });
 
   void browser.storage.local.get(CLAVE_PROGRESO).then((v) => pintarIcono(v[CLAVE_PROGRESO] as EstadoTrabajo | undefined));

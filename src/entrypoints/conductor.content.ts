@@ -10,7 +10,7 @@ export default defineContentScript({
     // Cada instalación tiene identidad propia y el content script le habla solo
     // al conductor más reciente, así que reinyectar no produce dobles clics.
     const yo = crypto.randomUUID();
-    (window as unknown as { __legajoConductor?: string }).__legajoConductor = yo;
+    (window as unknown as { __pluryfactConductor?: string }).__pluryfactConductor = yo;
     instalarConductor(window, yo);
   },
 });

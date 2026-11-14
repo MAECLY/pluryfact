@@ -12,5 +12,5 @@ export function armarZip(archivos: Archivo[]): Uint8Array {
 }
 
 export function nombreZip(ruc: string, bandeja: string, etiqueta: string): string {
-  return `legajo_${ruc}_${bandeja}_${etiqueta}.zip`.replace(/[^\w.-]/g, '_');
+  return `pluryfact_${ruc}_${bandeja}_${etiqueta}.zip`.replace(/[^\w.-]/g, '_');
 }

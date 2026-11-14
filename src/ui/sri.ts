@@ -19,7 +19,7 @@ const pedirEstado = async (id: number) => {
   }
 };
 
-/** Activa Legajo en una pestaña del SRI abierta antes de instalar o recargar la extensión. */
+/** Activa Pluryfact en una pestaña del SRI abierta antes de instalar o recargar la extensión. */
 async function inyectar(id: number) {
   await browser.scripting.executeScript({ target: { tabId: id }, files: ['/content-scripts/conductor.js'], world: 'MAIN' });
   await browser.scripting.executeScript({ target: { tabId: id }, files: ['/content-scripts/sri.js'] });

@@ -1,4 +1,4 @@
-/* Legajo — tokens del sistema de diseño. Fuente de verdad: docs/design-system.md.
+/* Pluryfact — tokens del sistema de diseño. Fuente de verdad: docs/design-system.md.
    Concepto: el expediente de oficina. Tinta azul, carpeta manila, cinta roja. */
 @import '@fontsource/ibm-plex-serif/latin-700.css';
 @import '@fontsource/ibm-plex-sans/latin-400.css';
@@ -8,59 +8,59 @@
 
 :root {
   /* Color — claro */
-  --lg-bg: #f2f3f5; /* Archivo */
-  --lg-surface: #ffffff;
-  --lg-ink: #14213d;
-  --lg-muted: #5a6275;
-  --lg-line: #d8dbe2;
-  --lg-accent: #1d3a6e; /* Tinta */
-  --lg-accent-ink: #ffffff;
-  --lg-manila: #d9a441; /* Manila */
-  --lg-ok: #2d7a4f; /* Archivado */
-  --lg-warn: #a8701a; /* Verificar */
-  --lg-err: #c8102e; /* Cinta */
+  --pf-bg: #f2f3f5; /* Archivo */
+  --pf-surface: #ffffff;
+  --pf-ink: #14213d;
+  --pf-muted: #5a6275;
+  --pf-line: #d8dbe2;
+  --pf-accent: #1d3a6e; /* Tinta */
+  --pf-accent-ink: #ffffff;
+  --pf-manila: #d9a441; /* Manila */
+  --pf-ok: #2d7a4f; /* Archivado */
+  --pf-warn: #a8701a; /* Verificar */
+  --pf-err: #c8102e; /* Cinta */
 
   /* Tipografía */
-  --lg-font-display: 'IBM Plex Serif', Georgia, serif;
-  --lg-font-body: 'IBM Plex Sans', system-ui, sans-serif;
-  --lg-font-mono: 'IBM Plex Mono', ui-monospace, monospace;
-  --lg-display-weight: 700;
-  --lg-display-tracking: -0.015em;
+  --pf-font-display: 'IBM Plex Serif', Georgia, serif;
+  --pf-font-body: 'IBM Plex Sans', system-ui, sans-serif;
+  --pf-font-mono: 'IBM Plex Mono', ui-monospace, monospace;
+  --pf-display-weight: 700;
+  --pf-display-tracking: -0.015em;
 
   /* Forma y espacio */
-  --lg-radius: 3px;
-  --lg-radius-lg: 9px;
-  --lg-space: 4px;
+  --pf-radius: 3px;
+  --pf-radius-lg: 9px;
+  --pf-space: 4px;
   color-scheme: light;
 }
 
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme='light']) {
-    --lg-bg: #0d1322;
-    --lg-surface: #151d30;
-    --lg-ink: #e8ecf4;
-    --lg-muted: #9ca5b8;
-    --lg-line: #26304a;
-    --lg-accent: #7fa6e8;
-    --lg-accent-ink: #0d1322;
-    --lg-manila: #e8b95a;
-    --lg-ok: #5dbb86;
-    --lg-warn: #e2ae52;
-    --lg-err: #ff5a6e;
+    --pf-bg: #0d1322;
+    --pf-surface: #151d30;
+    --pf-ink: #e8ecf4;
+    --pf-muted: #9ca5b8;
+    --pf-line: #26304a;
+    --pf-accent: #7fa6e8;
+    --pf-accent-ink: #0d1322;
+    --pf-manila: #e8b95a;
+    --pf-ok: #5dbb86;
+    --pf-warn: #e2ae52;
+    --pf-err: #ff5a6e;
     color-scheme: dark;
   }
 }
 :root[data-theme='dark'] {
-  --lg-bg: #0d1322;
-  --lg-surface: #151d30;
-  --lg-ink: #e8ecf4;
-  --lg-muted: #9ca5b8;
-  --lg-line: #26304a;
-  --lg-accent: #7fa6e8;
-  --lg-accent-ink: #0d1322;
-  --lg-manila: #e8b95a;
-  --lg-ok: #5dbb86;
-  --lg-warn: #e2ae52;
-  --lg-err: #ff5a6e;
+  --pf-bg: #0d1322;
+  --pf-surface: #151d30;
+  --pf-ink: #e8ecf4;
+  --pf-muted: #9ca5b8;
+  --pf-line: #26304a;
+  --pf-accent: #7fa6e8;
+  --pf-accent-ink: #0d1322;
+  --pf-manila: #e8b95a;
+  --pf-ok: #5dbb86;
+  --pf-warn: #e2ae52;
+  --pf-err: #ff5a6e;
   color-scheme: dark;
 }

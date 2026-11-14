@@ -1,10 +1,10 @@
-# Legajo: investigación UI/UX de descargas masivas y propuesta de mejoras
+# Pluryfact: investigación UI/UX de descargas masivas y propuesta de mejoras
 
 ## 1. Resumen
 
 - **Hallazgo principal:** ninguna extensión del SRI (ni de descargas en lote en general) ofrece una página completa como chrome://downloads. Casi todas inyectan UI en el portal o usan solo un popup. Tener esa página sería un diferenciador claro.
-- **Modelo a seguir:** el de Chrome y de Chrono, en dos niveles. El popup actúa como "burbuja" con el estado del trabajo activo y la página `legajo.html` en pestaña es el gestor (Nueva descarga, Descargas, Avanzado, Acerca de).
-- **Queja más grave del sector:** descargas incompletas sin explicación ("101 facturas" y solo 11 XML descargados). Le siguen los errores sin causa y los ajustes que no se recuerdan. Legajo debe mostrar cuántos comprobantes esperaba y cuántos obtuvo, y dar errores que se puedan resolver.
+- **Modelo a seguir:** el de Chrome y de Chrono, en dos niveles. El popup actúa como "burbuja" con el estado del trabajo activo y la página `pluryfact.html` en pestaña es el gestor (Nueva descarga, Descargas, Avanzado, Acerca de).
+- **Queja más grave del sector:** descargas incompletas sin explicación ("101 facturas" y solo 11 XML descargados). Le siguen los errores sin causa y los ajustes que no se recuerdan. Pluryfact debe mostrar cuántos comprobantes esperaba y cuántos obtuvo, y dar errores que se puedan resolver.
 - **"Puedes cerrar" tiene un matiz:** el popup se puede cerrar, pero la pestaña del SRI no. Hay que decir ambas cosas y apoyarlas con la insignia del icono y notificaciones del sistema.
 - **Confianza demostrada, no solo prometida:** "no pedimos tu clave", "nada sale de tu navegador", permisos explicados uno por uno, código y política enlazados, e identidad MAECLY. Varios competidores declaran que recogen datos de autenticación e historial web.
 
@@ -31,7 +31,7 @@
 ## 3. Patrones de la industria a adoptar
 
 ### Página completa y navegación
-- **Dos niveles, como Chrome y Chrono.** El popup muestra el estado y lleva un botón "Abrir Legajo". La página completa en pestaña (`legajo.html`, abierta con `tabs.create` y declarada también como `options_page`) tiene navegación lateral: Nueva descarga · Descargas · Avanzado · Acerca de.
+- **Dos niveles, como Chrome y Chrono.** El popup muestra el estado y lleva un botón "Abrir Pluryfact". La página completa en pestaña (`pluryfact.html`, abierta con `tabs.create` y declarada también como `options_page`) tiene navegación lateral: Nueva descarga · Descargas · Avanzado · Acerca de.
 - **El popup no aloja el trabajo.** Chrome lo cierra al perder el foco. El estado vive en `chrome.storage.local` y todas las vistas escuchan `storage.onChanged`, sin sondeo ni mensajes.
 - **Nueva descarga a pantalla completa en dos columnas.** A la izquierda, los parámetros. A la derecha, un resumen con estimación ("≈ 3.600 archivos, unos 40 min") y la comprobación de que hay sesión activa en el SRI.
 - **Panel lateral (`sidePanel`) opcional** para ver el portal y el progreso a la vez. Solo se abre tras un gesto del usuario y no sustituye a la página.
@@ -68,7 +68,7 @@
 - **Cierre inequívoco** con un banner de éxito que resuma el resultado ("1.784 archivos · 12 meses · 3 sin RIDE"), "Abrir ZIP" como acción principal y "Ver detalle" como secundaria. Así el usuario no relanza el trabajo.
 
 ### Ajustes avanzados
-- **Plantilla de nombres con vista previa en vivo.** ZIP: `Legajo_<RUC>_<desde>-<hasta>.zip`. Archivos: `{tipo}_{serie}_{fecha}_{ruc}`. Carpetas dentro del ZIP: contribuyente/año/mes, por tipo, o plana.
+- **Plantilla de nombres con vista previa en vivo.** ZIP: `Pluryfact_<RUC>_<desde>-<hasta>.zip`. Archivos: `{tipo}_{serie}_{fecha}_{ruc}`. Carpetas dentro del ZIP: contribuyente/año/mes, por tipo, o plana.
 - **Opciones de salida:** qué hacer con los duplicados (omitir o reemplazar); un ZIP por mes o uno solo; incluir el reporte TXT y un CSV resumen.
 - **Ritmo "amable con el SRI":** pausa entre peticiones (lento/normal), concurrencia de 1 a 3 y reintentos automáticos.
 - **Comportamiento:** notificaciones sí/no, conservar el historial N días y panel lateral sí/no.
@@ -79,7 +79,7 @@
 ### Confianza y "Acerca de"
 - **Bloque de confianza en Acerca de y en la primera ejecución:**
   - "Usa tu sesión abierta del SRI; nunca pide tu clave."
-  - "Todo ocurre en tu navegador: Legajo no tiene servidores ni analítica y no envía comprobantes ni credenciales."
+  - "Todo ocurre en tu navegador: Pluryfact no tiene servidores ni analítica y no envía comprobantes ni credenciales."
 - **Permisos en una tabla**, cada uno con el motivo en español. Incluir la declaración de cumplimiento Limited Use: la política exige describir el uso de datos "in the extension's interface".
 - **Pruebas, no solo promesas.** La ficha de privacidad de la Chrome Web Store es autodeclarada y nadie la audita, así que hay que enlazar el código fuente y la política de privacidad.
 - **Identidad y soporte:** versión con fecha de compilación y Novedades, licencia, "Reportar un problema" (adjunta el diagnóstico), contacto (correo o WhatsApp), crédito "by MAECLY" con el kit de marca y la frase "No es una herramienta oficial del SRI".
@@ -104,11 +104,11 @@
 - **Cifras de marketing sin método** ("+500 comprobantes/minuto").
 - **Interfaz sin ayuda ni texto** ("no help, no text").
 
-## 5. Recomendaciones priorizadas para Legajo
+## 5. Recomendaciones priorizadas para Pluryfact
 
 ### P0 (núcleo de la petición y de la confianza)
 
-1. **Página completa `legajo.html` en pestaña** con navegación lateral (Nueva descarga · Descargas · Avanzado · Acerca de). El popup queda como resumen del trabajo activo con un botón "Abrir Legajo".
+1. **Página completa `pluryfact.html` en pestaña** con navegación lateral (Nueva descarga · Descargas · Avanzado · Acerca de). El popup queda como resumen del trabajo activo con un botón "Abrir Pluryfact".
    - *Por qué:* el popup se cierra solo, los trabajos duran de 10 a 60 min, y ningún competidor del SRI tiene una página así.
    - *Fuente:* developer.chrome.com (add-popup, options-page); Chrono; uBlock Origin.
 2. **Estado compartido en `storage.local` y `storage.onChanged`** para que el popup, la página y un eventual panel se mantengan sincronizados y se pueda reanudar.
@@ -122,7 +122,7 @@
    - *Fuente:* reseñas de Descarga Masiva Facturas (AMO).
 5. **Errores dentro de la fila con causa y acción** ("Sesión caducada en Marzo, pág. 3 → Reanudar"); las acciones que no aplican se ocultan.
    - *Fuente:* reseñas de Simple Mass Downloader y DownThemAll; item.html.ts de Chromium; bugs 1739150 y 227502 de Mozilla.
-6. **Descargas al estilo chrome://downloads:** agrupadas por fecha, buscador, acciones según el estado y "Quitar del historial de Legajo (no borra archivos de tu computadora)". El fichero de periodos pasa a ser el detalle expandido.
+6. **Descargas al estilo chrome://downloads:** agrupadas por fecha, buscador, acciones según el estado y "Quitar del historial de Pluryfact (no borra archivos de tu computadora)". El fichero de periodos pasa a ser el detalle expandido.
    - *Fuente:* support.google.com/chrome/answer/95759; item.html.ts.
 7. **Insignia del icono** ("4/12", "!" ámbar, "✓" verde) y **notificaciones** al terminar, al caducar la sesión (con `requireInteraction`) y ante errores.
    - *Por qué:* el usuario habrá cerrado el popup.
@@ -157,7 +157,7 @@
     - *Fuente:* informe paginas-extension (Chrome options-page / patrón de onboarding).
 16. **Panel lateral opcional**, activable en Avanzado, que se abre solo tras un clic del usuario.
     - *Fuente:* Chrome sidePanel API.
-17. **Atajo de teclado** para abrir Legajo (como Ctrl+J en Chrono) y "Repetir con los mismos filtros".
+17. **Atajo de teclado** para abrir Pluryfact (como Ctrl+J en Chrono) y "Repetir con los mismos filtros".
     - *Fuente:* Chrono.
 18. **Indicador del estado del portal SRI** en la cabecera.
     - *Fuente:* ACCOUNTEX365.

@@ -21,8 +21,8 @@ export default defineContentScript({
   main() {
     // El popup puede reinyectar este script (pestaña abierta antes de recargar la extensión).
     const marca = document.documentElement;
-    if (marca.dataset.legajo === browser.runtime.id) return;
-    marca.dataset.legajo = browser.runtime.id;
+    if (marca.dataset.pluryfact === browser.runtime.id) return;
+    marca.dataset.pluryfact = browser.runtime.id;
     const log = crearRegistro('content', browser.storage.local);
     log.info(`Content script activo en ${location.pathname.split('/').pop()}`);
     const logConductor = crearRegistro('conductor', browser.storage.local);
@@ -75,7 +75,7 @@ export default defineContentScript({
         window.postMessage({ canal: CANAL, tipo: 'quien' } satisfies MensajeCanal, location.origin);
         await new Promise((r) => setTimeout(r, 100));
       }
-      if (!conductor) throw new Error('El conductor de Legajo no está activo en la página. Vuelve a entrar desde el menú del portal.');
+      if (!conductor) throw new Error('El conductor de Pluryfact no está activo en la página. Vuelve a entrar desde el menú del portal.');
       return conductor;
     }
 

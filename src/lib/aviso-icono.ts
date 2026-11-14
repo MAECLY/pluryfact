@@ -10,19 +10,19 @@ const enMarcha = (e: EstadoTrabajo) => ['consultando', 'descargando', 'empaqueta
 
 /** Insignia y título del icono de la extensión según el trabajo. */
 export function insignia(e: EstadoTrabajo | undefined): Insignia {
-  if (!e) return { texto: '', color: '#1D3A6E', titulo: 'Legajo' };
+  if (!e) return { texto: '', color: '#1D3A6E', titulo: 'Pluryfact' };
   if (enMarcha(e)) {
     const total = e.consultasTotal || 0;
     const hechas = Math.min(e.consultasHechas + 1, total);
     return {
       texto: total && total <= 99 ? `${hechas}/${total}` : '…',
       color: '#1D3A6E',
-      titulo: `Legajo: descargando (${hechas} de ${total}). Puedes cerrar esta ventana; no cierres la pestaña del SRI.`,
+      titulo: `Pluryfact: descargando (${hechas} de ${total}). Puedes cerrar esta ventana; no cierres la pestaña del SRI.`,
     };
   }
-  if (e.fase === 'error' || e.pendientes?.length) return { texto: '!', color: '#A8701A', titulo: 'Legajo: la descarga necesita tu atención.' };
-  if (e.fase === 'listo') return { texto: '✓', color: '#2D7A4F', titulo: 'Legajo: descarga lista.' };
-  return { texto: '', color: '#1D3A6E', titulo: 'Legajo' };
+  if (e.fase === 'error' || e.pendientes?.length) return { texto: '!', color: '#A8701A', titulo: 'Pluryfact: la descarga necesita tu atención.' };
+  if (e.fase === 'listo') return { texto: '✓', color: '#2D7A4F', titulo: 'Pluryfact: descarga lista.' };
+  return { texto: '', color: '#1D3A6E', titulo: 'Pluryfact' };
 }
 
 export interface Notificacion {
@@ -40,7 +40,7 @@ export interface Notificacion {
 export function notificacion(antes: EstadoTrabajo | undefined, ahora: EstadoTrabajo | undefined): Notificacion | null {
   if (!ahora || (antes && antes.fase === ahora.fase && antes.inicio === ahora.inicio)) return null;
   if (!['listo', 'error'].includes(ahora.fase)) return null;
-  const id = `legajo-${ahora.inicio}-${ahora.fase}`;
+  const id = `pluryfact-${ahora.inicio}-${ahora.fase}`;
   if (ahora.fase === 'listo')
     return {
       id,
@@ -54,7 +54,7 @@ export function notificacion(antes: EstadoTrabajo | undefined, ahora: EstadoTrab
   return {
     id,
     titulo: sesion ? 'Tu sesión del SRI caducó' : 'La descarga se detuvo',
-    mensaje: sesion ? 'Inicia sesión otra vez y pulsa Reanudar en Legajo.' : ahora.mensaje.slice(0, 180),
+    mensaje: sesion ? 'Inicia sesión otra vez y pulsa Reanudar en Pluryfact.' : ahora.mensaje.slice(0, 180),
     insistente: true,
   };
 }

@@ -8,7 +8,7 @@ export interface Ajustes {
 }
 
 export const AJUSTES_POR_DEFECTO: Ajustes = { ritmo: 'normal', notificaciones: true, diasHistorial: 90 };
-export const CLAVE_AJUSTES = 'legajo:ajustes';
+export const CLAVE_AJUSTES = 'pluryfact:ajustes';
 
 export function normalizarAjustes(v: unknown): Ajustes {
   const a = (v && typeof v === 'object' ? v : {}) as Partial<Ajustes>;

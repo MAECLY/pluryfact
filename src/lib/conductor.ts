@@ -13,7 +13,7 @@ import { clasificarMensaje } from './mensajes';
 import { byId, TABLA } from './selectors';
 import type { Bandeja } from './types';
 
-export const CANAL = 'legajo-conductor';
+export const CANAL = 'pluryfact-conductor';
 
 export type Orden =
   | { accion: 'consultar'; consulta: ConsultaPortal }

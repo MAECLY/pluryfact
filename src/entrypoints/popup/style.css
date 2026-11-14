@@ -3,7 +3,7 @@
 @import '../../ui/componentes.css';
 
 /*
- * Popup de Legajo. Concepto: un archivador.
+ * Popup de Pluryfact. Concepto: un archivador.
  * Lo único llamativo es el fichero de periodos (una casilla por mes o día) que
  * se rellena de manila. Todo lo demás es tipografía sobria, sin cajas, sin
  * etiquetas en mayúsculas ni monoespaciadas.
@@ -12,9 +12,9 @@
 @layer base {
   html,
   body {
-    background: var(--lg-surface);
-    color: var(--lg-ink);
-    font-family: var(--lg-font-body);
+    background: var(--pf-surface);
+    color: var(--pf-ink);
+    font-family: var(--pf-font-body);
     font-size: 13px;
     line-height: 1.45;
     margin: 0;
@@ -24,7 +24,7 @@
     font-variant-numeric: tabular-nums;
   }
   :focus-visible {
-    outline: 2px solid var(--lg-accent);
+    outline: 2px solid var(--pf-accent);
     outline-offset: 2px;
   }
   button {
@@ -44,24 +44,24 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  font-family: var(--lg-font-display);
+  font-family: var(--pf-font-display);
   font-weight: 700;
   font-size: 17px;
   letter-spacing: -0.015em;
 }
 .pantalla {
   font-size: 12px;
-  color: var(--lg-muted);
+  color: var(--pf-muted);
 }
 .pantalla[data-conectado='true'] {
-  color: var(--lg-ink);
+  color: var(--pf-ink);
 }
 
 .pestanas {
   display: flex;
   gap: 18px;
   padding: 0 16px;
-  border-bottom: 1px solid var(--lg-line);
+  border-bottom: 1px solid var(--pf-line);
 }
 .pestana {
   display: inline-flex;
@@ -74,11 +74,11 @@
   background: none;
   cursor: pointer;
   font-weight: 600;
-  color: var(--lg-muted);
+  color: var(--pf-muted);
 }
 .pestana[aria-selected='true'] {
-  color: var(--lg-ink);
-  border-bottom-color: var(--lg-accent);
+  color: var(--pf-ink);
+  border-bottom-color: var(--pf-accent);
 }
 .pestana:disabled {
   cursor: not-allowed;
@@ -88,13 +88,13 @@
   width: 6px;
   height: 6px;
   border-radius: 50%;
-  background: var(--lg-accent);
+  background: var(--pf-accent);
 }
 .indicador[data-estado='listo'] {
-  background: var(--lg-manila);
+  background: var(--pf-manila);
 }
 .indicador[data-estado='error'] {
-  background: var(--lg-err);
+  background: var(--pf-err);
 }
 
 /* ---- Formulario ---- */
@@ -111,12 +111,12 @@
   flex-direction: column;
   gap: 8px;
   padding: 12px 16px 14px;
-  border-top: 1px solid var(--lg-line);
+  border-top: 1px solid var(--pf-line);
 }
 .aviso {
   margin: 0;
   font-size: 12px;
-  color: var(--lg-warn);
+  color: var(--pf-warn);
 }
 
 .pie-enlaces {

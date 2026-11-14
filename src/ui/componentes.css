@@ -1,5 +1,5 @@
 /*
- * Componentes compartidos por el popup y la página de Legajo.
+ * Componentes compartidos por el popup y la página de Pluryfact.
  * Concepto: un archivador. Lo único llamativo es el fichero de periodos.
  * Sin etiquetas en mayúsculas, sin monoespaciada, sin cajas dentro de cajas.
  */
@@ -17,7 +17,7 @@
   margin-bottom: 8px;
   font-size: 12px;
   font-weight: 600;
-  color: var(--lg-muted);
+  color: var(--pf-muted);
 }
 .opciones {
   display: flex;
@@ -29,8 +29,8 @@
   display: inline-flex;
   align-items: center;
   padding: 5px 10px;
-  border: 1px solid var(--lg-line);
-  border-radius: var(--lg-radius);
+  border: 1px solid var(--pf-line);
+  border-radius: var(--pf-radius);
   cursor: pointer;
   user-select: none;
 }
@@ -40,12 +40,12 @@
   pointer-events: none;
 }
 .opcion:has(input:checked) {
-  background: var(--lg-accent);
-  border-color: var(--lg-accent);
-  color: var(--lg-accent-ink);
+  background: var(--pf-accent);
+  border-color: var(--pf-accent);
+  color: var(--pf-accent-ink);
 }
 .opcion:has(input:focus-visible) {
-  outline: 2px solid var(--lg-accent);
+  outline: 2px solid var(--pf-accent);
   outline-offset: 2px;
 }
 
@@ -59,12 +59,12 @@
   border-bottom: 1.5px solid transparent;
   background: none;
   cursor: pointer;
-  color: var(--lg-muted);
+  color: var(--pf-muted);
 }
 .modos button[aria-pressed='true'] {
-  color: var(--lg-ink);
+  color: var(--pf-ink);
   font-weight: 600;
-  border-bottom-color: var(--lg-ink);
+  border-bottom-color: var(--pf-ink);
 }
 .campos {
   display: grid;
@@ -76,20 +76,20 @@
   flex-direction: column;
   gap: 3px;
   font-size: 12px;
-  color: var(--lg-muted);
+  color: var(--pf-muted);
 }
 .campo {
   width: 100%;
   box-sizing: border-box;
   padding: 7px 9px;
-  border: 1px solid var(--lg-line);
-  border-radius: var(--lg-radius);
-  background: var(--lg-surface);
-  color: var(--lg-ink);
+  border: 1px solid var(--pf-line);
+  border-radius: var(--pf-radius);
+  background: var(--pf-surface);
+  color: var(--pf-ink);
   font: inherit;
 }
 .campo::placeholder {
-  color: var(--lg-muted);
+  color: var(--pf-muted);
 }
 .casillas {
   display: flex;
@@ -103,21 +103,21 @@
   cursor: pointer;
 }
 .casillas input {
-  accent-color: var(--lg-accent);
+  accent-color: var(--pf-accent);
   margin: 0;
 }
 .plan {
   margin: -4px 0 0;
-  color: var(--lg-muted);
+  color: var(--pf-muted);
 }
 .plan[data-error='true'] {
-  color: var(--lg-err);
+  color: var(--pf-err);
 }
 
 .vacio {
   margin: 28px 8px;
   text-align: center;
-  color: var(--lg-muted);
+  color: var(--pf-muted);
 }
 .progreso {
   display: flex;
@@ -126,7 +126,7 @@
 }
 .titulo {
   margin: 0;
-  font-family: var(--lg-font-display);
+  font-family: var(--pf-font-display);
   font-size: 17px;
   font-weight: 700;
   letter-spacing: -0.015em;
@@ -148,34 +148,34 @@
   height: 30px;
   display: grid;
   place-items: center;
-  border: 1px solid var(--lg-line);
-  border-radius: var(--lg-radius) var(--lg-radius) 0 0;
+  border: 1px solid var(--pf-line);
+  border-radius: var(--pf-radius) var(--pf-radius) 0 0;
   font-size: 10.5px;
-  color: var(--lg-muted);
+  color: var(--pf-muted);
 }
 .fichero[data-denso='true'] .ficha {
   height: 18px;
   font-size: 0;
 }
 .ficha[data-estado='ok'] {
-  background: var(--lg-manila);
-  border-color: var(--lg-manila);
-  color: var(--lg-ink);
+  background: var(--pf-manila);
+  border-color: var(--pf-manila);
+  color: var(--pf-ink);
 }
 .ficha[data-estado='sin-datos'] {
-  background: var(--lg-bg);
+  background: var(--pf-bg);
   border-style: dashed;
 }
 .ficha[data-estado='consultando'],
 .ficha[data-estado='descargando'] {
-  border-color: var(--lg-accent);
+  border-color: var(--pf-accent);
   border-width: 1.5px;
-  color: var(--lg-ink);
+  color: var(--pf-ink);
   font-weight: 600;
 }
 .ficha[data-estado='fallida'],
 .ficha[data-problema='true'] {
-  border-color: var(--lg-err);
+  border-color: var(--pf-err);
 }
 /* La cinta roja: marca diagonal en la esquina de una ficha con problemas. */
 .ficha[data-estado='fallida']::after,
@@ -186,7 +186,7 @@
   right: -1px;
   width: 0;
   height: 0;
-  border-top: 9px solid var(--lg-err);
+  border-top: 9px solid var(--pf-err);
   border-left: 9px solid transparent;
 }
 
@@ -198,11 +198,11 @@
 }
 .cifras {
   margin: 0;
-  color: var(--lg-muted);
+  color: var(--pf-muted);
 }
 .problema {
   margin: 2px 0 0;
-  color: var(--lg-err);
+  color: var(--pf-err);
   text-wrap: pretty;
 }
 .problema strong {
@@ -210,7 +210,7 @@
 }
 .detalle summary {
   cursor: pointer;
-  color: var(--lg-muted);
+  color: var(--pf-muted);
   font-size: 12px;
   width: fit-content;
 }
@@ -222,17 +222,17 @@
   max-height: 150px;
   overflow-y: auto;
   font-size: 11.5px;
-  color: var(--lg-muted);
+  color: var(--pf-muted);
   display: flex;
   flex-direction: column;
   gap: 3px;
 }
 .actividad time {
-  color: var(--lg-ink);
+  color: var(--pf-ink);
   margin-right: 6px;
 }
 .fallidas {
-  color: var(--lg-err);
+  color: var(--pf-err);
 }
 
 .tabla-pasos {
@@ -244,13 +244,13 @@
 .tabla-pasos th {
   text-align: left;
   font-weight: 600;
-  color: var(--lg-muted);
+  color: var(--pf-muted);
   padding: 6px 8px;
-  border-bottom: 1px solid var(--lg-line);
+  border-bottom: 1px solid var(--pf-line);
 }
 .tabla-pasos td {
   padding: 6px 8px;
-  border-bottom: 1px solid var(--lg-line);
+  border-bottom: 1px solid var(--pf-line);
 }
 .tabla-pasos td:nth-child(2),
 .tabla-pasos td:nth-child(3),
@@ -259,18 +259,18 @@
   text-align: right;
 }
 .tabla-pasos tr[data-estado='fallida'] td:last-child {
-  color: var(--lg-err);
+  color: var(--pf-err);
 }
 .actividad-error {
-  color: var(--lg-err);
+  color: var(--pf-err);
 }
 .actividad-aviso {
-  color: var(--lg-warn);
+  color: var(--pf-warn);
 }
 .boton {
   width: 100%;
   padding: 9px 14px;
-  border-radius: var(--lg-radius);
+  border-radius: var(--pf-radius);
   border: 1px solid transparent;
   cursor: pointer;
   font-weight: 600;
@@ -280,20 +280,20 @@
   opacity: 0.45;
 }
 .boton-principal {
-  background: var(--lg-accent);
-  color: var(--lg-accent-ink);
+  background: var(--pf-accent);
+  color: var(--pf-accent-ink);
 }
 .boton-secundario {
   background: transparent;
-  border-color: var(--lg-line);
-  color: var(--lg-ink);
+  border-color: var(--pf-line);
+  color: var(--pf-ink);
 }
 .enlace {
   align-self: center;
   border: 0;
   background: none;
   cursor: pointer;
-  color: var(--lg-accent);
+  color: var(--pf-accent);
   font-size: 12px;
   text-decoration: underline;
   text-underline-offset: 2px;
@@ -305,14 +305,14 @@
   align-items: flex-start;
   margin: 0;
   font-size: 12px;
-  color: var(--lg-muted);
+  color: var(--pf-muted);
 }
 .cerrar-aviso svg {
   flex: none;
   width: 16px;
   height: 16px;
   margin-top: 1px;
-  color: var(--lg-ok);
+  color: var(--pf-ok);
 }
 @media (prefers-reduced-motion: no-preference) {
   .ficha[data-estado='consultando'],

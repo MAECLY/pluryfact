@@ -209,7 +209,7 @@ export interface Resumen {
 }
 
 export const MENSAJE_CAPTCHA =
-  'El SRI rechazó la verificación reCAPTCHA. Legajo se detuvo para no insistir: usa tu Chrome habitual, espera unos minutos y vuelve a intentar.';
+  'El SRI rechazó la verificación reCAPTCHA. Pluryfact se detuvo para no insistir: usa tu Chrome habitual, espera unos minutos y vuelve a intentar.';
 
 export async function ejecutar(t: Trabajo, d: Dependencias): Promise<Resumen> {
   const planCompleto = planificar(t, d.hoy);
@@ -354,7 +354,7 @@ export async function ejecutar(t: Trabajo, d: Dependencias): Promise<Resumen> {
 
       if (t.formatos.txt && reporte.filas.length) {
         const tipo = filas[0]?.clave.tipo ?? reporte.filas[0]!.clave.tipo;
-        archivos.push({ ruta: `legajo/${d.rucContribuyente}/${t.bandeja}/reportes/${tipo}_${etiqueta}.txt`, datos: bytes });
+        archivos.push({ ruta: `pluryfact/${d.rucContribuyente}/${t.bandeja}/reportes/${tipo}_${etiqueta}.txt`, datos: bytes });
       }
 
       const sinXml = new Map<string, FilaReporte>();

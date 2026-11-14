@@ -3,6 +3,7 @@ import { AJUSTES_POR_DEFECTO, CLAVE_AJUSTES, normalizarAjustes, type Ajustes } f
 import type { Trabajo } from '@/lib/cola';
 import { agregar, agrupar, CLAVE_HISTORIAL, textoBuscable, tieneProblemas, type EntradaHistorial, type FiltroEstado } from '@/lib/historial';
 import { CLAVE_PROGRESO, type EstadoTrabajo } from '@/lib/mensajeria';
+import { migrarClavesAntiguas } from '@/lib/migracion';
 import { PREFIJO_REGISTRO, type Entrada } from '@/lib/registro';
 import { pintarFichero } from '@/ui/fichero';
 import { montarFormulario, textoEstimacion } from '@/ui/formulario';
@@ -10,7 +11,7 @@ import { cancelar, conectar, iniciar, irAlSri, type Conexion } from '@/ui/sri';
 import { enMarcha, fraseEstado, pintarTarjeta, refrescarCifras, resumenTexto } from '@/ui/tarjeta';
 import { hora, miles, tituloTrabajo } from '@/ui/textos';
 
-// Página completa de Legajo: Nueva descarga, Descargas (como chrome://downloads),
+// Página completa de Pluryfact: Nueva descarga, Descargas (como chrome://downloads),
 // Avanzado y Acerca de. Todo el estado vive en storage.local y se sincroniza
 // con el popup por storage.onChanged.
 
@@ -31,7 +32,7 @@ function mostrar(s: Seccion) {
     $(`#sec-${x}`).hidden = x !== s;
     document.querySelector(`[data-seccion="${x}"]`)?.toggleAttribute('aria-current', x === s);
   }
-  document.title = `Legajo · ${s === 'nueva' ? 'Nueva descarga' : s === 'descargas' ? 'Descargas' : s === 'avanzado' ? 'Avanzado' : 'Acerca de'}`.replace(' · ', ': ');
+  document.title = `Pluryfact · ${s === 'nueva' ? 'Nueva descarga' : s === 'descargas' ? 'Descargas' : s === 'avanzado' ? 'Avanzado' : 'Acerca de'}`.replace(' · ', ': ');
 }
 const desdeHash = (): Seccion => (SECCIONES.includes(location.hash.slice(1) as Seccion) ? (location.hash.slice(1) as Seccion) : 'nueva');
 window.addEventListener('hashchange', () => mostrar(desdeHash()));
@@ -131,7 +132,7 @@ function pintarReanudar() {
 
 /**
  * La última descarga entra al historial aunque la haya hecho una versión
- * anterior de Legajo (que no guardaba historial).
+ * anterior de Pluryfact (que no guardaba historial).
  */
 async function archivarUltima() {
   const e = actual;
@@ -321,7 +322,7 @@ async function textoRegistro(): Promise<string> {
     .filter(([k]) => k.startsWith(PREFIJO_REGISTRO))
     .flatMap(([, v]) => v as Entrada[])
     .sort((a, b) => a.t - b.t);
-  const cab = `Legajo ${browser.runtime.getManifest().version} · ${navigator.userAgent}\n${entradas.length} entradas\n\n`;
+  const cab = `Pluryfact ${browser.runtime.getManifest().version} · ${navigator.userAgent}\n${entradas.length} entradas\n\n`;
   return cab + entradas.map((e) => `${new Date(e.t).toISOString()} ${e.n.padEnd(5)} ${e.o.padEnd(10)} ${e.m}`).join('\n');
 }
 $('#copiar-registro').addEventListener('click', async () => {
@@ -337,7 +338,7 @@ $('#bajar-registro').addEventListener('click', async () => {
   const url = URL.createObjectURL(new Blob([await textoRegistro()], { type: 'text/plain' }));
   const a = document.createElement('a');
   a.href = url;
-  a.download = `legajo-registro-${new Date().toISOString().slice(0, 10)}.txt`;
+  a.download = `pluryfact-registro-${new Date().toISOString().slice(0, 10)}.txt`;
   a.click();
   setTimeout(() => URL.revokeObjectURL(url), 10_000);
 });
@@ -398,6 +399,7 @@ setInterval(() => actual && enMarcha(actual) && refrescarCifras($('#tarjeta-acti
 $('#version').textContent = `Versión ${browser.runtime.getManifest().version}`;
 mostrar(desdeHash());
 void (async () => {
+  await migrarClavesAntiguas(browser.storage.local);
   const v = await browser.storage.local.get([CLAVE_PROGRESO, CLAVE_HISTORIAL, CLAVE_AJUSTES]);
   actual = v[CLAVE_PROGRESO] as EstadoTrabajo | undefined;
   historial = (v[CLAVE_HISTORIAL] as EntradaHistorial[] | undefined) ?? [];

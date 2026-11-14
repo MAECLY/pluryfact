@@ -8,10 +8,10 @@ export interface Ubicable {
   fechaEmision: Fecha;
 }
 
-/** Carpeta: legajo/<ruc del contribuyente>/<bandeja>/<aaaa>/<mm>/ */
+/** Carpeta: pluryfact/<ruc del contribuyente>/<bandeja>/<aaaa>/<mm>/ */
 export function carpeta(rucContribuyente: string, bandeja: Bandeja, f: Ubicable): string {
   const mm = String(f.fechaEmision.mes).padStart(2, '0');
-  return `legajo/${rucContribuyente}/${bandeja}/${f.fechaEmision.anio}/${mm}`;
+  return `pluryfact/${rucContribuyente}/${bandeja}/${f.fechaEmision.anio}/${mm}`;
 }
 
 /** Nombre: <tipo>_<serie>_<ruc emisor>_<clave>.<ext>, solo ASCII seguro. */

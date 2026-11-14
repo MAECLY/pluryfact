@@ -15,7 +15,7 @@ it('acumula por origen y recorta al máximo', async () => {
   await r.volcar();
   r.error('fin');
   await r.volcar();
-  const e = mem['legajo:registro:content'] as Entrada[];
+  const e = mem['pluryfact:registro:content'] as Entrada[];
   expect(e).toHaveLength(MAX_ENTRADAS);
   expect(e.at(-1)).toEqual({ t: 1, o: 'content', n: 'error', m: 'fin' });
 });

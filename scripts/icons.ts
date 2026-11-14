@@ -51,7 +51,7 @@ function render(svgName: string, size: number, out: string, store = false): void
     css = `svg{display:block;width:${STORE_ICON.art}px;height:${STORE_ICON.art}px;margin:${pad}px;filter:${STORE_ICON.glow}}`;
   }
   const html = `<!doctype html><html><head><style>html,body{margin:0;background:transparent;overflow:hidden}${css}</style></head><body>${svg}</body></html>`;
-  const dir = mkdtempSync(join(tmpdir(), 'legajo-icon-'));
+  const dir = mkdtempSync(join(tmpdir(), 'pluryfact-icon-'));
   try {
     const page = join(dir, 'page.html');
     writeFileSync(page, html);

@@ -1,7 +1,7 @@
 /**
  * Registro de diagnóstico en chrome.storage.local (en disco: perfil de Chrome →
  * Local Extension Settings/<id>/, LevelDB). Cada contexto escribe su propia
- * clave para no pisarse: legajo:registro:<origen>. Se lee con `bun run registro`.
+ * clave para no pisarse: pluryfact:registro:<origen>. Se lee con `bun run registro`.
  *
  * Nunca guarda RUC ni claves de acceso completas: se enmascaran al anotar.
  */
@@ -15,7 +15,7 @@ export interface Entrada {
   m: string;
 }
 
-export const PREFIJO_REGISTRO = 'legajo:registro:';
+export const PREFIJO_REGISTRO = 'pluryfact:registro:';
 export const MAX_ENTRADAS = 2000;
 
 /** 49 dígitos → …secuencial; 10–13 dígitos (RUC/cédula) → <id>. */

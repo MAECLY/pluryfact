@@ -52,7 +52,7 @@ Base: `https://srienlinea.sri.gob.ec/comprobantes-electronicos-internet/`. Menú
 ## Verificado en vivo (2026-11-09, recibidos)
 
 **Sesión**
-- Abrir una URL del portal directamente (barra de direcciones) **pierde la sesión** y redirige al login de Keycloak. El usuario debe entrar desde el menú del portal; la URL real lleva parámetros `contextoMPT`, `pathMPT`, `actualMPT`, `linkMPT`. Legajo **nunca navega**: solo trabaja en la pestaña que el usuario abrió.
+- Abrir una URL del portal directamente (barra de direcciones) **pierde la sesión** y redirige al login de Keycloak. El usuario debe entrar desde el menú del portal; la URL real lleva parámetros `contextoMPT`, `pathMPT`, `actualMPT`, `linkMPT`. Pluryfact **nunca navega**: solo trabaja en la pestaña que el usuario abrió.
 
 **reCAPTCHA**
 - `cargarRecaptcha` hace `grecaptcha.enterprise.render(contenedor, {sitekey, size:'invisible', callback:onSubmit})`; `executeRecaptcha` llama a `grecaptcha.enterprise.execute({action})`; `onSubmit` llama a `rcBuscar()` y `onsuccess` hace `grecaptcha.enterprise.reset()`.
@@ -79,13 +79,13 @@ Base: `https://srienlinea.sri.gob.ec/comprobantes-electronicos-internet/`. Menú
 - **Requiere la cabecera `SOAPAction: ""`**; sin ella responde una página HTML de redirección.
 - Sin sesión ni captcha, ~100–200 ms por clave. Comprobante escapado con entidades dentro de `<comprobante>`. Clave inexistente → `<numeroComprobantes>0</numeroComprobantes><autorizaciones/>`.
 - Un primer intento dio timeout transitorio: hace falta reintento.
-- **Solo responde por comprobantes recientes.** Con claves de enero 2025 (consultado el 2026-11-09) devuelve `<estado>RECHAZADA</estado>` con el mensaje `80 ERROR EN LA ESTRUCTURA DE LA CLAVE DE ACCESO … la fecha de emision esta fuera del rango permitido`. Con octubre 2026 funcionó. Para meses antiguos el XML sale del enlace `lnkXml` de la tabla de recibidos (respaldo de Legajo). Emitidos no tiene ese enlace: los XML antiguos de emitidos quedan pendientes de otra vía.
+- **Solo responde por comprobantes recientes.** Con claves de enero 2025 (consultado el 2026-11-09) devuelve `<estado>RECHAZADA</estado>` con el mensaje `80 ERROR EN LA ESTRUCTURA DE LA CLAVE DE ACCESO … la fecha de emision esta fuera del rango permitido`. Con octubre 2026 funcionó. Para meses antiguos el XML sale del enlace `lnkXml` de la tabla de recibidos (respaldo de Pluryfact). Emitidos no tiene ese enlace: los XML antiguos de emitidos quedan pendientes de otra vía.
 
 ### reCAPTCHA en navegador automatizado (2026-11-09)
 
 - En un Chromium manejado por Playwright (perfil nuevo, `navigator.webdriver`), la consulta real llega al SRI y vuelve con el mensaje **`Captcha incorrecta`**, también al reintentar.
 - En el Chrome habitual de Miguel, 5 consultas seguidas pasaron sin desafío.
-- Conclusión: las pruebas de **recibidos** se hacen con Legajo instalado en un Chrome normal. No se disfraza el navegador de pruebas.
+- Conclusión: las pruebas de **recibidos** se hacen con Pluryfact instalado en un Chrome normal. No se disfraza el navegador de pruebas.
 - Secuencia real de Consultar en recibidos: `deshabilitarBoton(this)` → `PrimeFaces.ab` inmediato del botón (no trae el listado) → reCAPTCHA → `rcBuscar` (actualiza `panelListaComprobantes`) → `onsuccess`: `reactivarBoton`. El conductor da la consulta por terminada cuando el botón se rehabilita.
 
 ## Verificado en vivo (2026-11-09, emitidos)

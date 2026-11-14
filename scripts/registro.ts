@@ -1,15 +1,16 @@
 /**
- * Lee el registro de diagnóstico de Legajo desde los perfiles de Chrome
+ * Lee el registro de diagnóstico de Pluryfact desde los perfiles de Chrome
  * (`bun run registro [--ultimos N] [--errores]`).
  *
  * chrome.storage.local vive en <perfil>/Local Extension Settings/<id>/ como
  * LevelDB. Chrome mantiene la base abierta, así que se copia a una carpeta
  * temporal y se lee la copia. El ID de una extensión descomprimida depende de
- * la ruta de la carpeta cargada; se buscan todas las que tengan claves legajo:*.
+ * la ruta de la carpeta cargada; se buscan todas las que tengan claves pluryfact:*.
  */
 import { cpSync, existsSync, mkdtempSync, readdirSync, rmSync } from 'node:fs';
 import { homedir, tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { dirname, join, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { ClassicLevel } from 'classic-level';
 import { enmascarar, PREFIJO_REGISTRO, type Entrada } from '../src/lib/registro';
 
@@ -23,7 +24,7 @@ const RAICES = [
   join(homedir(), 'Library/Application Support/Google/Chrome'),
   join(homedir(), 'Library/Application Support/Chromium'),
   join(homedir(), '.config/google-chrome'),
-  join(homedir(), 'Documents/GitHub/legajo/.e2e-profile'),
+  resolve(dirname(fileURLToPath(import.meta.url)), '../.e2e-profile'),
 ];
 
 const bases: string[] = [];
@@ -37,7 +38,7 @@ for (const raiz of RAICES) {
   }
 }
 
-const tmp = mkdtempSync(join(tmpdir(), 'legajo-registro-'));
+const tmp = mkdtempSync(join(tmpdir(), 'pluryfact-registro-'));
 let encontradas = 0;
 try {
   for (const [i, base] of bases.entries()) {
@@ -48,12 +49,15 @@ try {
     const entradas: Entrada[] = [];
     let progreso: unknown = null;
     try {
-      for await (const [k, v] of db.iterator({ gte: 'legajo:', lt: 'legajo;' })) {
-        if (k.startsWith(PREFIJO_REGISTRO)) entradas.push(...(JSON.parse(v) as Entrada[]));
-        if (k === 'legajo:progreso') progreso = JSON.parse(v);
-      }
+      // legajo:* es el prefijo de antes del cambio de nombre; la extensión lo migra al arrancar.
+      for (const prefijo of ['pluryfact:', 'legajo:'])
+        for await (const [k, v] of db.iterator({ gte: prefijo, lt: prefijo.slice(0, -1) + ';' })) {
+          const clave = 'pluryfact:' + k.slice(prefijo.length);
+          if (clave.startsWith(PREFIJO_REGISTRO)) entradas.push(...(JSON.parse(v) as Entrada[]));
+          if (clave === 'pluryfact:progreso') progreso ??= JSON.parse(v);
+        }
     } catch {
-      /* no es una base de Legajo legible */
+      /* no es una base de Pluryfact legible */
     } finally {
       await db.close();
     }
@@ -84,4 +88,4 @@ try {
 } finally {
   rmSync(tmp, { recursive: true, force: true });
 }
-if (!encontradas) console.log('No se encontró ningún registro de Legajo en los perfiles de Chrome.');
+if (!encontradas) console.log('No se encontró ningún registro de Pluryfact en los perfiles de Chrome.');

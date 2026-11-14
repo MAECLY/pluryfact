@@ -7,13 +7,13 @@ import { defineConfig } from 'wxt';
 // servicio web público de autorización del SRI, que entrega el XML por
 // clave de acceso sin sesión ni captcha. El host del portal permite al popup
 // encontrar la pestaña del SRI sin el permiso amplio `tabs`. `scripting`
-// permite al popup activar Legajo en una pestaña del SRI que ya estaba
+// permite al popup activar Pluryfact en una pestaña del SRI que ya estaba
 // abierta antes de instalar o recargar la extensión. `notifications` avisa
 // al terminar o si la sesión del SRI caduca, con el popup ya cerrado.
 export default defineConfig({
   srcDir: 'src',
   manifest: {
-    name: 'Legajo',
+    name: 'Pluryfact',
     description:
       'Descarga en lote tus comprobantes electrónicos de SRI en Línea: XML, RIDE y reporte.',
     permissions: ['storage', 'scripting', 'notifications'],
@@ -21,9 +21,9 @@ export default defineConfig({
       'https://cel.sri.gob.ec/*',
       'https://srienlinea.sri.gob.ec/comprobantes-electronicos-internet/*',
     ],
-    action: { default_title: 'Legajo' },
+    action: { default_title: 'Pluryfact' },
     // La página completa también es la página de opciones (chrome://extensions → Detalles → Opciones).
-    options_ui: { page: 'legajo.html', open_in_tab: true },
+    options_ui: { page: 'pluryfact.html', open_in_tab: true },
   },
   vite: () => ({
     plugins: [tailwindcss()],

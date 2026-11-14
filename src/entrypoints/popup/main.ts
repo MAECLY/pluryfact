@@ -1,11 +1,12 @@
 import './style.css';
 import { CLAVE_PROGRESO, type EstadoTrabajo } from '@/lib/mensajeria';
+import { migrarClavesAntiguas } from '@/lib/migracion';
 import { montarFormulario } from '@/ui/formulario';
 import { cancelar, conectar, iniciar, type Conexion } from '@/ui/sri';
 import { enMarcha, pintarTarjeta, refrescarCifras } from '@/ui/tarjeta';
 
 // El popup es el acceso rápido: lanzar una descarga y ver la que está en curso.
-// La gestión completa (historial, ajustes, Acerca de) vive en legajo.html.
+// La gestión completa (historial, ajustes, Acerca de) vive en pluryfact.html.
 
 const $ = <T extends HTMLElement>(sel: string) => document.querySelector<T>(sel)!;
 
@@ -101,7 +102,7 @@ $('#tab-form').addEventListener('click', () => !enCurso && mostrarPestana('form'
 $('#tab-descargas').addEventListener('click', () => mostrarPestana('descargas'));
 $('#secundario').addEventListener('click', () => mostrarPestana('form'));
 $('#abrir').addEventListener('click', async () => {
-  await browser.tabs.create({ url: browser.runtime.getURL(`/legajo.html#${pestanaActiva === 'form' ? 'nueva' : 'descargas'}`) });
+  await browser.tabs.create({ url: browser.runtime.getURL(`/pluryfact.html#${pestanaActiva === 'form' ? 'nueva' : 'descargas'}`) });
   window.close();
 });
 $('#descargar').addEventListener('click', async () => {
@@ -125,7 +126,7 @@ browser.storage.onChanged.addListener((cambios, area) => {
 });
 
 pintarPlan();
-void conectar().then(async (c) => {
+void migrarClavesAntiguas(browser.storage.local).then(conectar).then(async (c) => {
   conexion = c;
   aviso(c.problema);
   if (c.pagina?.bandeja) {

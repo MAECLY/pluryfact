@@ -1,5 +1,5 @@
 {
-  "name": "legajo",
+  "name": "pluryfact",
   "description": "Descarga en lote tus comprobantes electrónicos de SRI en Línea: XML, RIDE y reporte.",
   "private": true,
   "version": "0.0.1",
@@ -20,6 +20,7 @@
     "registro": "bun scripts/registro.ts"
   },
   "devDependencies": {
+    "@fontsource/bricolage-grotesque": "5",
     "@fontsource/ibm-plex-mono": "5",
     "@fontsource/ibm-plex-sans": "5",
     "@fontsource/ibm-plex-serif": "5",
