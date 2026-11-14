@@ -63,5 +63,9 @@ local, que el permiso es opcional y cómo quitarlo.
 - [ ] PluryPrint 0.0.6 publicado con `pluryprint-bridge` y el registro del host.
 - [ ] `wxt.config.ts`: `nativeMessaging` solo en `optional_permissions` (el build E2E no se sube).
 - [ ] Copiar este borrador a [PRIVACY.md](PRIVACY.md) y borrar este archivo.
+- [ ] Actualizar [LISTING.md](LISTING.md), que hoy describe la 0.1.0:
+  - «CÓMO CUIDA TU CUENTA»: «Solo habla con el SRI…» → «En internet, solo habla con el SRI… Fuera de internet, solo con PluryPrint, y solo si tú lo conectas.» (la misma idea que README y Acerca de).
+  - «QUÉ HACE»: mencionar la impresión opcional con PluryPrint (RIDE en PDF, XML como representación impresa y reporte TXT).
+  - «PERMISOS»: añadir el permiso opcional «Comunicarse con aplicaciones nativas que cooperan: solo con PluryPrint, en tu equipo, si lo conectas».
 - [ ] Política de privacidad del sitio actualizada.
 - [ ] Una captura de Avanzado → PluryPrint para la ficha, si se quiere mostrar.
