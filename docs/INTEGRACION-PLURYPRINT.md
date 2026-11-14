@@ -1,16 +1,16 @@
-# Integración con PluryPrint
+# Integración con Pluryprint
 
 Estado: **en desarrollo**. Llega con **Pluryfact 0.2.0** (después de que Chrome
-Web Store apruebe la 0.1.0) y **PluryPrint 0.0.6**, que trae el host nativo
+Web Store apruebe la 0.1.0) y **Pluryprint 0.0.6**, que trae el host nativo
 `pluryprint-bridge`. Nada de esto se publica en la tienda todavía.
 
-Pluryfact descarga en lote los comprobantes del SRI; PluryPrint (app de
+Pluryfact descarga en lote los comprobantes del SRI; Pluryprint (app de
 escritorio de MAECLY para Windows y macOS) imprime en lote. La integración
 permite mandar a imprimir, sin pasar por el disco ni por internet, lo que
 Pluryfact acaba de bajar o un `pluryfact_*.zip` de antes:
 
 - **RIDE en PDF**, tal cual los entrega el portal (se valida la cabecera `%PDF-`).
-- **XML autorizados**: PluryPrint arma una representación impresa tipo RIDE a
+- **XML autorizados**: Pluryprint arma una representación impresa tipo RIDE a
   partir del XML (factura, nota de crédito, nota de débito, retención, guía de
   remisión y liquidación de compra). Sirve cuando el usuario no bajó el RIDE
   (más rápido: el XML viene del servicio web sin paginar el portal) o cuando un
@@ -23,14 +23,14 @@ El ZIP en sí nunca viaja: Pluryfact manda su contenido.
 
 | | Opción | Permisos nuevos en Pluryfact | Veredicto |
 |---|---|---|---|
-| a | PluryPrint abre o importa el ZIP de Pluryfact («Abrir con», arrastrar, asociación de `.zip`) | Ninguno | **Descartada como transporte.** Obliga a descomprimir en Rust un archivo no confiable (zip-slip, ZIP bomba, avisos RUSTSEC del crate `zip`), el usuario tiene que encontrar el ZIP (Chrome pudo renombrarlo a `(1)` o guardarlo en otra carpeta) y no hay canal de vuelta. Lo útil de la idea queda cubierto por **«Imprimir un ZIP…»** dentro de Pluryfact, que descomprime con fflate en la extensión. |
+| a | Pluryprint abre o importa el ZIP de Pluryfact («Abrir con», arrastrar, asociación de `.zip`) | Ninguno | **Descartada como transporte.** Obliga a descomprimir en Rust un archivo no confiable (zip-slip, ZIP bomba, avisos RUSTSEC del crate `zip`), el usuario tiene que encontrar el ZIP (Chrome pudo renombrarlo a `(1)` o guardarlo en otra carpeta) y no hay canal de vuelta. Lo útil de la idea queda cubierto por **«Imprimir un ZIP…»** dentro de Pluryfact, que descomprime con fflate en la extensión. |
 | b | Deep link `pluryprint://` desde la página | Ninguno (pero haría falta `downloads` para conocer la ruta) | **Descartada.** No transporta bytes, solo una pista; cualquier web puede invocarlo, así que nunca podría imprimir sin confirmar; Chrome muestra un aviso en cada uso y no hay respuesta. |
-| c | Servidor HTTP en `localhost` dentro de PluryPrint | `host_permissions` para `http://127.0.0.1/*` | **Descartada.** Abre un puerto local (rompe el modelo de seguridad de PluryPrint, que hoy solo sale a github.com), exige token, `Origin` y CORS, choca con Private/Local Network Access de Chrome y la tienda lo revisa igual que cualquier permiso de host. |
-| d | Carpeta vigilada: la página escribe PDFs con File System Access (`showDirectoryPicker`) y PluryPrint vigila esa carpeta | Ninguno | **Descartada.** La página de la extensión debe estar abierta y con un gesto del usuario en cada sesión, PluryPrint no tiene «hot folder» (está en ideas futuras), hay carreras entre escritura y lectura y no hay canal de vuelta ni confirmación. |
-| e | **Chrome Native Messaging** con un host de PluryPrint | `nativeMessaging`, **opcional** | **Elegida.** Canal local autenticado por Chrome (solo los orígenes de `allowed_origins`), sin puertos, con respuesta por mensaje, límites conocidos (1 MB host→Chrome, 64 MiB Chrome→host) y sin tocar rutas: viajan bytes validados. El permiso es opcional, así que la actualización no desactiva Pluryfact a quien no usa PluryPrint. |
+| c | Servidor HTTP en `localhost` dentro de Pluryprint | `host_permissions` para `http://127.0.0.1/*` | **Descartada.** Abre un puerto local (rompe el modelo de seguridad de Pluryprint, que hoy solo sale a github.com), exige token, `Origin` y CORS, choca con Private/Local Network Access de Chrome y la tienda lo revisa igual que cualquier permiso de host. |
+| d | Carpeta vigilada: la página escribe PDFs con File System Access (`showDirectoryPicker`) y Pluryprint vigila esa carpeta | Ninguno | **Descartada.** La página de la extensión debe estar abierta y con un gesto del usuario en cada sesión, Pluryprint no tiene «hot folder» (está en ideas futuras), hay carreras entre escritura y lectura y no hay canal de vuelta ni confirmación. |
+| e | **Chrome Native Messaging** con un host de Pluryprint | `nativeMessaging`, **opcional** | **Elegida.** Canal local autenticado por Chrome (solo los orígenes de `allowed_origins`), sin puertos, con respuesta por mensaje, límites conocidos (1 MB host→Chrome, 64 MiB Chrome→host) y sin tocar rutas: viajan bytes validados. El permiso es opcional, así que la actualización no desactiva Pluryfact a quien no usa Pluryprint. |
 
 Alternativa que también se descartó: pedir `downloads` para conocer la ruta del
-ZIP y pasársela a PluryPrint. La advertencia («Administrar tus descargas») es
+ZIP y pasársela a Pluryprint. La advertencia («Administrar tus descargas») es
 alarmante para una extensión tributaria y el host tendría que leer rutas
 elegidas por la extensión, que es justo lo que se quiere evitar.
 
@@ -59,7 +59,7 @@ pluryfact.html (Descargas: «Imprimir un ZIP…»)        pestaña del SRI (cont
                    · commitJob → handoff schema 1, source "pluryfact"
                      y lanza la GUI desacoplada: --invoke=context-menu --files-from … --action …
                                    ▼
-                 PluryPrint (GUI): Print Job / cola, con la etiqueta «Desde PluryFact»
+                 Pluryprint (GUI): Print Job / cola, con la etiqueta «Desde Pluryfact»
 ```
 
 - **Por qué el puente en el background:** Chrome no ofrece `connectNative` en
@@ -87,7 +87,7 @@ pluryfact.html (Descargas: «Imprimir un ZIP…»)        pestaña del SRI (cont
 | `src/entrypoints/pluryfact/pluryprint.ts` | UI de la página: barra lateral, Avanzado y panel de Descargas. |
 | `src/entrypoints/sri.content.ts` | Conserva el último resultado y lo envía (a pedido o al terminar). |
 | `scripts/pluryprint-host-falso.ts` | Host falso del protocolo, para tests y E2E. |
-| `test/fixtures/pluryprint-protocol/` | Copia byte a byte de los fixtures canónicos de PluryPrint. |
+| `test/fixtures/pluryprint-protocol/` | Copia byte a byte de los fixtures canónicos de Pluryprint. |
 
 ## 3. Protocolo v1
 
@@ -124,15 +124,15 @@ Reglas del lado de Pluryfact:
 
 | Código | Origen | Texto en Pluryfact |
 |---|---|---|
-| `no_instalado` | Chrome: «Specified native messaging host not found.» | PluryPrint no está instalado en este equipo, o no está conectado con este navegador. (+ enlace de descarga) |
-| `sin_permiso` | Falta el permiso opcional | Pluryfact no tiene permiso para comunicarse con PluryPrint. Pulsa «Conectar con PluryPrint» en Avanzado. |
-| `origin_not_allowed` | Chrome («…forbidden») o el host | PluryPrint no reconoce esta copia de Pluryfact… (`pluryprint-cli bridge install --extra-origin`) |
-| `version_incompatible` | Saludo sin protocolo 1 o sin capacidades | Actualiza PluryPrint: esta versión no sabe recibir comprobantes de Pluryfact. |
-| `unsupported_version`, `unknown_type` | Host | Actualiza PluryPrint (y Pluryfact). |
+| `no_instalado` | Chrome: «Specified native messaging host not found.» | Pluryprint no está instalado en este equipo, o no está conectado con este navegador. (+ enlace de descarga) |
+| `sin_permiso` | Falta el permiso opcional | Pluryfact no tiene permiso para comunicarse con Pluryprint. Pulsa «Conectar con Pluryprint» en Avanzado. |
+| `origin_not_allowed` | Chrome («…forbidden») o el host | Pluryprint no reconoce esta copia de Pluryfact… (`pluryprint-cli bridge install --extra-origin`) |
+| `version_incompatible` | Saludo sin protocolo 1 o sin capacidades | Actualiza Pluryprint: esta versión no sabe recibir comprobantes de Pluryfact. |
+| `unsupported_version`, `unknown_type` | Host | Actualiza Pluryprint (y Pluryfact). |
 | `too_large`, `too_many_files` | Host o chequeo local | Un archivo o el trabajo supera el tamaño… / Son demasiados archivos… |
 | `bad_pdf`, `checksum_mismatch`, `bad_request` | Host | Un RIDE no es un PDF válido. / Un archivo llegó dañado… / Dato inválido. |
 | `unknown_job`, `job_incomplete`, `io_error`, `launch_failed`, `internal` | Host | Mensajes propios (ver `MENSAJES` en `lib/pluryprint.ts`). |
-| `desconectado`, `tiempo_agotado`, `respuesta_invalida`, `cancelado` | Cliente | PluryPrint cerró la conexión… / no respondió a tiempo… / Envío cancelado. |
+| `desconectado`, `tiempo_agotado`, `respuesta_invalida`, `cancelado` | Cliente | Pluryprint cerró la conexión… / no respondió a tiempo… / Envío cancelado. |
 
 ### Fixtures de contrato
 
@@ -145,7 +145,7 @@ error y, si `../pluryprint` existe al lado, que los `.json` son idénticos.
 ## 4. Seguridad
 
 - **Permiso opcional.** `nativeMessaging` va en `optional_permissions` y se pide
-  con `permissions.request` en el clic de «Conectar con PluryPrint». «Desconectar»
+  con `permissions.request` en el clic de «Conectar con Pluryprint». «Desconectar»
   lo quita (`permissions.remove`). El build E2E (`PLURYFACT_E2E=1`) lo vuelve
   obligatorio solo para probar sin el diálogo, y sale a `.output-e2e/`.
 - **Quién puede hablar con el host.** Chrome solo lanza el host para los orígenes
@@ -169,12 +169,12 @@ error y, si `../pluryprint` existe al lado, que los `.json` son idénticos.
   ≤ 1 GiB en total y ≤ 20 000 entradas. Solo se aceptan nombres de Pluryfact con
   clave de acceso válida (dígito módulo 11) cuyo RUC coincide con el del nombre;
   PDF sin `%PDF-` y XML que no son de comprobante se ignoran y se cuentan.
-- **Papel.** La acción por defecto es `configure`: PluryPrint se abre para
+- **Papel.** La acción por defecto es `configure`: Pluryprint se abre para
   confirmar. `print-default` solo si el usuario la elige, y con más de 50
   documentos Pluryfact pide confirmación en el botón; el envío automático al
-  terminar no puede confirmar, así que con más de 50 abre PluryPrint en su lugar.
+  terminar no puede confirmar, así que con más de 50 abre Pluryprint en su lugar.
 - **Riesgo aceptado.** Un proceso local del mismo usuario puede ejecutar el
-  binario del host o escribir en el directorio de handoff de PluryPrint; ya
+  binario del host o escribir en el directorio de handoff de Pluryprint; ya
   podía hacerlo antes (menús contextuales). No hay escalada: todo corre como el
   usuario.
 
@@ -186,14 +186,14 @@ error y, si `../pluryprint` existe al lado, que los `.json` son idénticos.
   error (pasa por `crearRegistro`, que enmascara RUC y claves); nunca nombres ni
   contenido de archivos.
 - La etiqueta del trabajo no lleva el RUC («Recibidos · 2026-10»).
-- Los archivos quedan en `<data_dir>/inbox/<jobId>/` de PluryPrint; la GUI barre
+- Los archivos quedan en `<data_dir>/inbox/<jobId>/` de Pluryprint; la GUI barre
   al arrancar las carpetas de más de 7 días.
 - La pestaña del SRI conserva en memoria los archivos del último trabajo para
   poder imprimirlos sin releer el ZIP; se sueltan al empezar otro trabajo o al
   cerrar la pestaña.
 - Textos que dejaron de ser exactos y se reescribieron: «Todo ocurre en tu
   navegador» → «Todo ocurre en tu equipo»; «Solo habla con el SRI» → «En
-  internet, solo habla con el SRI… Fuera de internet, solo con PluryPrint, y
+  internet, solo habla con el SRI… Fuera de internet, solo con Pluryprint, y
   solo si tú lo conectas». Borrador de la pestaña de privacidad para la 0.2.0 en
   `store-assets/PRIVACY-0.2.0-borrador.md`.
 
@@ -201,8 +201,8 @@ error y, si `../pluryprint` existe al lado, que los `.json` son idénticos.
 
 | | Estado |
 |---|---|
-| Windows 10/11 | Soportado. El instalador NSIS de PluryPrint escribe el manifiesto y las claves `HKCU\Software\{Google\Chrome, Microsoft\Edge, Chromium}\NativeMessagingHosts\com.maecly.pluryprint` (Brave en Windows lee la de Chrome); el desinstalador las borra. |
-| macOS | Soportado. La app registra en cada arranque los manifiestos de usuario de los navegadores instalados (`~/Library/Application Support/<navegador>/NativeMessagingHosts/`), apuntando al `pluryprint-bridge` dentro del `.app`; no registra si corre trasladada (App Translocation). Hay que abrir PluryPrint una vez después de instalarlo. |
+| Windows 10/11 | Soportado. El instalador NSIS de Pluryprint escribe el manifiesto y las claves `HKCU\Software\{Google\Chrome, Microsoft\Edge, Chromium}\NativeMessagingHosts\com.maecly.pluryprint` (Brave en Windows lee la de Chrome); el desinstalador las borra. |
+| macOS | Soportado. La app registra en cada arranque los manifiestos de usuario de los navegadores instalados (`~/Library/Application Support/<navegador>/NativeMessagingHosts/`), apuntando al `pluryprint-bridge` dentro del `.app`; no registra si corre trasladada (App Translocation). Hay que abrir Pluryprint una vez después de instalarlo. |
 | Linux | `pluryprint-cli bridge install` funciona con rutas XDG de usuario, pero no se promete: Chromium en snap/flatpak no ve hosts del sistema. |
 | Navegadores | Chrome, Edge, Brave y Chromium. Tienda: solo Chrome Web Store. |
 | Equipos gestionados | Las políticas `NativeMessagingAllowlist`/`Blocklist` y `NativeMessagingUserLevelHosts=false` pueden bloquear el host; Pluryfact lo verá como «no instalado». |
@@ -218,24 +218,24 @@ empaqueta en una carpeta temporal por eso mismo.
 
 ## 7. Interfaz
 
-- **Avanzado → PluryPrint.** Estado (no conectado / conectado vX / no instalado,
-  con enlace a https://pluryprint.maecly.com/), «Conectar con PluryPrint»
+- **Avanzado → Pluryprint.** Estado (no conectado / conectado vX / no instalado,
+  con enlace a https://pluryprint.maecly.com/), «Conectar con Pluryprint»
   (permiso + saludo), «Comprobar de nuevo», «Desconectar», y las opciones: qué
   imprimir (RIDE, XML o ambos), XML si falta el RIDE, reporte, orden, acción,
   perfil, impresora, copias, doble cara y color (vacío = lo del perfil).
-- **Nueva descarga.** Casilla «Enviar a PluryPrint al terminar» (solo con
-  PluryPrint conectado) que fija los formatos necesarios: RIDE si se imprime
+- **Nueva descarga.** Casilla «Enviar a Pluryprint al terminar» (solo con
+  Pluryprint conectado) que fija los formatos necesarios: RIDE si se imprime
   RIDE, XML si se imprime XML (solo XML no obliga a bajar el RIDE), TXT si se
-  incluye el reporte. El resumen explica qué se enviará y qué hará PluryPrint.
+  incluye el reporte. El resumen explica qué se enviará y qué hará Pluryprint.
 - **Tarjeta del trabajo** (popup y página). Línea con el estado del envío.
 - **Descargas.** «Imprimir un ZIP…» para cualquier `pluryfact_*.zip`, e
-  «Imprimir con PluryPrint» en la fila del último trabajo mientras la pestaña
+  «Imprimir con Pluryprint» en la fila del último trabajo mientras la pestaña
   del SRI lo tiene en memoria (si no, «Imprimir su ZIP…»). Antes de enviar, un
   panel resume «Se imprimirán N RIDE + M XML + el reporte» y avisa de lo que no
   entra.
 - **Acerca de.** Fila del permiso opcional y promesas reescritas.
-- **Barra lateral.** «PluryPrint: conectado / no conectado / no instalado / sin permiso / sin respuesta / actualízalo / con problemas». «Sin respuesta» solo cuando PluryPrint no respondió (se cortó o se agotó el tiempo); el detalle de cualquier problema va en el `title`.
-- **Popup.** La misma casilla y, al terminar, «Imprimir con PluryPrint», que
+- **Barra lateral.** «Pluryprint: conectado / no conectado / no instalado / sin permiso / sin respuesta / actualízalo / con problemas». «Sin respuesta» solo cuando Pluryprint no respondió (se cortó o se agotó el tiempo); el detalle de cualquier problema va en el `title`.
+- **Popup.** La misma casilla y, al terminar, «Imprimir con Pluryprint», que
   abre la página con el resumen.
 
 ### Qué se manda de cada comprobante
@@ -253,11 +253,11 @@ los entregó el portal; los reportes van al final.
 ## 8. Matriz de operaciones
 
 Filas: cada operación o salida de Pluryfact. Columnas: cada operación de
-PluryPrint. Cada celda dice si el cruce aplica, por dónde se expone y en qué
+Pluryprint. Cada celda dice si el cruce aplica, por dónde se expone y en qué
 fase.
 
 **Leyenda:** **P** = MVP, por el protocolo y elegible en la UI de Pluryfact ·
-**F** = MVP, solo en la UI de Pluryfact · **R** = MVP, lo resuelve PluryPrint en
+**F** = MVP, solo en la UI de Pluryfact · **R** = MVP, lo resuelve Pluryprint en
 su UI (Pluryfact no lo controla) · **S** = fase siguiente · **D** = descartado
 (ver nota) · **·** = no aplica.
 
@@ -269,7 +269,7 @@ la cola · **pau** pausar · **can** cancelar · **rei** reintentar · **cli** C
 `print --json` · **ctx** menús contextuales · **con** «Abrir con» · **arr**
 arrastrar · **xml** representación de XML · **act** actualizaciones.
 
-| Pluryfact \ PluryPrint | cfg | cola | dir | perf | imp | cop | dup | col | pap | ran | esc | ori | int | est | pau | can | rei | cli | ctx | con | arr | xml | act |
+| Pluryfact \ Pluryprint | cfg | cola | dir | perf | imp | cop | dup | col | pap | ran | esc | ori | int | est | pau | can | rei | cli | ctx | con | arr | xml | act |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
 | Bandeja emitidos | P | P | P | S¹ | S¹ | S² | · | · | · | · | · | · | · | · | · | · | · | · | · | · | · | · | · |
 | Bandeja recibidos | P | P | P | S¹ | S¹ | · | · | · | · | · | · | · | · | · | · | · | · | · | · | · | · | · | · |
@@ -301,51 +301,51 @@ Notas:
    es solo UI de Pluryfact.
 2. **Copias por bandeja** (emitidos: cliente + archivo). Igual que la nota 1.
 3. **Año completo con «Imprimir directo»:** con más de 50 documentos Pluryfact
-   pide confirmación en el botón; en el envío automático abre PluryPrint.
+   pide confirmación en el botón; en el envío automático abre Pluryprint.
 4. **Estado de vuelta (`jobStatus`).** Hoy el handoff no devuelve el lote de la
-   cola; Pluryfact solo sabe «entregado a PluryPrint». Fase siguiente: un tipo
+   cola; Pluryfact solo sabe «entregado a Pluryprint». Fase siguiente: un tipo
    `jobStatus` con el `jobId` como id de correlación guardado en la cola de
-   PluryPrint, para mostrar en Descargas «Impreso», «Falló la impresora» o
+   Pluryprint, para mostrar en Descargas «Impreso», «Falló la impresora» o
    «Pendiente», y en el resumen copiable.
 5. **Rango de páginas** no tiene sentido para un lote de cientos de comprobantes
    distintos. En `configure` el usuario puede fijarlo en Print Job si quiere.
 6. **CLI `print --json`** imprime sin ventana y sin pasar por la cola de la GUI:
    dos caminos con comportamientos distintos. El host usa solo el handoff. El
    CLI sigue disponible por separado para quien descomprima el ZIP.
-7. **Nuevo con la integración:** PluryPrint aprende a imprimir XML de
+7. **Nuevo con la integración:** Pluryprint aprende a imprimir XML de
    comprobantes desde el Explorador o el Finder, «Abrir con» y arrastrar, sin
-   Pluryfact (ver la ADR de PluryPrint).
-8. **Actualizaciones:** el saludo negocia versión y capacidades; si PluryPrint
-   es viejo o no tiene el host, Pluryfact dice «Actualiza PluryPrint» con
-   enlace. El actualizador de PluryPrint no cambia.
+   Pluryfact (ver la ADR de Pluryprint).
+8. **Actualizaciones:** el saludo negocia versión y capacidades; si Pluryprint
+   es viejo o no tiene el host, Pluryfact dice «Actualiza Pluryprint» con
+   enlace. El actualizador de Pluryprint no cambia.
 9. Ya funciona hoy sin integración, con los archivos sacados del ZIP a mano.
-10. PluryPrint no abre ZIP (riesgos de la opción a). Lo cubre «Imprimir un ZIP…».
+10. Pluryprint no abre ZIP (riesgos de la opción a). Lo cubre «Imprimir un ZIP…».
 11. **Pausar, cancelar o reintentar desde Pluryfact:** descartado en el MVP;
-    se hace en la cola de PluryPrint. Con `jobStatus` podría añadirse
-    «Cancelar en PluryPrint» (fase siguiente).
+    se hace en la cola de Pluryprint. Con `jobStatus` podría añadirse
+    «Cancelar en Pluryprint» (fase siguiente).
 12. Reanudar arma otro ZIP solo con lo que faltó: se imprime solo eso. Avisar si
     algo de ese lote ya se imprimió (deduplicación por clave) es fase siguiente.
 13. Marcar en Descargas qué lotes ya se imprimieron depende de la nota 4.
-14. «Repetir» conserva la casilla «Enviar a PluryPrint al terminar».
-15. El resumen copiable incluye la línea del envío a PluryPrint.
+14. «Repetir» conserva la casilla «Enviar a Pluryprint al terminar».
+15. El resumen copiable incluye la línea del envío a Pluryprint.
 16. Una descarga cancelada o cortada **no** se envía sola; se puede imprimir a
     mano lo que se alcanzó a bajar.
 17. Notificación del sistema al entregar o al fallar el envío: fase siguiente
     (hoy se ve en la tarjeta y en Descargas).
 18. El registro anota los envíos (conteos, acción, códigos de error, versión del
     host), sin nombres ni contenido.
-19. Borrar todos los datos borra también los ajustes de PluryPrint; el permiso
+19. Borrar todos los datos borra también los ajustes de Pluryprint; el permiso
     se quita con «Desconectar».
 
 ### Operaciones nuevas que habilita la integración
 
 | Operación | Fase |
 |---|---|
-| Imprimir XML de comprobantes desde el Explorador/Finder, «Abrir con» o arrastrando, sin Pluryfact | MVP (PluryPrint 0.0.6) |
+| Imprimir XML de comprobantes desde el Explorador/Finder, «Abrir con» o arrastrando, sin Pluryfact | MVP (Pluryprint 0.0.6) |
 | Imprimir solo XML: descarga más rápida, sin paginar el portal para el RIDE | MVP |
 | Reimprimir una descarga pasada desde Descargas («Imprimir su ZIP…») | MVP |
 | Imprimir el último resultado sin tocar el disco | MVP |
-| Etiqueta «Desde PluryFact» en Print Job y en la cola de PluryPrint | MVP (PluryPrint) |
+| Etiqueta «Desde Pluryfact» en Print Job y en la cola de Pluryprint | MVP (Pluryprint) |
 | Estado del trabajo de vuelta en Pluryfact (`jobStatus` con id de correlación) | Siguiente |
 | Hoja separadora por periodo (mes o día) y portada con totales del reporte | Siguiente |
 | Deduplicación: avisar si un comprobante ya se imprimió | Siguiente |
@@ -365,12 +365,12 @@ Notas:
 | Unit | `test/seleccion-impresion.test.ts` | Qué y en qué orden, rutas hostiles, ZIP, textos. |
 | Unit | `test/ajustes-pluryprint.test.ts` | Defectos, migración desde la 0.1.0 y formas viejas, regla de 50 documentos. |
 | DOM | `test/formulario-pluryprint.test.ts` | La casilla de Nueva descarga y los formatos que fija. |
-| E2E | `bun run e2e:pluryprint` | Chromium real + host nativo (falso, o el puente real de PluryPrint con `PLURYPRINT_BRIDGE_BIN`): no instalado, conectar, «Imprimir un ZIP…» con un ZIP ficticio y verificación de lo recibido (orden, tipo y sha256). Con el puente real: dos trabajos (RIDE con XML de respaldo + reporte, y solo XML + reporte), cada archivo del `inbox/` igual byte a byte a su entrada del ZIP, el handoff, y el test `bridge_handoff_e2e` de PluryPrint sobre lo que dejó el puente. |
+| E2E | `bun run e2e:pluryprint` | Chromium real + host nativo (falso, o el puente real de Pluryprint con `PLURYPRINT_BRIDGE_BIN`): no instalado, conectar, «Imprimir un ZIP…» con un ZIP ficticio y verificación de lo recibido (orden, tipo y sha256). Con el puente real: dos trabajos (RIDE con XML de respaldo + reporte, y solo XML + reporte), cada archivo del `inbox/` igual byte a byte a su entrada del ZIP, el handoff, y el test `bridge_handoff_e2e` de Pluryprint sobre lo que dejó el puente. |
 | E2E (registro real) | `PLURYPRINT_REGISTRO=cli bun run e2e:pluryprint` | Lo anterior, pero el host lo registra `pluryprint-cli bridge install --browser chrome --extra-origin <id de prueba>` en un HOME temporal (macOS y Linux). |
 
-### 9.1 E2E cruzada con PluryPrint
+### 9.1 E2E cruzada con Pluryprint
 
-Se corre desde este repo contra los binarios reales de PluryPrint (rama
+Se corre desde este repo contra los binarios reales de Pluryprint (rama
 `feat/pluryfact-bridge`, que ya incluye la impresión de XML de
 `feat/print-sri-xml`). No imprime en papel ni abre la app: el puente corre con
 `PLURYPRINT_BRIDGE_NO_LAUNCH=1`, que escribe el inbox y el handoff y se detiene.
@@ -381,7 +381,7 @@ cargo build --bin pluryprint-bridge --bin pluryprint-cli
 # Aquí: manifiesto escrito por el script, datos del puente en una carpeta temporal
 PLURYPRINT_BRIDGE_BIN=../pluryprint/src-tauri/target/debug/pluryprint-bridge \
   PLURYPRINT_BRIDGE_NO_LAUNCH=1 bun run e2e:pluryprint
-# Registro real con el CLI de PluryPrint, en un HOME temporal
+# Registro real con el CLI de Pluryprint, en un HOME temporal
 PLURYPRINT_REGISTRO=cli PLURYPRINT_BRIDGE_BIN=../pluryprint/src-tauri/target/debug/pluryprint-bridge \
   PLURYPRINT_BRIDGE_NO_LAUNCH=1 bun run e2e:pluryprint
 ```
@@ -397,7 +397,7 @@ Qué comprueba, en orden:
    Chromium es la carpeta de Chrome de ese HOME, así que el navegador lee el
    manifiesto justo donde lo escribió el CLI, y le pasa ese HOME al puente, que
    acepta el origen de prueba solo porque el manifiesto instalado lo lista. Al
-   final, el manifiesto de Chrome y el inbox de PluryPrint del usuario tienen
+   final, el manifiesto de Chrome y el inbox de Pluryprint del usuario tienen
    que seguir iguales. Sin la variable, el script escribe el manifiesto y usa
    `PLURYPRINT_BRIDGE_DATA_DIR`.
 2. **Protocolo y página**: «no instalado» antes de registrar, `hello`,
@@ -411,7 +411,7 @@ Qué comprueba, en orden:
    `pluryfact-<jobId>.json` dice `schema_version: 1`, `source: "pluryfact"`,
    `action: "configure"`, la etiqueta «Recibidos · 2026-10» (sin RUC) y las
    rutas del inbox en orden.
-4. **Lo que haría la app**: si encuentra el repo de PluryPrint (el `src-tauri`
+4. **Lo que haría la app**: si encuentra el repo de Pluryprint (el `src-tauri`
    del que salió `PLURYPRINT_BRIDGE_BIN`, o `PLURYPRINT_SRC_TAURI`), compila
    antes de abrir Chromium su test `bridge_handoff_e2e` y lo corre justo después
    de cada trabajo (la app no acepta un handoff de más de 60 s). Ese test arma
@@ -424,17 +424,17 @@ Qué comprueba, en orden:
    como página de texto. Los PDF quedan en `<temporal>/impreso/<jobId>/` con
    `E2E_CONSERVAR=1`. `PLURYPRINT_VALIDAR_HANDOFF=0` salta este paso.
 
-Verificado en esta Mac (14 de noviembre de 2026, PluryPrint
+Verificado en esta Mac (14 de noviembre de 2026, Pluryprint
 `feat/pluryfact-bridge` en de47ae8): pasan los tres modos (host falso; puente
 real con manifiesto del script; puente real registrado con
 `pluryprint-cli bridge install` en un HOME temporal), con todas las
 comprobaciones en PASS, incluidos los dos trabajos por la puerta de la app y la
 conversión de los 4 XML (factura y retención) y del reporte a PDF. El
 manifiesto `~/Library/Application Support/Google/Chrome/NativeMessagingHosts/`
-y el inbox de PluryPrint del usuario no cambiaron.
+y el inbox de Pluryprint del usuario no cambiaron.
 
 Una observación de esa corrida: el pie de la representación impresa sale en el
-idioma de la app de PluryPrint (`app.locale`). En un HOME nuevo, sin el primer
+idioma de la app de Pluryprint (`app.locale`). En un HOME nuevo, sin el primer
 arranque que detecta el idioma del sistema, es inglés («Printed representation
 generated by Pluryprint…»); con la app ya configurada en español sale
 «Representación impresa generada por Pluryprint…». Las etiquetas del RIDE van
@@ -453,9 +453,9 @@ verdad. Windows no se puede probar desde esta Mac.
 ## 10. Versiones y publicación
 
 1. Chrome Web Store aprueba **Pluryfact 0.1.0** (en revisión; no se toca).
-2. **PluryPrint 0.0.6** sale con `pluryprint-bridge`, el registro del host y la
+2. **Pluryprint 0.0.6** sale con `pluryprint-bridge`, el registro del host y la
    impresión de XML: las dos ramas (#104 y #103) juntas, ver §9. Sin la segunda,
-   lo que Pluryfact mande como XML llega pero PluryPrint no lo imprime.
+   lo que Pluryfact mande como XML llega pero Pluryprint no lo imprime.
 3. **Pluryfact 0.2.0** se envía a la tienda con el permiso opcional y la
    pestaña de privacidad actualizada (`store-assets/PRIVACY-0.2.0-borrador.md`).
    El permiso nuevo puede alargar la revisión.
@@ -469,5 +469,5 @@ verdad. Windows no se puede probar desde esta Mac.
 | Políticas de empresa bloquean hosts de usuario | Se ve como «no instalado»; documentado. |
 | macOS: Gatekeeper/cuarentena o App Translocation | La app registra solo desde una ruta estable y en cada arranque; hay que abrirla una vez. |
 | Lotes muy grandes (miles de RIDE) | Límites del host, troceo, avance visible y «Detener»; memoria: el ZIP ya vivía en memoria de la pestaña. |
-| El service worker se duerme a mitad | El puerto nativo lo mantiene vivo; si muere, el puerto se cierra, el host descarta el trabajo y Pluryfact dice «PluryPrint cerró la conexión». |
+| El service worker se duerme a mitad | El puerto nativo lo mantiene vivo; si muere, el puerto se cierra, el host descarta el trabajo y Pluryfact dice «Pluryprint cerró la conexión». |
 | Papel gastado por error | `configure` por defecto y confirmación con más de 50 documentos. |

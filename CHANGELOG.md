@@ -7,29 +7,29 @@ All notable changes to Pluryfact are listed here. The format follows
 ## [Unreleased]
 
 Planned for 0.2.0, after the Chrome Web Store approves 0.1.0. In development:
-it needs PluryPrint 0.0.6, which must ship both the native host
+it needs Pluryprint 0.0.6, which must ship both the native host
 (MAECLY/pluryprint#104) and XML printing (MAECLY/pluryprint#103).
 
 ### Added
 
-- **Print with PluryPrint** (Windows and macOS): send the RIDE PDFs, the
-  authorised XML (PluryPrint renders a RIDE-like printout from it) or both, plus
-  the optional TXT report, to the PluryPrint desktop app over Chrome Native
+- **Print with Pluryprint** (Windows and macOS): send the RIDE PDFs, the
+  authorised XML (Pluryprint renders a RIDE-like printout from it) or both, plus
+  the optional TXT report, to the Pluryprint desktop app over Chrome Native
   Messaging. Files travel as validated bytes in 8 MiB chunks with a SHA-256
   each; nothing goes over the network and no paths are shared.
-- Advanced → PluryPrint: connect (asks for the optional permission and greets
+- Advanced → Pluryprint: connect (asks for the optional permission and greets
   the host), what to print, XML when a RIDE is missing, report, order (issue
-  date, issuer, type or portal order), what PluryPrint does (open to review and
+  date, issuer, type or portal order), what Pluryprint does (open to review and
   confirm by default, queue, or print directly with a confirmation above 50
   documents), profile, printer, copies, duplex and colour.
-- New download: "Send to PluryPrint when done", which turns on the formats the
+- New download: "Send to Pluryprint when done", which turns on the formats the
   chosen printout needs (printing XML only does not require the slower RIDE
   download).
 - Downloads: "Print a ZIP…" for any past `pluryfact_*.zip` (unzipped inside the
-  extension, hostile paths ignored), "Print with PluryPrint" for the last job
+  extension, hostile paths ignored), "Print with Pluryprint" for the last job
   while the SRI tab still holds it, and a summary ("3 RIDE + 1 XML + the
-  report") before confirming. Each job shows how its PluryPrint delivery went.
-- Sidebar indicator "PluryPrint: connected / not connected / not installed /
+  report") before confirming. Each job shows how its Pluryprint delivery went.
+- Sidebar indicator "Pluryprint: connected / not connected / not installed /
   no permission / no response / update it / problems" (the full message is in
   the tooltip).
 - `bun run e2e:pluryprint`: end-to-end test in Chromium with a native host
@@ -38,7 +38,7 @@ it needs PluryPrint 0.0.6, which must ship both the native host
 ### Changed
 
 - `nativeMessaging` is declared as an **optional** permission, requested only
-  when the user connects PluryPrint, so updating does not disable Pluryfact for
+  when the user connects Pluryprint, so updating does not disable Pluryfact for
   anyone else.
 - About: "Everything happens in your browser" and "Only talks to the SRI" now
   read "Everything happens on your computer" and "On the internet, it only talks

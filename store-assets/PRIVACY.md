@@ -9,7 +9,7 @@ scripts en esa misma ruta del portal (uno en el MAIN world). Si una versión
 cambia algo de esto, actualiza este archivo antes de enviarla.
 
 > Nota: la 0.2.0 añade el permiso opcional `nativeMessaging` para imprimir con
-> PluryPrint. Sus respuestas están en
+> Pluryprint. Sus respuestas están en
 > [PRIVACY-0.2.0-borrador.md](PRIVACY-0.2.0-borrador.md); no se envían mientras
 > la 0.1.0 siga en revisión.
 
