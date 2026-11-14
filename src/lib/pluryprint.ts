@@ -132,7 +132,7 @@ export interface PuertoNativo {
 
 const MENSAJES: Record<CodigoError, string> = {
   no_instalado: 'Pluryprint no está instalado en este equipo, o no está conectado con este navegador.',
-  sin_permiso: 'Pluryfact no tiene permiso para comunicarse con Pluryprint. Pulsa «Conectar con Pluryprint» en Avanzado.',
+  sin_permiso: 'Pluryfact no tiene permiso para comunicarse con Pluryprint. Pulsa «Conectar con Pluryprint» en Integraciones → Pluryprint.',
   desconectado: 'Pluryprint cerró la conexión antes de terminar.',
   tiempo_agotado: 'Pluryprint no respondió a tiempo.',
   respuesta_invalida: 'Pluryprint respondió algo que Pluryfact no entiende. Actualiza Pluryprint.',

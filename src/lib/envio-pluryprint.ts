@@ -76,7 +76,7 @@ export interface EstadoConexion {
   perfiles: Perfil[];
 }
 
-/** Saludo + impresoras + perfiles en una sola conexión (Avanzado y el indicador lateral). */
+/** Saludo + impresoras + perfiles en una sola conexión (Integraciones → Pluryprint y el indicador lateral). */
 export async function consultarPluryprint(abrirPuerto: () => PuertoNativo, clientVersion: string, conListas = true): Promise<EstadoConexion> {
   const cliente = new ClientePluryprint(abrirPuerto(), { clientVersion });
   try {

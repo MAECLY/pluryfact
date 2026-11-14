@@ -169,7 +169,7 @@ export default defineContentScript({
       const aj = normalizarAjustes((await browser.storage.local.get(CLAVE_AJUSTES))[CLAVE_AJUSTES]).pluryprint;
       const sel = seleccionarParaImprimir(u.archivos, aj);
       const base = { archivos: sel.archivos.length, enviados: 0, t: Date.now() };
-      if (!aj.activado) return anotarImpresion(u.inicio, { ...base, estado: 'error', mensaje: 'Conecta Pluryprint en Avanzado para imprimir.' });
+      if (!aj.activado) return anotarImpresion(u.inicio, { ...base, estado: 'error', mensaje: 'Conecta Pluryprint en Integraciones para imprimir.' });
       if (!sel.archivos.length) return anotarImpresion(u.inicio, { ...base, estado: 'error', mensaje: textoSeleccion(sel).principal });
       log.info(`Pluryprint: enviando ${sel.ride} RIDE, ${sel.xml} XML y ${sel.reportes} reportes (${aj.accion})`);
       await anotarImpresion(u.inicio, { ...base, estado: 'enviando', mensaje: textoSeleccion(sel).principal });

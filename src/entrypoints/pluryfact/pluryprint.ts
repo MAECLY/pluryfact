@@ -10,7 +10,7 @@ import { miles, problemaPluryprintCorto, tituloTrabajo } from '@/ui/textos';
 
 /**
  * Pluryprint en la página completa: el estado en la barra lateral, la sección
- * de Avanzado y el panel «Imprimir con Pluryprint» de Descargas (para un ZIP
+ * de Integraciones → Pluryprint y el panel «Imprimir con Pluryprint» de Descargas (para un ZIP
  * elegido por el usuario o para el último resultado que sigue en memoria de
  * la pestaña del SRI).
  */
@@ -54,7 +54,7 @@ export function montarPluryprint(ctx: Contexto) {
     return { tipo: 'problema', codigo: err.codigo, mensaje: err.message };
   };
 
-  /** Saludo silencioso: alimenta la barra lateral y las listas de Avanzado. */
+  /** Saludo silencioso: alimenta la barra lateral y las listas de Integraciones → Pluryprint. */
   async function comprobar() {
     if (!pp().activado) return ponerEstado({ tipo: 'no-conectado' });
     if (!(await tienePermisoNativo())) return ponerEstado(aProblema(new ErrorPluryprint('sin_permiso')));
@@ -88,7 +88,7 @@ export function montarPluryprint(ctx: Contexto) {
     ponerEstado({ tipo: 'no-conectado' });
   });
 
-  // ------------------------------------------------------------ Avanzado
+  // ------------------------------------------- Integraciones → Pluryprint
 
   document.querySelectorAll<HTMLInputElement>('input[name="pp-contenido"]').forEach((r) =>
     r.addEventListener('change', () => ctx.guardar({ contenido: r.value as AjustesPluryprint['contenido'] })),
@@ -134,7 +134,19 @@ export function montarPluryprint(ctx: Contexto) {
             : 'Pluryprint: no conectado';
     lat.title = estado.tipo === 'conectado' ? `Pluryprint ${estado.version}` : estado.tipo === 'problema' ? estado.mensaje : '';
 
-    // Avanzado: estado y botones
+    // Integraciones: la ficha de Pluryprint
+    const ficha = $('#pp-ficha-estado');
+    ficha.dataset.estado = lat.dataset.estado;
+    ficha.textContent =
+      estado.tipo === 'conectado'
+        ? `Conectado · ${estado.version}`
+        : estado.tipo === 'comprobando'
+          ? 'Comprobando…'
+          : estado.tipo === 'problema'
+            ? 'Revisa la conexión'
+            : 'No conectado';
+
+    // Integraciones → Pluryprint: estado y botones
     const est = $('#pp-estado');
     est.dataset.estado = estado.tipo;
     est.textContent = '';
@@ -154,7 +166,7 @@ export function montarPluryprint(ctx: Contexto) {
     $('#pp-desconectar').hidden = !a.activado;
     $('#pp-opciones').hidden = !a.activado;
 
-    // Avanzado: opciones
+    // Integraciones → Pluryprint: opciones
     document.querySelectorAll<HTMLInputElement>('input[name="pp-contenido"]').forEach((r) => (r.checked = r.value === a.contenido));
     document.querySelectorAll<HTMLInputElement>('input[name="pp-accion"]').forEach((r) => (r.checked = r.value === a.accion));
     const respaldo = $<HTMLInputElement>('#pp-xml-respaldo');
@@ -196,7 +208,7 @@ export function montarPluryprint(ctx: Contexto) {
     avisos.textContent = '';
     for (const t of resumen.avisos) avisos.append(Object.assign(document.createElement('li'), { textContent: t }));
     const n = o.tipo === 'zip' ? o.seleccion.archivos.length : o.archivos;
-    $('#pp-panel-accion').textContent = `${TEXTO_ACCION[pp().accion]} Puedes cambiarlo en Avanzado.`;
+    $('#pp-panel-accion').textContent = `${TEXTO_ACCION[pp().accion]} Puedes cambiarlo en Integraciones → Pluryprint.`;
     progreso.hidden = true;
     progreso.value = 0;
     ponerEstadoPanel('', '');

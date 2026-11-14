@@ -110,7 +110,7 @@ body {
 .conexion p[data-ok='true'] {
   color: var(--pf-ok);
 }
-/* Pluryprint en la barra lateral: un punto de estado y el texto, enlaza a Avanzado. */
+/* Pluryprint en la barra lateral: un punto de estado y el texto, enlaza a Integraciones → Pluryprint. */
 .pp-lateral {
   display: inline-flex;
   align-items: center;
@@ -521,7 +521,85 @@ body {
 .campo.corto {
   width: auto;
 }
-/* Pluryprint en Avanzado. */
+/* Integraciones: una ficha por herramienta (hoy solo Pluryprint) y, debajo,
+   la división de la elegida con sus ajustes. Pensado para sumar más fichas. */
+.integraciones-lista {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 28px;
+}
+.integracion-ficha {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 200px;
+  padding: 10px 14px;
+  border: 1px solid var(--pf-line);
+  border-radius: var(--pf-radius-lg);
+  background: var(--pf-surface);
+  color: var(--pf-ink);
+  text-decoration: none;
+}
+.integracion-ficha:hover {
+  border-color: var(--pf-muted);
+}
+.integracion-ficha[aria-current] {
+  border-color: var(--pf-accent);
+  box-shadow: inset 0 0 0 1px var(--pf-accent);
+}
+.integracion-ficha img {
+  flex: none;
+  border-radius: 7px;
+}
+.integracion-texto {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.integracion-nombre {
+  font-weight: 600;
+}
+.integracion-estado {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12.5px;
+  color: var(--pf-muted);
+}
+.integracion-estado::before {
+  content: '';
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  border: 1.5px solid var(--pf-muted);
+  box-sizing: border-box;
+}
+.integracion-estado[data-estado='conectado'] {
+  color: var(--pf-ok);
+}
+.integracion-estado[data-estado='conectado']::before {
+  background: var(--pf-ok);
+  border-color: var(--pf-ok);
+}
+.integracion-estado[data-estado='problema']::before {
+  background: var(--pf-err);
+  border-color: var(--pf-err);
+}
+.integracion {
+  max-width: 620px;
+  padding-top: 24px;
+  border-top: 1px solid var(--pf-line);
+}
+.integracion-cabecera {
+  margin-bottom: 26px;
+}
+.integracion-cabecera h2 {
+  margin: 0 0 6px;
+  font-family: var(--pf-font-display);
+  font-size: 22px;
+  letter-spacing: -0.01em;
+}
 .pp-estado {
   margin: 0;
 }
@@ -531,33 +609,13 @@ body {
 .pp-estado[data-estado='problema'] {
   color: var(--pf-err);
 }
-.pp-opciones {
-  display: flex;
-  flex-direction: column;
-  gap: 18px;
-  margin-top: 10px;
-}
-.pp-opciones .grupo > label {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  gap: 4px 8px;
-}
-.pp-opciones .grupo > label .ayuda {
-  flex-basis: 100%;
-  padding-left: 22px;
-}
-.pp-opciones .grupo > label:has(input:disabled) {
+.pp-opciones > .ajuste > label:has(input:disabled) {
   color: var(--pf-muted);
-}
-.pp-opciones input[type='radio'],
-.pp-opciones input[type='checkbox'] {
-  accent-color: var(--pf-accent);
 }
 .pp-campos {
   max-width: 460px;
 }
-.pp-opciones .campo.corto {
+.ajuste > .campo.corto {
   align-self: flex-start;
 }
 .opcional {
@@ -730,4 +788,8 @@ body {
   .nueva {
     grid-template-columns: 1fr;
   }
+}
+/* `display: flex` de .ajustes gana al [hidden] del navegador: sin conectar, las opciones no se muestran. */
+.pp-opciones[hidden] {
+  display: none;
 }
