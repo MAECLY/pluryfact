@@ -182,12 +182,12 @@
 .ficha[data-problema='true']::after {
   content: '';
   position: absolute;
-  top: -1px;
-  right: -1px;
-  width: 0;
-  height: 0;
-  border-top: 9px solid var(--pf-err);
-  border-left: 9px solid transparent;
+  top: 0;
+  right: 0;
+  width: 9px;
+  height: 9px;
+  background: var(--pf-err);
+  clip-path: polygon(0 0, 100% 0, 100% 100%);
 }
 
 .estado-frase {
@@ -265,7 +265,7 @@
   color: var(--pf-err);
 }
 .actividad-aviso {
-  color: var(--pf-warn);
+  color: color-mix(in srgb, var(--pf-warn) 82%, var(--pf-ink));
 }
 .boton {
   width: 100%;
