@@ -14,7 +14,12 @@
 </p>
 
 <p align="center">
-  <a href="https://pluryfact.maecly.com/"><img alt="Estado: en desarrollo" src="https://img.shields.io/badge/estado-en%20desarrollo-A8701A?style=flat-square&labelColor=151C33"></a>
+  <a href="https://github.com/MAECLY/pluryfact/releases/latest"><img alt="Última versión" src="https://img.shields.io/github/v/release/MAECLY/pluryfact?style=flat-square&label=versión&color=2446A8&labelColor=151C33"></a>
+  <a href="#instalar"><img alt="Chrome Web Store: en revisión" src="https://img.shields.io/badge/chrome%20web%20store-en%20revisi%C3%B3n-A8701A?style=flat-square&labelColor=151C33"></a>
+  <a href="https://github.com/MAECLY/pluryfact/releases"><img alt="Descargas" src="https://img.shields.io/github/downloads/MAECLY/pluryfact/total?style=flat-square&label=descargas&color=2446A8&labelColor=151C33"></a>
+  <a href="https://github.com/MAECLY/pluryfact/stargazers"><img alt="Estrellas" src="https://img.shields.io/github/stars/MAECLY/pluryfact?style=flat-square&color=2446A8&labelColor=151C33"></a>
+  <a href="https://hits.sh/github.com/MAECLY/pluryfact/"><img alt="Visitas" src="https://hits.sh/github.com/MAECLY/pluryfact.svg?style=flat-square&label=visitas&color=2446A8&labelColor=151C33"></a>
+  <a href="https://github.com/MAECLY/pluryfact/commits/main"><img alt="Último commit" src="https://img.shields.io/github/last-commit/MAECLY/pluryfact?style=flat-square&color=2446A8&labelColor=151C33"></a>
   <a href="LICENSE"><img alt="Licencia: AGPL-3.0-only" src="https://img.shields.io/badge/licencia-AGPL--3.0--only-2446A8?style=flat-square&labelColor=151C33"></a>
   <a href="#instalar"><img alt="Chrome, Manifest V3" src="https://img.shields.io/badge/Chrome-MV3-2446A8?style=flat-square&labelColor=151C33"></a>
   <a href="#cómo-cuida-tu-cuenta"><img alt="Sin telemetría" src="https://img.shields.io/badge/telemetr%C3%ADa-ninguna-2446A8?style=flat-square&labelColor=151C33"></a>
@@ -28,6 +33,9 @@
   <a href="#cómo-cuida-tu-cuenta">Privacidad</a> ·
   <a href="#límites">Límites</a> ·
   <a href="#desarrollo">Desarrollo</a> ·
+  <a href="https://github.com/MAECLY/pluryfact/releases/latest">Descargar</a> ·
+  <a href="CHANGELOG.md">Cambios</a> ·
+  <a href="https://github.com/MAECLY/pluryfact/issues/new">Reportar un problema</a> ·
   <a href="README.md">English</a> · <b>Español</b>
 </p>
 
@@ -39,11 +47,14 @@
 </p>
 
 > [!NOTE]
-> **En desarrollo, dicho claro.** El núcleo (lectura de las tablas del portal,
-> clave de acceso, plan de consultas y filtros) está probado, y las descargas de
-> XML, RIDE y TXT se verificaron contra el portal real. La conexión con el
-> portal se valida con sesiones reales antes de la primera versión. Aún no está
-> en Chrome Web Store y este repositorio es privado mientras tanto.
+> **Versión 0.1.0, dicho claro.** Es la primera versión pública: el núcleo
+> (lectura de las tablas del portal, clave de acceso, plan de consultas y
+> filtros) tiene pruebas automáticas, y las descargas de XML, RIDE y TXT se
+> validaron con sesiones reales del portal. Está **en revisión en Chrome Web
+> Store**; mientras tanto se instala a mano desde la
+> [última versión](https://github.com/MAECLY/pluryfact/releases/latest). Si
+> algo falla, un [issue](https://github.com/MAECLY/pluryfact/issues/new) con el
+> registro de diagnóstico (Avanzado → Copiar registro) ayuda mucho.
 
 ---
 
@@ -146,19 +157,25 @@ el [sitio](https://pluryfact.maecly.com/#comparar).
 
 ## Instalar
 
-Pluryfact aún no está en Chrome Web Store. Mientras tanto, quien tenga acceso a
-este repositorio puede cargarla desde el código:
+**Chrome Web Store:** la versión 0.1.0 está en revisión. Cuando la tienda la
+apruebe, se instala con un clic desde su ficha.
 
-1. Compílala (ver [Desarrollo](#desarrollo)): `bun install && bun run build`.
+**A mano, desde GitHub (mientras tanto):**
+
+1. Descarga `pluryfact-0.1.0-chrome.zip` de la
+   [última versión](https://github.com/MAECLY/pluryfact/releases/latest) y
+   descomprímelo en una carpeta que no vayas a borrar.
 2. Abre `chrome://extensions` y activa el **Modo de desarrollador**.
-3. Pulsa **Cargar descomprimida** y elige `.output/chrome-mv3`.
+3. Pulsa **Cargar descomprimida** y elige esa carpeta.
 4. Entra a [SRI en Línea](https://srienlinea.sri.gob.ec/), abre desde el menú
    **Facturación electrónica → Comprobantes electrónicos recibidos** (o
    *emitidos*) y pulsa el ícono de Pluryfact.
 
-Tras recompilar, pulsa el botón de recarga en la tarjeta de la extensión. El ID
+Para actualizar una instalación manual, descomprime la nueva versión sobre la
+misma carpeta y pulsa el botón de recarga en la tarjeta de la extensión. El ID
 de una extensión descomprimida depende de la ruta de la carpeta: si la cargas
-desde otra carpeta, empieza con el historial vacío.
+desde otra carpeta, empieza con el historial vacío. Para compilarla desde el
+código, ver [Desarrollo](#desarrollo).
 
 ## Desarrollo
 
