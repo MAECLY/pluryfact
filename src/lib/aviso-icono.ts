@@ -10,19 +10,19 @@ const enMarcha = (e: EstadoTrabajo) => ['consultando', 'descargando', 'empaqueta
 
 /** Insignia y título del icono de la extensión según el trabajo. */
 export function insignia(e: EstadoTrabajo | undefined): Insignia {
-  if (!e) return { texto: '', color: '#1D3A6E', titulo: 'Pluryfact' };
+  if (!e) return { texto: '', color: '#2446A8', titulo: 'Pluryfact' };
   if (enMarcha(e)) {
     const total = e.consultasTotal || 0;
     const hechas = Math.min(e.consultasHechas + 1, total);
     return {
       texto: total && total <= 99 ? `${hechas}/${total}` : '…',
-      color: '#1D3A6E',
+      color: '#2446A8',
       titulo: `Pluryfact: descargando (${hechas} de ${total}). Puedes cerrar esta ventana; no cierres la pestaña del SRI.`,
     };
   }
   if (e.fase === 'error' || e.pendientes?.length) return { texto: '!', color: '#A8701A', titulo: 'Pluryfact: la descarga necesita tu atención.' };
   if (e.fase === 'listo') return { texto: '✓', color: '#2D7A4F', titulo: 'Pluryfact: descarga lista.' };
-  return { texto: '', color: '#1D3A6E', titulo: 'Pluryfact' };
+  return { texto: '', color: '#2446A8', titulo: 'Pluryfact' };
 }
 
 export interface Notificacion {

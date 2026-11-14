@@ -1,8 +1,8 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024">
-  <!-- Legajo: carpeta manila atada con cinta roja sobre tinta. Baldosa 100..924. -->
-  <rect x="100" y="100" width="824" height="824" rx="168" fill="#1D3A6E"/>
-  <path d="M236 330h196l56 60h300v364H236z" fill="#D9A441"/>
-  <path d="M236 432h552" stroke="#B8862E" stroke-width="18"/>
-  <path d="M512 390v364" stroke="#C8102E" stroke-width="34"/>
-  <circle cx="512" cy="586" r="52" fill="none" stroke="#C8102E" stroke-width="30"/>
+  <!-- Pluryfact: varios pliegos apilados (plury) y una flecha de descarga, en tinta azul con pliego coral. Baldosa 100..924. -->
+  <rect x="100" y="100" width="824" height="824" rx="168" fill="#2446A8"/>
+  <rect x="330" y="236" width="400" height="500" rx="28" fill="#F06A4D"/>
+  <rect x="284" y="296" width="400" height="500" rx="28" fill="#FFFFFF"/>
+  <path d="M484 400v236M396 556l88 88 88-88" fill="none" stroke="#2446A8" stroke-width="48" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M376 720h216" stroke="#2446A8" stroke-width="40" stroke-linecap="round"/>
 </svg>

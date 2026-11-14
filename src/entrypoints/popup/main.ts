@@ -1,6 +1,8 @@
 import './style.css';
 import { CLAVE_PROGRESO, type EstadoTrabajo } from '@/lib/mensajeria';
+import { CLAVE_AJUSTES, normalizarAjustes } from '@/lib/ajustes';
 import { migrarClavesAntiguas } from '@/lib/migracion';
+import { aplicarTema } from '@/lib/temas';
 import { montarFormulario } from '@/ui/formulario';
 import { cancelar, conectar, iniciar, type Conexion } from '@/ui/sri';
 import { enMarcha, pintarTarjeta, refrescarCifras } from '@/ui/tarjeta';
@@ -122,11 +124,16 @@ $('#descargar').addEventListener('click', async () => {
 
 setInterval(() => actual && refrescarCifras($('#tarjeta'), actual), 1000);
 browser.storage.onChanged.addListener((cambios, area) => {
+  if (area === 'local' && cambios[CLAVE_AJUSTES]) aplicarTema(document, normalizarAjustes(cambios[CLAVE_AJUSTES].newValue).tema);
   if (area === 'local' && cambios[CLAVE_PROGRESO]) pintarProgreso(cambios[CLAVE_PROGRESO].newValue as EstadoTrabajo | undefined);
 });
 
 pintarPlan();
-void migrarClavesAntiguas(browser.storage.local).then(conectar).then(async (c) => {
+void migrarClavesAntiguas(browser.storage.local)
+  .then(() => browser.storage.local.get(CLAVE_AJUSTES))
+  .then((v) => aplicarTema(document, normalizarAjustes(v[CLAVE_AJUSTES]).tema))
+  .then(conectar)
+  .then(async (c) => {
   conexion = c;
   aviso(c.problema);
   if (c.pagina?.bandeja) {

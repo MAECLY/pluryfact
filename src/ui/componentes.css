@@ -158,8 +158,8 @@
   font-size: 0;
 }
 .ficha[data-estado='ok'] {
-  background: var(--pf-manila);
-  border-color: var(--pf-manila);
+  background: var(--pf-pliego);
+  border-color: var(--pf-pliego);
   color: var(--pf-ink);
 }
 .ficha[data-estado='sin-datos'] {

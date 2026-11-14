@@ -5,7 +5,7 @@
 /*
  * Popup de Pluryfact. Concepto: un archivador.
  * Lo único llamativo es el fichero de periodos (una casilla por mes o día) que
- * se rellena de manila. Todo lo demás es tipografía sobria, sin cajas, sin
+ * se rellena con el color de pliego del tema. Todo lo demás es tipografía sobria, sin cajas, sin
  * etiquetas en mayúsculas ni monoespaciadas.
  */
 
@@ -91,7 +91,7 @@
   background: var(--pf-accent);
 }
 .indicador[data-estado='listo'] {
-  background: var(--pf-manila);
+  background: var(--pf-pliego);
 }
 .indicador[data-estado='error'] {
   background: var(--pf-err);

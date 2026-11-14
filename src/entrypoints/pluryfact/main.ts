@@ -4,6 +4,7 @@ import type { Trabajo } from '@/lib/cola';
 import { agregar, agrupar, CLAVE_HISTORIAL, textoBuscable, tieneProblemas, type EntradaHistorial, type FiltroEstado } from '@/lib/historial';
 import { CLAVE_PROGRESO, type EstadoTrabajo } from '@/lib/mensajeria';
 import { migrarClavesAntiguas } from '@/lib/migracion';
+import { aplicarTema, TEMAS, type IdTema } from '@/lib/temas';
 import { PREFIJO_REGISTRO, type Entrada } from '@/lib/registro';
 import { pintarFichero } from '@/ui/fichero';
 import { montarFormulario, textoEstimacion } from '@/ui/formulario';
@@ -299,7 +300,29 @@ document.querySelectorAll<HTMLButtonElement>('[data-filtro]').forEach((b) =>
 // ---------------------------------------------------------------- avanzado
 
 let ajustes: Ajustes = AJUSTES_POR_DEFECTO;
+function montarTemas() {
+  const caja = $('#aj-temas');
+  for (const t of TEMAS) {
+    const l = document.createElement('label');
+    l.className = 'tema';
+    l.dataset.brand = t.id;
+    const r = Object.assign(document.createElement('input'), { type: 'radio', name: 'tema', value: t.id, id: `aj-tema-${t.id}` });
+    r.addEventListener('change', () => guardarAjustes({ tema: t.id as IdTema }));
+    const nombre = Object.assign(document.createElement('span'), { className: 'tema-nombre', textContent: t.nombre });
+    nombre.style.fontFamily = `'${t.fuente}'`;
+    const muestra = document.createElement('span');
+    muestra.className = 'tema-muestra';
+    muestra.setAttribute('aria-hidden', 'true');
+    for (const c of t.muestra) muestra.append(Object.assign(document.createElement('i'), { style: `background:${c}` }));
+    l.append(r, nombre, muestra);
+    caja.append(l);
+  }
+}
+montarTemas();
+
 function pintarAjustes() {
+  aplicarTema(document, ajustes.tema);
+  document.querySelectorAll<HTMLInputElement>('input[name="tema"]').forEach((r) => (r.checked = r.value === ajustes.tema));
   document.querySelectorAll<HTMLInputElement>('input[name="ritmo"]').forEach((r) => (r.checked = r.value === ajustes.ritmo));
   $<HTMLInputElement>('#aj-notificaciones').checked = ajustes.notificaciones;
   const dias = $<HTMLSelectElement>('#aj-dias');

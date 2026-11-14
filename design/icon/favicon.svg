@@ -1,6 +1,7 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024">
-  <!-- Versión 16/32 px: sin margen, trazos más gruesos y sin la línea interior. -->
-  <rect width="1024" height="1024" rx="200" fill="#1D3A6E"/>
-  <path d="M150 270h260l70 80h394v474H150z" fill="#D9A441"/>
-  <path d="M512 350v474" stroke="#C8102E" stroke-width="70"/>
+  <!-- Versión 16/32 px: sin margen, pliegos más grandes y flecha más gruesa. -->
+  <rect width="1024" height="1024" rx="200" fill="#2446A8"/>
+  <rect x="300" y="130" width="560" height="660" rx="40" fill="#F06A4D"/>
+  <rect x="164" y="234" width="560" height="660" rx="40" fill="#FFFFFF"/>
+  <path d="M444 380v330M320 590l124 124 124-124" fill="none" stroke="#2446A8" stroke-width="90" stroke-linecap="round" stroke-linejoin="round"/>
 </svg>

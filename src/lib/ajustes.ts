@@ -1,3 +1,5 @@
+import { esTema, TEMA_POR_DEFECTO, type IdTema } from './temas';
+
 /** Preferencias del usuario (pestaña Avanzado). Se recuerdan entre descargas. */
 export interface Ajustes {
   /** "amable" alarga las pausas entre consultas y descargas. */
@@ -5,9 +7,11 @@ export interface Ajustes {
   notificaciones: boolean;
   /** Trabajos terminados que se conservan en Descargas. */
   diasHistorial: number;
+  /** Paleta y tipografía de la interfaz (ver lib/temas). */
+  tema: IdTema;
 }
 
-export const AJUSTES_POR_DEFECTO: Ajustes = { ritmo: 'normal', notificaciones: true, diasHistorial: 90 };
+export const AJUSTES_POR_DEFECTO: Ajustes = { ritmo: 'normal', notificaciones: true, diasHistorial: 90, tema: TEMA_POR_DEFECTO };
 export const CLAVE_AJUSTES = 'pluryfact:ajustes';
 
 export function normalizarAjustes(v: unknown): Ajustes {
@@ -16,6 +20,7 @@ export function normalizarAjustes(v: unknown): Ajustes {
     ritmo: a.ritmo === 'amable' ? 'amable' : 'normal',
     notificaciones: a.notificaciones !== false,
     diasHistorial: Number.isFinite(a.diasHistorial) && a.diasHistorial! >= 1 && a.diasHistorial! <= 3650 ? Math.round(a.diasHistorial!) : 90,
+    tema: esTema(a.tema) ? a.tema : TEMA_POR_DEFECTO,
   };
 }
 

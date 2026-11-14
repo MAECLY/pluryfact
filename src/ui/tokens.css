@@ -1,66 +1,331 @@
 /* Pluryfact — tokens del sistema de diseño. Fuente de verdad: docs/design-system.md.
-   Concepto: el expediente de oficina. Tinta azul, carpeta manila, cinta roja. */
-@import '@fontsource/ibm-plex-serif/latin-700.css';
+   Ocho temas (lib/temas.ts) sobre la misma estructura de tokens: Pluryfact es el
+   predeterminado y vive en :root; los demás se activan con <html data-brand="id">.
+   Cada tema tiene claro y oscuro; el oscuro sigue al sistema o a data-theme="dark". */
 @import '@fontsource/ibm-plex-sans/latin-400.css';
 @import '@fontsource/ibm-plex-sans/latin-600.css';
 @import '@fontsource/ibm-plex-mono/latin-400.css';
 @import '@fontsource/ibm-plex-mono/latin-500.css';
+@import '@fontsource/bricolage-grotesque/latin-700.css';
+@import '@fontsource/marcellus/latin-400.css';
+@import '@fontsource/newsreader/latin-600.css';
+@import '@fontsource/sora/latin-700.css';
+@import '@fontsource/jetbrains-mono/latin-700.css';
+@import '@fontsource/outfit/latin-700.css';
+@import '@fontsource/rubik/latin-700.css';
+@import '@fontsource/manrope/latin-800.css';
 
+/* Pluryfact (predeterminado): tinta azul y pliego coral. */
 :root {
-  /* Color — claro */
-  --pf-bg: #f2f3f5; /* Archivo */
+  --pf-bg: #f3f5fb;
   --pf-surface: #ffffff;
-  --pf-ink: #14213d;
-  --pf-muted: #5a6275;
-  --pf-line: #d8dbe2;
-  --pf-accent: #1d3a6e; /* Tinta */
+  --pf-ink: #151c33;
+  --pf-muted: #59617a;
+  --pf-line: #d3d9ee;
+  --pf-accent: #2446a8;
   --pf-accent-ink: #ffffff;
-  --pf-manila: #d9a441; /* Manila */
-  --pf-ok: #2d7a4f; /* Archivado */
-  --pf-warn: #a8701a; /* Verificar */
-  --pf-err: #c8102e; /* Cinta */
-
-  /* Tipografía */
-  --pf-font-display: 'IBM Plex Serif', Georgia, serif;
+  --pf-pliego: #f06a4d;
+  --pf-ok: #2d7a4f;
+  --pf-warn: #a8701a;
+  --pf-err: #b3261e;
+  --pf-font-display: 'Bricolage Grotesque', system-ui, sans-serif;
+  --pf-display-weight: 700;
+  --pf-display-tracking: -0.02em;
   --pf-font-body: 'IBM Plex Sans', system-ui, sans-serif;
   --pf-font-mono: 'IBM Plex Mono', ui-monospace, monospace;
-  --pf-display-weight: 700;
-  --pf-display-tracking: -0.015em;
 
-  /* Forma y espacio */
+  /* Forma y espacio (comunes a todos los temas) */
   --pf-radius: 3px;
   --pf-radius-lg: 9px;
   --pf-space: 4px;
   color-scheme: light;
 }
-
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme='light']) {
-    --pf-bg: #0d1322;
-    --pf-surface: #151d30;
-    --pf-ink: #e8ecf4;
-    --pf-muted: #9ca5b8;
-    --pf-line: #26304a;
-    --pf-accent: #7fa6e8;
-    --pf-accent-ink: #0d1322;
-    --pf-manila: #e8b95a;
+    --pf-bg: #0e1324;
+    --pf-surface: #161d33;
+    --pf-ink: #e7ebf7;
+    --pf-muted: #9aa3bd;
+    --pf-line: #27304d;
+    --pf-accent: #8ea8f0;
+    --pf-accent-ink: #0e1324;
+    --pf-pliego: #ff8a70;
     --pf-ok: #5dbb86;
     --pf-warn: #e2ae52;
-    --pf-err: #ff5a6e;
+    --pf-err: #ff6b6b;
     color-scheme: dark;
   }
 }
 :root[data-theme='dark'] {
-  --pf-bg: #0d1322;
-  --pf-surface: #151d30;
-  --pf-ink: #e8ecf4;
-  --pf-muted: #9ca5b8;
-  --pf-line: #26304a;
-  --pf-accent: #7fa6e8;
-  --pf-accent-ink: #0d1322;
-  --pf-manila: #e8b95a;
+  --pf-bg: #0e1324;
+  --pf-surface: #161d33;
+  --pf-ink: #e7ebf7;
+  --pf-muted: #9aa3bd;
+  --pf-line: #27304d;
+  --pf-accent: #8ea8f0;
+  --pf-accent-ink: #0e1324;
+  --pf-pliego: #ff8a70;
   --pf-ok: #5dbb86;
   --pf-warn: #e2ae52;
-  --pf-err: #ff5a6e;
+  --pf-err: #ff6b6b;
   color-scheme: dark;
+}
+
+/* Tabularium: verde pátina y bronce. */
+:root[data-brand='tabularium'] {
+  --pf-bg: #ecebe6;
+  --pf-surface: #f9f8f4;
+  --pf-ink: #2a2620;
+  --pf-muted: #6b6457;
+  --pf-line: #d6d2c7;
+  --pf-accent: #2f6e62;
+  --pf-accent-ink: #ffffff;
+  --pf-pliego: #b07a3f;
+  --pf-font-display: 'Marcellus', Georgia, serif;
+  --pf-display-weight: 400;
+  --pf-display-tracking: 0.02em;
+}
+@media (prefers-color-scheme: dark) {
+  :root[data-brand='tabularium']:not([data-theme='light']) {
+    --pf-bg: #15130f;
+    --pf-surface: #1f1c17;
+    --pf-ink: #ece7dc;
+    --pf-muted: #a59d8e;
+    --pf-line: #36312a;
+    --pf-accent: #6fb8a8;
+    --pf-accent-ink: #15130f;
+    --pf-pliego: #c99556;
+  }
+}
+:root[data-brand='tabularium'][data-theme='dark'] {
+  --pf-bg: #15130f;
+  --pf-surface: #1f1c17;
+  --pf-ink: #ece7dc;
+  --pf-muted: #a59d8e;
+  --pf-line: #36312a;
+  --pf-accent: #6fb8a8;
+  --pf-accent-ink: #15130f;
+  --pf-pliego: #c99556;
+}
+
+/* Ledgera: verde libro mayor. */
+:root[data-brand='ledgera'] {
+  --pf-bg: #f1f4ee;
+  --pf-surface: #fbfcf9;
+  --pf-ink: #1a2a1f;
+  --pf-muted: #5b6a5f;
+  --pf-line: #d5ddcf;
+  --pf-accent: #1d5c3a;
+  --pf-accent-ink: #ffffff;
+  --pf-pliego: #8fbf9a;
+  --pf-font-display: 'Newsreader', Georgia, serif;
+  --pf-display-weight: 600;
+  --pf-display-tracking: -0.01em;
+}
+@media (prefers-color-scheme: dark) {
+  :root[data-brand='ledgera']:not([data-theme='light']) {
+    --pf-bg: #0f1712;
+    --pf-surface: #17211a;
+    --pf-ink: #e3ece5;
+    --pf-muted: #9aaa9f;
+    --pf-line: #2a3a2f;
+    --pf-accent: #6fc597;
+    --pf-accent-ink: #0f1712;
+    --pf-pliego: #3f7a52;
+  }
+}
+:root[data-brand='ledgera'][data-theme='dark'] {
+  --pf-bg: #0f1712;
+  --pf-surface: #17211a;
+  --pf-ink: #e3ece5;
+  --pf-muted: #9aaa9f;
+  --pf-line: #2a3a2f;
+  --pf-accent: #6fc597;
+  --pf-accent-ink: #0f1712;
+  --pf-pliego: #3f7a52;
+}
+
+/* Factrix: petróleo y menta. */
+:root[data-brand='factrix'] {
+  --pf-bg: #e8f3f2;
+  --pf-surface: #ffffff;
+  --pf-ink: #0f2a2c;
+  --pf-muted: #557073;
+  --pf-line: #c9e0de;
+  --pf-accent: #0c5c63;
+  --pf-accent-ink: #ffffff;
+  --pf-pliego: #5fd3b3;
+  --pf-font-display: 'Sora', system-ui, sans-serif;
+  --pf-display-weight: 700;
+  --pf-display-tracking: -0.02em;
+}
+@media (prefers-color-scheme: dark) {
+  :root[data-brand='factrix']:not([data-theme='light']) {
+    --pf-bg: #0b1819;
+    --pf-surface: #122426;
+    --pf-ink: #dff0ee;
+    --pf-muted: #8fb0ad;
+    --pf-line: #23403f;
+    --pf-accent: #5fd3b3;
+    --pf-accent-ink: #0b1819;
+    --pf-pliego: #2a8f86;
+  }
+}
+:root[data-brand='factrix'][data-theme='dark'] {
+  --pf-bg: #0b1819;
+  --pf-surface: #122426;
+  --pf-ink: #dff0ee;
+  --pf-muted: #8fb0ad;
+  --pf-line: #23403f;
+  --pf-accent: #5fd3b3;
+  --pf-accent-ink: #0b1819;
+  --pf-pliego: #2a8f86;
+}
+
+/* Xmlote: terminal verde y ámbar. */
+:root[data-brand='xmlote'] {
+  --pf-bg: #f2f6f2;
+  --pf-surface: #ffffff;
+  --pf-ink: #16211a;
+  --pf-muted: #56665b;
+  --pf-line: #d3dfd5;
+  --pf-accent: #2f7d3a;
+  --pf-accent-ink: #ffffff;
+  --pf-pliego: #e3b341;
+  --pf-font-display: 'JetBrains Mono', ui-monospace, monospace;
+  --pf-display-weight: 700;
+  --pf-display-tracking: -0.03em;
+}
+@media (prefers-color-scheme: dark) {
+  :root[data-brand='xmlote']:not([data-theme='light']) {
+    --pf-bg: #0f1712;
+    --pf-surface: #16211a;
+    --pf-ink: #d9eadc;
+    --pf-muted: #8fa595;
+    --pf-line: #28382d;
+    --pf-accent: #7bd389;
+    --pf-accent-ink: #0f1712;
+    --pf-pliego: #e3b341;
+  }
+}
+:root[data-brand='xmlote'][data-theme='dark'] {
+  --pf-bg: #0f1712;
+  --pf-surface: #16211a;
+  --pf-ink: #d9eadc;
+  --pf-muted: #8fa595;
+  --pf-line: #28382d;
+  --pf-accent: #7bd389;
+  --pf-accent-ink: #0f1712;
+  --pf-pliego: #e3b341;
+}
+
+/* Comproflow: agua y ámbar. */
+:root[data-brand='comproflow'] {
+  --pf-bg: #e9f5f9;
+  --pf-surface: #ffffff;
+  --pf-ink: #0d2530;
+  --pf-muted: #52707c;
+  --pf-line: #cbe4ec;
+  --pf-accent: #0a7ea4;
+  --pf-accent-ink: #ffffff;
+  --pf-pliego: #ffb547;
+  --pf-font-display: 'Outfit', system-ui, sans-serif;
+  --pf-display-weight: 700;
+  --pf-display-tracking: -0.01em;
+}
+@media (prefers-color-scheme: dark) {
+  :root[data-brand='comproflow']:not([data-theme='light']) {
+    --pf-bg: #0a1a21;
+    --pf-surface: #11252e;
+    --pf-ink: #dcf0f6;
+    --pf-muted: #8daeba;
+    --pf-line: #1f3d49;
+    --pf-accent: #4fc3e8;
+    --pf-accent-ink: #0a1a21;
+    --pf-pliego: #e09a2e;
+  }
+}
+:root[data-brand='comproflow'][data-theme='dark'] {
+  --pf-bg: #0a1a21;
+  --pf-surface: #11252e;
+  --pf-ink: #dcf0f6;
+  --pf-muted: #8daeba;
+  --pf-line: #1f3d49;
+  --pf-accent: #4fc3e8;
+  --pf-accent-ink: #0a1a21;
+  --pf-pliego: #e09a2e;
+}
+
+/* Comprobox: naranja caja y pizarra. */
+:root[data-brand='comprobox'] {
+  --pf-bg: #fbf1ea;
+  --pf-surface: #ffffff;
+  --pf-ink: #2b1d14;
+  --pf-muted: #75604f;
+  --pf-line: #ecd8c9;
+  --pf-accent: #b4471a;
+  --pf-accent-ink: #ffffff;
+  --pf-pliego: #3e7c8c;
+  --pf-font-display: 'Rubik', system-ui, sans-serif;
+  --pf-display-weight: 700;
+  --pf-display-tracking: -0.01em;
+}
+@media (prefers-color-scheme: dark) {
+  :root[data-brand='comprobox']:not([data-theme='light']) {
+    --pf-bg: #1a120c;
+    --pf-surface: #241912;
+    --pf-ink: #f3e6dc;
+    --pf-muted: #b39c8a;
+    --pf-line: #3d2c20;
+    --pf-accent: #f08a4b;
+    --pf-accent-ink: #1a120c;
+    --pf-pliego: #5fa3b4;
+  }
+}
+:root[data-brand='comprobox'][data-theme='dark'] {
+  --pf-bg: #1a120c;
+  --pf-surface: #241912;
+  --pf-ink: #f3e6dc;
+  --pf-muted: #b39c8a;
+  --pf-line: #3d2c20;
+  --pf-accent: #f08a4b;
+  --pf-accent-ink: #1a120c;
+  --pf-pliego: #5fa3b4;
+}
+
+/* Fiscabox: azul marino y oro sello. */
+:root[data-brand='fiscabox'] {
+  --pf-bg: #eef1f6;
+  --pf-surface: #ffffff;
+  --pf-ink: #121d30;
+  --pf-muted: #56627a;
+  --pf-line: #d4dbe7;
+  --pf-accent: #16325c;
+  --pf-accent-ink: #ffffff;
+  --pf-pliego: #c9a227;
+  --pf-font-display: 'Manrope', system-ui, sans-serif;
+  --pf-display-weight: 800;
+  --pf-display-tracking: -0.02em;
+}
+@media (prefers-color-scheme: dark) {
+  :root[data-brand='fiscabox']:not([data-theme='light']) {
+    --pf-bg: #0c1220;
+    --pf-surface: #141c2e;
+    --pf-ink: #e6ebf5;
+    --pf-muted: #9aa5bd;
+    --pf-line: #263149;
+    --pf-accent: #8fb0e8;
+    --pf-accent-ink: #0c1220;
+    --pf-pliego: #d9b440;
+  }
+}
+:root[data-brand='fiscabox'][data-theme='dark'] {
+  --pf-bg: #0c1220;
+  --pf-surface: #141c2e;
+  --pf-ink: #e6ebf5;
+  --pf-muted: #9aa5bd;
+  --pf-line: #263149;
+  --pf-accent: #8fb0e8;
+  --pf-accent-ink: #0c1220;
+  --pf-pliego: #d9b440;
 }

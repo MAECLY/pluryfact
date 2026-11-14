@@ -2,7 +2,7 @@ import type { Paso } from '@/lib/cola';
 import { descripcionPaso, rotulo } from './textos';
 
 /**
- * El fichero: una pestaña de archivador por periodo. Se rellena de manila al
+ * El fichero: una pestaña de archivador por periodo. Se rellena de pliego al
  * completarse; la cinta roja marca problemas. Con muchos periodos (un año de
  * emitidos son 365 días) se vuelve una trama densa sin rótulos.
  */

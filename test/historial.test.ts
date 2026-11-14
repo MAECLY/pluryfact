@@ -25,6 +25,6 @@ it('agrupa como chrome://downloads', () => {
 
 it('normaliza ajustes inválidos a los valores por defecto', () => {
   expect(normalizarAjustes(undefined)).toEqual(AJUSTES_POR_DEFECTO);
-  expect(normalizarAjustes({ ritmo: 'amable', notificaciones: false, diasHistorial: 7 })).toEqual({ ritmo: 'amable', notificaciones: false, diasHistorial: 7 });
+  expect(normalizarAjustes({ ritmo: 'amable', notificaciones: false, diasHistorial: 7 })).toEqual({ ritmo: 'amable', notificaciones: false, diasHistorial: 7, tema: 'pluryfact' });
   expect(normalizarAjustes({ diasHistorial: -5 }).diasHistorial).toBe(90);
 });
