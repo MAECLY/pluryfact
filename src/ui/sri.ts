@@ -1,5 +1,5 @@
 import type { Trabajo } from '@/lib/cola';
-import { CLAVE_CANCELAR, CLAVE_PROGRESO, type EstadoPagina, type EstadoTrabajo, type Peticion } from '@/lib/mensajeria';
+import { CLAVE_CANCELAR, CLAVE_PROGRESO, type EstadoPagina, type EstadoTrabajo, type Peticion, type RespuestaImprimir } from '@/lib/mensajeria';
 
 /** Conexión con la pestaña del portal del SRI, compartida por popup y página. */
 const PATRON_SRI = 'https://srienlinea.sri.gob.ec/comprobantes-electronicos-internet/*';
@@ -78,4 +78,15 @@ export async function irAlSri(c: Conexion) {
   }
   const t = await browser.tabs.update(c.pestana, { active: true });
   if (t?.windowId !== undefined) await browser.windows.update(t.windowId, { focused: true });
+}
+
+/** Pide a la pestaña del SRI que mande a PluryPrint el último resultado que tiene en memoria (o solo su resumen). */
+export async function pedirImpresion(c: Conexion, inicio: number, confirmado: boolean, soloResumen = false): Promise<RespuestaImprimir> {
+  if (c.pestana === null) return { ok: false, error: c.problema ?? 'Abre la pestaña del SRI.' };
+  try {
+    const r = (await browser.tabs.sendMessage(c.pestana, { tipo: 'imprimir', inicio, confirmado, soloResumen } satisfies Peticion)) as RespuestaImprimir | undefined;
+    return r ?? { ok: false, error: 'La pestaña del SRI no respondió.' };
+  } catch {
+    return { ok: false, error: 'La pestaña del SRI no responde. Usa «Imprimir un ZIP…» con el archivo que descargaste.' };
+  }
 }

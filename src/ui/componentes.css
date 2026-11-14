@@ -299,6 +299,51 @@
   text-underline-offset: 2px;
 }
 
+/* Envío a PluryPrint: una línea bajo el estado, con el pliego como marca. */
+.linea-impresion {
+  position: relative;
+  margin: 0;
+  padding-left: 16px;
+  font-size: 13px;
+  text-wrap: pretty;
+}
+.linea-impresion::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0.4em;
+  width: 8px;
+  height: 10px;
+  border-radius: 2px 2px 0 0;
+  background: var(--pf-pliego);
+}
+.linea-impresion[data-estado='pendiente']::before {
+  background: none;
+  border: 1px dashed var(--pf-muted);
+  box-sizing: border-box;
+}
+.linea-impresion[data-estado='error'] {
+  color: var(--pf-err);
+}
+.linea-impresion[data-estado='error']::before {
+  background: var(--pf-err);
+}
+.casilla-pluryprint {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 4px;
+  cursor: pointer;
+}
+.casilla-pluryprint input {
+  accent-color: var(--pf-accent);
+  margin: 0;
+}
+.casillas label:has(input:disabled) {
+  cursor: default;
+  color: var(--pf-muted);
+}
+
 .cerrar-aviso {
   display: flex;
   gap: 8px;
@@ -317,7 +362,8 @@
 @media (prefers-reduced-motion: no-preference) {
   .ficha[data-estado='consultando'],
   .ficha[data-estado='descargando'],
-  .indicador[data-estado='activo'] {
+  .indicador[data-estado='activo'],
+  .linea-impresion[data-estado='enviando']::before {
     animation: latir 1.4s ease-in-out infinite;
   }
   @keyframes latir {
