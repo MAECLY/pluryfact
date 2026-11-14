@@ -119,6 +119,8 @@ export function montarPluryprint(ctx: Contexto) {
 
   function pintar() {
     const a = pp();
+    // «Borrar todos los datos» o Desconectar desde otra pestaña: sin activar no se muestra «conectado».
+    if (!a.activado && estado.tipo === 'conectado') estado = { tipo: 'no-conectado' };
     // Barra lateral
     const lat = $('#pp-lateral');
     lat.dataset.estado = estado.tipo === 'problema' ? 'problema' : estado.tipo;
