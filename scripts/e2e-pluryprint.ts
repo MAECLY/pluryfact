@@ -8,9 +8,13 @@
  * 3. Registra el host `com.maecly.pluryprint` en <perfil>/NativeMessagingHosts/
  *    (Chromium lee ahí los manifiestos de usuario cuando se usa --user-data-dir),
  *    con el ID de esta extensión en allowed_origins. El host es:
- *      - PLURYPRINT_BRIDGE_BIN=/ruta/a/pluryprint-bridge  → el puente real de PluryPrint.
- *        Ojo: el puente real además valida el origen contra los manifiestos que
- *        instala `pluryprint-cli bridge install --extra-origin chrome-extension://<id>/`.
+ *      - PLURYPRINT_BRIDGE_BIN=/ruta/a/pluryprint-bridge  → el puente real de
+ *        PluryPrint, copiado a la carpeta temporal y con su modo de prueba:
+ *        PLURYPRINT_BRIDGE_DATA_DIR apunta a una carpeta temporal (inbox/,
+ *        handoff/ y un manifiesto con este origen, así no hace falta
+ *        `bridge install` ni se tocan los manifiestos reales) y
+ *        PLURYPRINT_BRIDGE_NO_LAUNCH=1 evita abrir la app (pon
+ *        PLURYPRINT_BRIDGE_NO_LAUNCH=0 para que la abra).
  *      - sin esa variable → scripts/pluryprint-host-falso.ts (bun), que implementa
  *        el protocolo y guarda lo recibido.
  * 4. En pluryfact.html: Avanzado → «Conectar con PluryPrint», elige RIDE con XML
@@ -19,13 +23,12 @@
  * 5. Verifica que el host recibió exactamente los archivos esperados, en orden,
  *    con su sha256; y que sin host registrado la página dice «no instalado».
  *
- * Variables: PLURYPRINT_BRIDGE_BIN, PLURYPRINT_INBOX_DIR (con el puente real:
- * carpeta inbox/ de PluryPrint para revisar lo recibido), E2E_VENTANA=1 (con
- * ventana), E2E_CAPTURAS=<carpeta> (guarda capturas de Avanzado y Descargas).
+ * Variables: PLURYPRINT_BRIDGE_BIN, PLURYPRINT_BRIDGE_NO_LAUNCH, E2E_VENTANA=1
+ * (con ventana), E2E_CAPTURAS=<carpeta> (guarda capturas de Avanzado y Descargas).
  */
 import { spawnSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
-import { chmodSync, existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { chmodSync, copyFileSync, existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -60,6 +63,7 @@ comprobar(manifiestoExt.permissions.includes('nativeMessaging'), 'el build E2E d
 const tmp = mkdtempSync(join(tmpdir(), 'pluryfact-e2e-pp-'));
 const perfil = join(tmp, 'perfil');
 const recibido = join(tmp, 'recibido');
+const datosPuente = join(tmp, 'datos-pluryprint');
 mkdirSync(perfil, { recursive: true });
 
 // Host: el puente real o el falso envuelto en un script (Chrome necesita un ejecutable).
@@ -67,8 +71,20 @@ mkdirSync(perfil, { recursive: true });
 // como proceso «responsable» propio y, si este lee algo dentro de ~/Documents
 // (donde suele estar el repo), se queda colgado esperando el permiso de
 // privacidad (TCC) sin que aparezca ningún diálogo.
-let binario = puenteReal ?? '';
-if (!puenteReal) {
+// Lo mismo vale para el puente real compilado dentro del repo: se copia fuera.
+let binario = '';
+if (puenteReal) {
+  const copia = join(tmp, 'pluryprint-bridge');
+  copyFileSync(puenteReal, copia);
+  chmodSync(copia, 0o755);
+  mkdirSync(datosPuente, { recursive: true });
+  binario = join(tmp, 'puente.sh');
+  writeFileSync(
+    binario,
+    `#!/bin/sh\nexport PLURYPRINT_BRIDGE_DATA_DIR='${datosPuente}'\nexport PLURYPRINT_BRIDGE_NO_LAUNCH='${process.env.PLURYPRINT_BRIDGE_NO_LAUNCH ?? '1'}'\nexec '${copia}' "$@"\n`,
+  );
+  chmodSync(binario, 0o755);
+} else {
   const js = join(tmp, 'host-falso.js');
   if (spawnSync(process.execPath, ['build', join(root, 'scripts', 'pluryprint-host-falso.ts'), '--target=bun', `--outfile=${js}`], { stdio: 'inherit' }).status !== 0) process.exit(1);
   binario = join(tmp, 'host-falso.sh');
@@ -89,12 +105,12 @@ try {
 
   const dirHosts = join(perfil, 'NativeMessagingHosts');
   const manifiestoHost = join(dirHosts, `${NOMBRE_HOST}.json`);
+  const manifiesto = JSON.stringify({ name: NOMBRE_HOST, description: 'PluryPrint (prueba E2E)', path: binario, type: 'stdio', allowed_origins: [`chrome-extension://${id}/`] }, null, 2);
   const registrar = () => {
     mkdirSync(dirHosts, { recursive: true });
-    writeFileSync(
-      manifiestoHost,
-      JSON.stringify({ name: NOMBRE_HOST, description: 'PluryPrint (prueba E2E)', path: binario, type: 'stdio', allowed_origins: [`chrome-extension://${id}/`] }, null, 2),
-    );
+    writeFileSync(manifiestoHost, manifiesto);
+    // El puente real también valida el origen contra un manifiesto en su carpeta de datos de prueba.
+    if (puenteReal) writeFileSync(join(datosPuente, `${NOMBRE_HOST}.json`), manifiesto);
   };
 
   const page = await ctx.newPage();
@@ -173,13 +189,21 @@ try {
       enDisco.length === esperado.length && enDisco.every((f, i) => sha(readFileSync(join(dir, f))) === sha(esperado[i]!.datos)),
       'bytes idénticos (sha256) a los del ZIP',
     );
-  } else if (process.env.PLURYPRINT_INBOX_DIR) {
-    const inbox = process.env.PLURYPRINT_INBOX_DIR;
-    const jobs = readdirSync(inbox).map((d) => join(inbox, d));
-    const ultimo = jobs.sort().at(-1);
-    const enDisco = ultimo ? readdirSync(ultimo).sort() : [];
-    comprobar(enDisco.length === esperado.length, 'el puente real dejó los archivos en su inbox', ultimo ?? 'sin carpeta');
-  } else console.log('INFO Con el puente real, define PLURYPRINT_INBOX_DIR para revisar su inbox; se comprobó solo la respuesta.');
+  } else {
+    const inbox = join(datosPuente, 'inbox');
+    const jobs = existsSync(inbox) ? readdirSync(inbox) : [];
+    comprobar(jobs.length === 1, 'el puente real dejó un trabajo en su inbox', jobs.join(','));
+    const dir = join(inbox, jobs[0] ?? 'nada');
+    const enDisco = existsSync(dir) ? readdirSync(dir).sort() : [];
+    console.log(`INFO inbox: ${enDisco.join(', ')}`);
+    comprobar(
+      enDisco.length === esperado.length && enDisco.every((f, i) => sha(readFileSync(join(dir, f))) === sha(esperado[i]!.datos)),
+      'bytes idénticos (sha256) y en orden en el inbox del puente real',
+    );
+    const handoff = join(datosPuente, 'handoff');
+    const handoffs = existsSync(handoff) ? readdirSync(handoff) : [];
+    console.log(`INFO handoff: ${handoffs.length ? handoffs.join(', ') : 'ninguno'}`);
+  }
 } catch (e) {
   console.error(e);
   fallos.push(String(e));
