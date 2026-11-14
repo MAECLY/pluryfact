@@ -1,0 +1,10 @@
+{
+  "v": 1,
+  "id": "9",
+  "type": "listPrinters",
+  "ok": false,
+  "error": {
+    "code": "internal",
+    "message": "Internal error."
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "v": 1,
+  "id": "9",
+  "type": "putFile",
+  "ok": false,
+  "error": {
+    "code": "io_error",
+    "message": "Could not write the file to the inbox."
+  }
+}

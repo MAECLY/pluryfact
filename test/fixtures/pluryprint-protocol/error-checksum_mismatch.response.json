@@ -1,0 +1,10 @@
+{
+  "v": 1,
+  "id": "9",
+  "type": "putFile",
+  "ok": false,
+  "error": {
+    "code": "checksum_mismatch",
+    "message": "SHA-256 of the received file does not match the declared sha256."
+  }
+}

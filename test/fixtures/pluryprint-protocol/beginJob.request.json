@@ -1,0 +1,16 @@
+{
+  "v": 1,
+  "id": "4",
+  "type": "beginJob",
+  "source": "pluryfact",
+  "label": "Recibidos · octubre 2026",
+  "action": "configure",
+  "profileId": "builtin-quick",
+  "printerId": null,
+  "overrides": {
+    "copies": 1,
+    "duplex": "long-edge",
+    "color": "mono"
+  },
+  "expectedFiles": 1
+}

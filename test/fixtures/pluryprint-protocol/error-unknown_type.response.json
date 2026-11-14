@@ -1,0 +1,10 @@
+{
+  "v": 1,
+  "id": "9",
+  "type": "printJob",
+  "ok": false,
+  "error": {
+    "code": "unknown_type",
+    "message": "Unknown message type \"printJob\"."
+  }
+}

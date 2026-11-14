@@ -1,0 +1,18 @@
+{
+  "v": 1,
+  "id": "3",
+  "type": "listProfiles",
+  "ok": true,
+  "profiles": [
+    {
+      "id": "builtin-quick",
+      "name": "Quick print",
+      "isDefault": true
+    },
+    {
+      "id": "builtin-duplex-bw",
+      "name": "Duplex black and white",
+      "isDefault": false
+    }
+  ]
+}

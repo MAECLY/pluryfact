@@ -1,0 +1,10 @@
+{
+  "v": 1,
+  "id": "9",
+  "type": "beginJob",
+  "ok": false,
+  "error": {
+    "code": "too_many_files",
+    "message": "expectedFiles exceeds maxFiles (5000)."
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "v": 1,
+  "id": "9",
+  "type": "hello",
+  "ok": false,
+  "error": {
+    "code": "origin_not_allowed",
+    "message": "The calling extension origin is not allowed by the installed host manifest."
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "v": 1,
+  "id": "5",
+  "type": "putFile",
+  "jobId": "0f8fad5b-d9cb-469f-a165-70867728950e",
+  "index": 0,
+  "name": "factura_001-001-000000123_0999999999001_1510202601099999999900120010010000001231234567817.pdf",
+  "kind": "pdf",
+  "size": 45,
+  "sha256": "666c86f3c9781e5b105baacc6f4565de97092c4555d44d4370d075e54a116a6c",
+  "chunk": 0,
+  "chunks": 1,
+  "data": "JVBERi0xLjQKJWZha2UgUklERSBmb3IgY29udHJhY3QgdGVzdHMKJSVFT0YK"
+}

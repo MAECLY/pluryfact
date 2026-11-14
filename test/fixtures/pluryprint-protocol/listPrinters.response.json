@@ -1,0 +1,26 @@
+{
+  "v": 1,
+  "id": "2",
+  "type": "listPrinters",
+  "ok": true,
+  "printers": [
+    {
+      "id": "office-laser",
+      "name": "Office Laser",
+      "isDefault": true,
+      "capabilities": {
+        "duplex": true,
+        "color": false,
+        "papers": [
+          "a4",
+          "letter"
+        ]
+      }
+    },
+    {
+      "id": "photo-inkjet",
+      "name": "Photo Inkjet",
+      "isDefault": false
+    }
+  ]
+}
