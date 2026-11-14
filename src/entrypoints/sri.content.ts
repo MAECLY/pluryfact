@@ -304,9 +304,11 @@ export default defineContentScript({
         const final: EstadoTrabajo = { ...r.progreso, ...base, fase, mensaje, actividad, esperaHasta: null, verificacion: false, actualizado: Date.now() };
         await guardar(final);
         await archivar(final, ajustes.diasHistorial).catch((e) => log.error(`No se pudo guardar el historial: ${String(e)}`));
-        // «Enviar a PluryPrint al terminar»: sin confirmación extra, así que
-        // imprimir directo con más de 50 documentos abre PluryPrint (ver envio-pluryprint).
-        if (t.imprimir && resultado) void imprimir(false);
+        // «Enviar a PluryPrint al terminar»: solo si la descarga terminó (no si
+        // se canceló o se cortó: eso se imprime a mano, o tras reanudar). Sin
+        // confirmación extra, imprimir directo con más de 50 documentos abre
+        // PluryPrint para revisar (ver envio-pluryprint).
+        if (t.imprimir && resultado && fase === 'listo') void imprimir(false);
       } catch (e) {
         log.error(`Trabajo interrumpido: ${e instanceof Error ? e.stack ?? e.message : String(e)}`);
         if (!(e instanceof Cancelado)) {
