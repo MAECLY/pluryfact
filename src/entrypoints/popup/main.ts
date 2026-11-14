@@ -1,6 +1,6 @@
 import './style.css';
 import { CLAVE_PROGRESO, type EstadoTrabajo } from '@/lib/mensajeria';
-import { CLAVE_AJUSTES, normalizarAjustes } from '@/lib/ajustes';
+import { AJUSTES_POR_DEFECTO, CLAVE_AJUSTES, normalizarAjustes, type Ajustes } from '@/lib/ajustes';
 import { migrarClavesAntiguas } from '@/lib/migracion';
 import { aplicarTema } from '@/lib/temas';
 import { montarFormulario } from '@/ui/formulario';
@@ -15,6 +15,7 @@ const $ = <T extends HTMLElement>(sel: string) => document.querySelector<T>(sel)
 let conexion: Conexion = { pestana: null, pagina: null, problema: null };
 let actual: EstadoTrabajo | undefined;
 let enCurso = false;
+let ajustes: Ajustes = AJUSTES_POR_DEFECTO;
 type Pestana = 'form' | 'descargas';
 let pestanaActiva: Pestana = 'form';
 
@@ -58,6 +59,11 @@ function actualizarAcciones() {
   tabForm.title = enCurso ? 'Disponible cuando termine la descarga en curso' : '';
   if (enCurso && pestanaActiva === 'form') return mostrarPestana('descargas');
   $('#cerrar').hidden = !enCurso;
+
+  // PluryPrint: la descarga terminada sigue en memoria de la pestaña del SRI.
+  const imprimible =
+    pestanaActiva === 'descargas' && !enCurso && !!actual?.zip && ajustes.pluryprint.activado && conexion.pagina?.enMemoria === actual.inicio;
+  $('#imprimir').hidden = !imprimible;
 
   const principal = $<HTMLButtonElement>('#descargar');
   const pendientes = pendientesDe(actual);
@@ -103,6 +109,12 @@ async function lanzar(t: Parameters<typeof iniciar>[1]) {
 $('#tab-form').addEventListener('click', () => !enCurso && mostrarPestana('form'));
 $('#tab-descargas').addEventListener('click', () => mostrarPestana('descargas'));
 $('#secundario').addEventListener('click', () => mostrarPestana('form'));
+// El resumen y la confirmación viven en la página completa (el popup se cierra al cambiar de ventana).
+$('#imprimir').addEventListener('click', async () => {
+  if (!actual) return;
+  await browser.tabs.create({ url: browser.runtime.getURL(`/pluryfact.html?imprimir=${actual.inicio}#descargas`) });
+  window.close();
+});
 $('#abrir').addEventListener('click', async () => {
   await browser.tabs.create({ url: browser.runtime.getURL(`/pluryfact.html#${pestanaActiva === 'form' ? 'nueva' : 'descargas'}`) });
   window.close();
@@ -124,14 +136,32 @@ $('#descargar').addEventListener('click', async () => {
 
 setInterval(() => actual && refrescarCifras($('#tarjeta'), actual), 1000);
 browser.storage.onChanged.addListener((cambios, area) => {
-  if (area === 'local' && cambios[CLAVE_AJUSTES]) aplicarTema(document, normalizarAjustes(cambios[CLAVE_AJUSTES].newValue).tema);
-  if (area === 'local' && cambios[CLAVE_PROGRESO]) pintarProgreso(cambios[CLAVE_PROGRESO].newValue as EstadoTrabajo | undefined);
+  if (area === 'local' && cambios[CLAVE_AJUSTES]) {
+    ajustes = normalizarAjustes(cambios[CLAVE_AJUSTES].newValue);
+    aplicarTema(document, ajustes.tema);
+    formulario.ponerPluryprint(ajustes.pluryprint);
+  }
+  if (area === 'local' && cambios[CLAVE_PROGRESO]) {
+    const antes = (cambios[CLAVE_PROGRESO].oldValue as EstadoTrabajo | undefined)?.fase;
+    const e = cambios[CLAVE_PROGRESO].newValue as EstadoTrabajo | undefined;
+    pintarProgreso(e);
+    // Al terminar, la pestaña del SRI conserva el resultado: se vuelve a preguntar para ofrecer imprimirlo.
+    if (e && e.fase !== antes && !enMarcha(e))
+      void conectar().then((c) => {
+        conexion = c;
+        actualizarAcciones();
+      });
+  }
 });
 
 pintarPlan();
 void migrarClavesAntiguas(browser.storage.local)
   .then(() => browser.storage.local.get(CLAVE_AJUSTES))
-  .then((v) => aplicarTema(document, normalizarAjustes(v[CLAVE_AJUSTES]).tema))
+  .then((v) => {
+    ajustes = normalizarAjustes(v[CLAVE_AJUSTES]);
+    aplicarTema(document, ajustes.tema);
+    formulario.ponerPluryprint(ajustes.pluryprint);
+  })
   .then(conectar)
   .then(async (c) => {
   conexion = c;
