@@ -1,0 +1,70 @@
+name: Reportar un problema
+description: Algo no funcionó como esperabas en Pluryfact
+title: 'bug: '
+labels: ['bug']
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Gracias por reportarlo. **No pegues tu clave del SRI, tu RUC completo ni claves de acceso completas.**
+        El registro de diagnóstico ya viene enmascarado: en Pluryfact, Avanzado → Copiar registro.
+
+  - type: input
+    id: version
+    attributes:
+      label: Versión de Pluryfact
+      description: Está en Pluryfact → Acerca de.
+      placeholder: '0.1.0'
+    validations:
+      required: true
+
+  - type: dropdown
+    id: instalacion
+    attributes:
+      label: Cómo la instalaste
+      options:
+        - Chrome Web Store
+        - ZIP del release de GitHub (Cargar descomprimida)
+        - Compilada desde el código
+    validations:
+      required: true
+
+  - type: dropdown
+    id: bandeja
+    attributes:
+      label: Pantalla del SRI
+      options:
+        - Comprobantes electrónicos recibidos
+        - Comprobantes electrónicos emitidos
+        - No llegué a la pantalla de comprobantes
+    validations:
+      required: true
+
+  - type: input
+    id: periodo
+    attributes:
+      label: Qué pediste
+      description: Tipo de comprobante, periodo y formatos.
+      placeholder: 'Facturas recibidas de 2025, XML y RIDE'
+
+  - type: textarea
+    id: que-paso
+    attributes:
+      label: Qué pasó y qué esperabas
+      description: Incluye el mensaje que mostró Pluryfact, si hubo alguno.
+    validations:
+      required: true
+
+  - type: textarea
+    id: registro
+    attributes:
+      label: Registro de diagnóstico
+      description: Avanzado → Copiar registro, y pégalo aquí. Ya viene sin tu RUC ni claves completas.
+      render: text
+
+  - type: input
+    id: chrome
+    attributes:
+      label: Versión de Chrome
+      description: chrome://version
+      placeholder: '142.0.7444.60'

@@ -1,0 +1,8 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Preguntas frecuentes
+    url: https://pluryfact.maecly.com/#preguntas
+    about: Respuestas sobre la clave, el captcha, la sesión de 20 minutos y los límites.
+  - name: Escribir por correo
+    url: mailto:hola@maecly.com
+    about: Para algo que no quieras dejar en un issue público.
