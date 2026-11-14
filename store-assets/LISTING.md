@@ -111,9 +111,9 @@ calendarios, y no encaja.
 
 | Campo | Valor |
 |---|---|
-| URL oficial | Ninguna (requiere verificar un dominio en Search Console; opcional) |
+| URL oficial | `https://pluryfact.maecly.com`, verificada en Search Console con la misma cuenta de la tienda (etiqueta `google-site-verification` en la landing; no quitarla) |
 | URL de la página principal | `https://pluryfact.maecly.com` |
-| URL de asistencia | `mailto:hola@maecly.com` o, si la tienda pide una página, `https://pluryfact.maecly.com/#preguntas` |
+| URL de asistencia | `https://pluryfact.maecly.com/#preguntas` (preguntas frecuentes; el pie de esa página tiene `hola@maecly.com`) |
 | Contenido para adultos | No |
 
 ## Distribución
