@@ -365,52 +365,90 @@ Notas:
 | Unit | `test/seleccion-impresion.test.ts` | Qué y en qué orden, rutas hostiles, ZIP, textos. |
 | Unit | `test/ajustes-pluryprint.test.ts` | Defectos, migración desde la 0.1.0 y formas viejas, regla de 50 documentos. |
 | DOM | `test/formulario-pluryprint.test.ts` | La casilla de Nueva descarga y los formatos que fija. |
-| E2E | `bun run e2e:pluryprint` | Chromium real + host nativo (falso, o el puente real con `PLURYPRINT_BRIDGE_BIN`): no instalado, conectar, «Imprimir un ZIP…» con un ZIP ficticio y verificación de lo recibido (orden, tipo y sha256; con el puente real, en su `inbox/`). |
+| E2E | `bun run e2e:pluryprint` | Chromium real + host nativo (falso, o el puente real de PluryPrint con `PLURYPRINT_BRIDGE_BIN`): no instalado, conectar, «Imprimir un ZIP…» con un ZIP ficticio y verificación de lo recibido (orden, tipo y sha256). Con el puente real: dos trabajos (RIDE con XML de respaldo + reporte, y solo XML + reporte), cada archivo del `inbox/` igual byte a byte a su entrada del ZIP, el handoff, y el test `bridge_handoff_e2e` de PluryPrint sobre lo que dejó el puente. |
+| E2E (registro real) | `PLURYPRINT_REGISTRO=cli bun run e2e:pluryprint` | Lo anterior, pero el host lo registra `pluryprint-cli bridge install --browser chrome --extra-origin <id de prueba>` en un HOME temporal (macOS y Linux). |
 
-Verificado en esta Mac (14 de noviembre de 2026): `bun run e2e:pluryprint` pasa
-con el host falso y con el puente real compilado de la rama
-`feat/pluryfact-bridge` de PluryPrint
-(`PLURYPRINT_BRIDGE_BIN=…/target/debug/pluryprint-bridge`, en su modo de prueba
-`PLURYPRINT_BRIDGE_DATA_DIR` + `PLURYPRINT_BRIDGE_NO_LAUNCH=1`): los 5 archivos
-llegan a `inbox/<jobId>/` en orden y con el mismo sha256, y el puente escribe el
-handoff `pluryfact-<jobId>.json`.
+### 9.1 E2E cruzada con PluryPrint
 
-**El XML depende de dos ramas de PluryPrint.** El puente (`feat/pluryfact-bridge`,
-MAECLY/pluryprint#104) acepta `kind: "xml"` y lo deja en el inbox, pero quien
-sabe imprimir XML es otra rama, `feat/print-sri-xml` (MAECLY/pluryprint#103:
-`xml` en `SUPPORTED_EXTS` y el convertidor `engine/convert/xml`). Con el puente
-solo, la app marca el XML como «Unsupported file type» en Print Job y la cola lo
-rechaza (`ipc/jobs.rs`, `queue/mod.rs`): **PluryPrint 0.0.6 tiene que salir con
-las dos**. Al juntarlas, git no marca conflicto en `src-tauri/Cargo.toml`, pero
-las dos añaden `roxmltree = "0.20"` y queda la clave duplicada (`cargo` falla
-con «duplicate key»): hay que dejar una sola línea. Los conflictos de texto son
-solo de documentación (CHANGELOG, `security-model.md`, índice de ADR).
+Se corre desde este repo contra los binarios reales de PluryPrint (rama
+`feat/pluryfact-bridge`, que ya incluye la impresión de XML de
+`feat/print-sri-xml`). No imprime en papel ni abre la app: el puente corre con
+`PLURYPRINT_BRIDGE_NO_LAUNCH=1`, que escribe el inbox y el handoff y se detiene.
 
-Verificado con las dos ramas juntas (14 de noviembre de 2026, en esta Mac, en
-una copia de trabajo temporal que no se subió: `feat/pluryfact-bridge` 84d0d98
-+ `feat/print-sri-xml` ee87b7a, con esa línea duplicada quitada):
+```sh
+# En ../pluryprint/src-tauri
+cargo build --bin pluryprint-bridge --bin pluryprint-cli
+# Aquí: manifiesto escrito por el script, datos del puente en una carpeta temporal
+PLURYPRINT_BRIDGE_BIN=../pluryprint/src-tauri/target/debug/pluryprint-bridge \
+  PLURYPRINT_BRIDGE_NO_LAUNCH=1 bun run e2e:pluryprint
+# Registro real con el CLI de PluryPrint, en un HOME temporal
+PLURYPRINT_REGISTRO=cli PLURYPRINT_BRIDGE_BIN=../pluryprint/src-tauri/target/debug/pluryprint-bridge \
+  PLURYPRINT_BRIDGE_NO_LAUNCH=1 bun run e2e:pluryprint
+```
 
-1. `PLURYPRINT_BRIDGE_BIN=<ese pluryprint-bridge> E2E_CONSERVAR=1 bun run
-   e2e:pluryprint` pasa entero (5 archivos, mismo orden y sha256, handoff).
-2. Con lo que dejó el puente, un test de Rust temporal pasa por las mismas
-   puertas que la app: `cli::selection_from_at` acepta el handoff (carpeta,
-   frescura de 60 s, `source: "pluryfact"`, etiqueta «Recibidos · 2026-10»,
-   acción `configure`), `ipc::jobs::inspect_files` da los 5 archivos como
-   imprimibles (PDF, **XML** y TXT) y `engine::convert::convert_to_pdf`, con el
-   proceso de render real, convierte el XML en un PDF A4 tipo RIDE (emisor,
-   RUC, «Factura», número y fecha de autorización, ambiente, clave de acceso
-   con su código de barras y el pie «Representación impresa generada por
-   Pluryprint a partir del XML autorizado») y el reporte TXT en un PDF.
+Qué comprueba, en orden:
 
-Lo que eso no cubre: abrir de verdad la pantalla Print Job con el handoff
-(`PLURYPRINT_BRIDGE_NO_LAUNCH=0` con la app instalada) e imprimir en papel o en
-una impresora PDF virtual. Hay que repetir los dos pasos cuando las dos ramas
-estén integradas en `main` de PluryPrint.
+1. **Registro** (`PLURYPRINT_REGISTRO=cli`): copia `pluryprint-cli` y
+   `pluryprint-bridge` juntos a la carpeta temporal (fuera de `~/Documents`, por
+   el permiso de privacidad de macOS) y corre `pluryprint-cli bridge install
+   --browser chrome --extra-origin chrome-extension://<id>/ --json` con
+   `HOME=<temporal>/home`; `bridge status --json` tiene que dar Chrome
+   registrado, apuntando a ese puente y con el binario presente. El perfil de
+   Chromium es la carpeta de Chrome de ese HOME, así que el navegador lee el
+   manifiesto justo donde lo escribió el CLI, y le pasa ese HOME al puente, que
+   acepta el origen de prueba solo porque el manifiesto instalado lo lista. Al
+   final, el manifiesto de Chrome y el inbox de PluryPrint del usuario tienen
+   que seguir iguales. Sin la variable, el script escribe el manifiesto y usa
+   `PLURYPRINT_BRIDGE_DATA_DIR`.
+2. **Protocolo y página**: «no instalado» antes de registrar, `hello`,
+   `listProfiles`, y dos «Imprimir un ZIP…» del ZIP ficticio (RUC
+   0999999999001): «Se imprimirán 3 RIDE + 1 XML + el reporte.» y, tras elegir
+   «El XML» en Avanzado, «Se imprimirán 4 XML + el reporte.» (una es una
+   retención).
+3. **Inbox y handoff** de cada trabajo: cada archivo de `inbox/<jobId>/` es byte
+   a byte su entrada del ZIP (comparado contra el ZIP descomprimido, no contra
+   lo que se usó para armarlo), en orden de impresión; el handoff
+   `pluryfact-<jobId>.json` dice `schema_version: 1`, `source: "pluryfact"`,
+   `action: "configure"`, la etiqueta «Recibidos · 2026-10» (sin RUC) y las
+   rutas del inbox en orden.
+4. **Lo que haría la app**: si encuentra el repo de PluryPrint (el `src-tauri`
+   del que salió `PLURYPRINT_BRIDGE_BIN`, o `PLURYPRINT_SRC_TAURI`), compila
+   antes de abrir Chromium su test `bridge_handoff_e2e` y lo corre justo después
+   de cada trabajo (la app no acepta un handoff de más de 60 s). Ese test arma
+   la línea de comandos con la que el puente abre la app, la pasa por la misma
+   puerta del menú contextual (`cli::selection_from_at`), comprueba que con el
+   HOME temporal la carpeta de handoff de la app es la del puente, que Print
+   Job da los 5 archivos por imprimibles (`ipc::jobs::inspect_files`) y
+   convierte cada uno con el proceso de render real (`convert_to_pdf`): los PDF
+   pasan tal cual, cada XML sale como su representación tipo RIDE y el reporte
+   como página de texto. Los PDF quedan en `<temporal>/impreso/<jobId>/` con
+   `E2E_CONSERVAR=1`. `PLURYPRINT_VALIDAR_HANDOFF=0` salta este paso.
+
+Verificado en esta Mac (14 de noviembre de 2026, PluryPrint
+`feat/pluryfact-bridge` en de47ae8): pasan los tres modos (host falso; puente
+real con manifiesto del script; puente real registrado con
+`pluryprint-cli bridge install` en un HOME temporal), con todas las
+comprobaciones en PASS, incluidos los dos trabajos por la puerta de la app y la
+conversión de los 4 XML (factura y retención) y del reporte a PDF. El
+manifiesto `~/Library/Application Support/Google/Chrome/NativeMessagingHosts/`
+y el inbox de PluryPrint del usuario no cambiaron.
+
+Una observación de esa corrida: el pie de la representación impresa sale en el
+idioma de la app de PluryPrint (`app.locale`). En un HOME nuevo, sin el primer
+arranque que detecta el idioma del sistema, es inglés («Printed representation
+generated by Pluryprint…»); con la app ya configurada en español sale
+«Representación impresa generada por Pluryprint…». Las etiquetas del RIDE van
+siempre en español.
+
+Lo que no cubre: abrir de verdad la pantalla Print Job con el handoff
+(`PLURYPRINT_BRIDGE_NO_LAUNCH=0` con la app instalada), mandar a una cola de
+impresión (aunque sea una PDF virtual), Edge y Brave, y Windows (registro en
+HKCU y el instalador NSIS), que no se puede probar desde esta Mac.
 
 Pendiente de probar a mano: el flujo con la pestaña real del SRI (resultado en
-memoria y envío al terminar), el puente instalado de verdad (registro del
-manifiesto y apertura de la app) en Windows y macOS, y una impresora o PDF
-virtual de verdad. Windows no se puede probar desde esta Mac.
+memoria y envío al terminar), la apertura de la app desde el puente instalado
+en Windows y macOS, el registro en Windows, y una impresora o PDF virtual de
+verdad. Windows no se puede probar desde esta Mac.
 
 ## 10. Versiones y publicación
 
