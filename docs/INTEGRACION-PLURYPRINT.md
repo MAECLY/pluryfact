@@ -375,6 +375,38 @@ con el host falso y con el puente real compilado de la rama
 llegan a `inbox/<jobId>/` en orden y con el mismo sha256, y el puente escribe el
 handoff `pluryfact-<jobId>.json`.
 
+**El XML depende de dos ramas de PluryPrint.** El puente (`feat/pluryfact-bridge`,
+MAECLY/pluryprint#104) acepta `kind: "xml"` y lo deja en el inbox, pero quien
+sabe imprimir XML es otra rama, `feat/print-sri-xml` (MAECLY/pluryprint#103:
+`xml` en `SUPPORTED_EXTS` y el convertidor `engine/convert/xml`). Con el puente
+solo, la app marca el XML como «Unsupported file type» en Print Job y la cola lo
+rechaza (`ipc/jobs.rs`, `queue/mod.rs`): **PluryPrint 0.0.6 tiene que salir con
+las dos**. Al juntarlas, git no marca conflicto en `src-tauri/Cargo.toml`, pero
+las dos añaden `roxmltree = "0.20"` y queda la clave duplicada (`cargo` falla
+con «duplicate key»): hay que dejar una sola línea. Los conflictos de texto son
+solo de documentación (CHANGELOG, `security-model.md`, índice de ADR).
+
+Verificado con las dos ramas juntas (14 de noviembre de 2026, en esta Mac, en
+una copia de trabajo temporal que no se subió: `feat/pluryfact-bridge` 84d0d98
++ `feat/print-sri-xml` ee87b7a, con esa línea duplicada quitada):
+
+1. `PLURYPRINT_BRIDGE_BIN=<ese pluryprint-bridge> E2E_CONSERVAR=1 bun run
+   e2e:pluryprint` pasa entero (5 archivos, mismo orden y sha256, handoff).
+2. Con lo que dejó el puente, un test de Rust temporal pasa por las mismas
+   puertas que la app: `cli::selection_from_at` acepta el handoff (carpeta,
+   frescura de 60 s, `source: "pluryfact"`, etiqueta «Recibidos · 2026-10»,
+   acción `configure`), `ipc::jobs::inspect_files` da los 5 archivos como
+   imprimibles (PDF, **XML** y TXT) y `engine::convert::convert_to_pdf`, con el
+   proceso de render real, convierte el XML en un PDF A4 tipo RIDE (emisor,
+   RUC, «Factura», número y fecha de autorización, ambiente, clave de acceso
+   con su código de barras y el pie «Representación impresa generada por
+   Pluryprint a partir del XML autorizado») y el reporte TXT en un PDF.
+
+Lo que eso no cubre: abrir de verdad la pantalla Print Job con el handoff
+(`PLURYPRINT_BRIDGE_NO_LAUNCH=0` con la app instalada) e imprimir en papel o en
+una impresora PDF virtual. Hay que repetir los dos pasos cuando las dos ramas
+estén integradas en `main` de PluryPrint.
+
 Pendiente de probar a mano: el flujo con la pestaña real del SRI (resultado en
 memoria y envío al terminar), el puente instalado de verdad (registro del
 manifiesto y apertura de la app) en Windows y macOS, y una impresora o PDF
@@ -384,7 +416,8 @@ virtual de verdad. Windows no se puede probar desde esta Mac.
 
 1. Chrome Web Store aprueba **Pluryfact 0.1.0** (en revisión; no se toca).
 2. **PluryPrint 0.0.6** sale con `pluryprint-bridge`, el registro del host y la
-   impresión de XML.
+   impresión de XML: las dos ramas (#104 y #103) juntas, ver §9. Sin la segunda,
+   lo que Pluryfact mande como XML llega pero PluryPrint no lo imprime.
 3. **Pluryfact 0.2.0** se envía a la tienda con el permiso opcional y la
    pestaña de privacidad actualizada (`store-assets/PRIVACY-0.2.0-borrador.md`).
    El permiso nuevo puede alargar la revisión.

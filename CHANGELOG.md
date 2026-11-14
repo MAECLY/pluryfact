@@ -7,7 +7,8 @@ All notable changes to Pluryfact are listed here. The format follows
 ## [Unreleased]
 
 Planned for 0.2.0, after the Chrome Web Store approves 0.1.0. In development:
-it needs PluryPrint 0.0.6, which ships the native host.
+it needs PluryPrint 0.0.6, which must ship both the native host
+(MAECLY/pluryprint#104) and XML printing (MAECLY/pluryprint#103).
 
 ### Added
 
