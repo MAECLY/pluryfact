@@ -1,8 +1,8 @@
-import { Cancelado, ejecutar, SesionCaducada, type Dependencias, type Progreso, type Trabajo } from '@/lib/cola';
+import { Cancelado, ejecutar, SesionCaducada, type Archivo, type Dependencias, type Progreso, type Trabajo } from '@/lib/cola';
 import { bandejaDePagina, CANAL, type MensajeCanal, type Orden, type Respuesta } from '@/lib/conductor';
 import { parseTabla } from '@/lib/extract';
 import { cuerpoDescarga, esAdjunto } from '@/lib/jsf';
-import { CLAVE_CANCELAR, CLAVE_PROGRESO, type EstadoPagina, type EstadoTrabajo, type Peticion } from '@/lib/mensajeria';
+import { CLAVE_CANCELAR, CLAVE_PROGRESO, type EstadoImpresion, type EstadoPagina, type EstadoTrabajo, type Peticion, type RespuestaImprimir } from '@/lib/mensajeria';
 import { etiquetaPeriodo } from '@/lib/periodo-etiqueta';
 import { CLAVE_AJUSTES, factorRitmo, normalizarAjustes } from '@/lib/ajustes';
 import { agregar, CLAVE_HISTORIAL, type EntradaHistorial } from '@/lib/historial';
@@ -11,6 +11,11 @@ import { pareceSesionCaducada } from '@/lib/sesion';
 import { byId, LINK_REPORTE } from '@/lib/selectors';
 import { hoyEcuador } from '@/entrypoints/popup/estado';
 import { armarZip, nombreZip } from '@/lib/zip';
+import { abrirPuertoPluryprint, versionPluryfact } from '@/lib/conexion-pluryprint';
+import { enviarAPluryprint, textoEntregado } from '@/lib/envio-pluryprint';
+import { seleccionarParaImprimir, textoSeleccion } from '@/lib/seleccion-impresion';
+import { exclusivo } from '@/lib/exclusivo';
+import { tituloTrabajo } from '@/ui/textos';
 
 // Mundo aislado: lee la página, descarga por POST con la sesión del usuario
 // y ejecuta la cola. Las acciones sobre controles del portal van al conductor
@@ -46,6 +51,12 @@ export default defineContentScript({
       if (area === 'local' && pedido !== undefined && pedido >= inicioTrabajo) pedirCancelar();
     });
     let verificacion = false;
+    /**
+     * Archivos del último trabajo, en memoria de esta pestaña, para mandarlos
+     * a Pluryprint sin volver a leer el ZIP. Se sueltan al empezar otro trabajo
+     * o al cerrar la pestaña.
+     */
+    let resultado: { inicio: number; archivos: Archivo[]; etiqueta: string } | null = null;
     let siguienteId = 1;
     let conductor: string | null = null;
     const pendientes = new Map<number, (r: Respuesta) => void>();
@@ -130,6 +141,62 @@ export default defineContentScript({
       setTimeout(() => URL.revokeObjectURL(url), 60_000);
     }
 
+    /** Escribe el estado del envío a Pluryprint en el progreso y en su fila de Descargas. */
+    function anotarImpresion(inicio: number, imp: EstadoImpresion) {
+      cola = cola
+        .then(async () => {
+          const v = await browser.storage.local.get([CLAVE_PROGRESO, CLAVE_HISTORIAL]);
+          const cambios: Record<string, unknown> = {};
+          const prog = v[CLAVE_PROGRESO] as EstadoTrabajo | undefined;
+          if (prog?.inicio === inicio) cambios[CLAVE_PROGRESO] = { ...prog, impresion: imp };
+          const hist = (v[CLAVE_HISTORIAL] as EntradaHistorial[] | undefined) ?? [];
+          if (hist.some((h) => h.id === String(inicio))) cambios[CLAVE_HISTORIAL] = hist.map((h) => (h.id === String(inicio) ? { ...h, impresion: imp } : h));
+          if (Object.keys(cambios).length) await browser.storage.local.set(cambios);
+        })
+        .catch(() => {});
+      return cola;
+    }
+
+    /**
+     * Manda a Pluryprint el último resultado en memoria, con los ajustes
+     * actuales. De a un envío por vez: el candado se toma antes del primer
+     * await (ver lib/exclusivo), así el envío automático al terminar y el botón
+     * «Imprimir con Pluryprint» no pueden abrir dos trabajos.
+     */
+    const envio = exclusivo(async (confirmado: boolean) => {
+      const u = resultado;
+      if (!u) return;
+      const aj = normalizarAjustes((await browser.storage.local.get(CLAVE_AJUSTES))[CLAVE_AJUSTES]).pluryprint;
+      const sel = seleccionarParaImprimir(u.archivos, aj);
+      const base = { archivos: sel.archivos.length, enviados: 0, t: Date.now() };
+      if (!aj.activado) return anotarImpresion(u.inicio, { ...base, estado: 'error', mensaje: 'Conecta Pluryprint en Avanzado para imprimir.' });
+      if (!sel.archivos.length) return anotarImpresion(u.inicio, { ...base, estado: 'error', mensaje: textoSeleccion(sel).principal });
+      log.info(`Pluryprint: enviando ${sel.ride} RIDE, ${sel.xml} XML y ${sel.reportes} reportes (${aj.accion})`);
+      await anotarImpresion(u.inicio, { ...base, estado: 'enviando', mensaje: textoSeleccion(sel).principal });
+      let ultimoAviso = 0;
+      try {
+        const r = await enviarAPluryprint({
+          abrirPuerto: abrirPuertoPluryprint,
+          clientVersion: versionPluryfact(),
+          ajustes: aj,
+          seleccion: sel,
+          etiqueta: u.etiqueta,
+          confirmado,
+          alAvanzar: (a) => {
+            if (Date.now() - ultimoAviso < 400 && a.bytes < a.bytesTotal) return;
+            ultimoAviso = Date.now();
+            void anotarImpresion(u.inicio, { ...base, estado: 'enviando', enviados: a.archivo, mensaje: textoSeleccion(sel).principal });
+          },
+        });
+        const cambio = r.accion !== aj.accion ? ' Eran más de 50: Pluryprint se abrió para que confirmes antes de imprimir.' : '';
+        log.info(`Pluryprint: ${r.archivos} archivos entregados (${r.accion})`);
+        await anotarImpresion(u.inicio, { ...base, estado: 'entregado', enviados: r.archivos, mensaje: textoEntregado(r.archivos, r.accion) + cambio, t: Date.now() });
+      } catch (e) {
+        log.aviso(`Pluryprint: ${e instanceof Error ? `${e.message} ${(e as { detalle?: string }).detalle ?? ''}` : String(e)}`);
+        await anotarImpresion(u.inicio, { ...base, estado: 'error', mensaje: e instanceof Error ? e.message : String(e), t: Date.now() });
+      }
+    });
+
     /** Guarda el trabajo terminado en Descargas (historial). */
     async function archivar(estado: EstadoTrabajo, diasMax: number) {
       const leido = await browser.storage.local.get(CLAVE_HISTORIAL);
@@ -143,6 +210,7 @@ export default defineContentScript({
       const factor = factorRitmo(ajustes);
       ocupado = true;
       cancelar = false;
+      resultado = null;
       inicioTrabajo = Date.now();
       pedidoCancelar = new Promise<void>((r) => (alCancelar = r));
       verificacion = false;
@@ -217,6 +285,7 @@ export default defineContentScript({
           descargar(zip, nombre);
           log.info(`ZIP ${nombre}: ${r.archivos.length} archivos, ${zip.length} bytes`);
           base.zip = nombre;
+          resultado = { inicio: r.progreso.inicio, archivos: r.archivos, etiqueta: tituloTrabajo(t).slice(0, 120) };
         }
         // Si todas las consultas fallaron, NO es "no hay comprobantes": es un error.
         const todasFallaron = r.progreso.consultasTotal > 0 && r.consultasFallidas.length >= r.progreso.consultasTotal;
@@ -237,6 +306,11 @@ export default defineContentScript({
         const final: EstadoTrabajo = { ...r.progreso, ...base, fase, mensaje, actividad, esperaHasta: null, verificacion: false, actualizado: Date.now() };
         await guardar(final);
         await archivar(final, ajustes.diasHistorial).catch((e) => log.error(`No se pudo guardar el historial: ${String(e)}`));
+        // «Enviar a Pluryprint al terminar»: solo si la descarga terminó (no si
+        // se canceló o se cortó: eso se imprime a mano, o tras reanudar). Sin
+        // confirmación extra, imprimir directo con más de 50 documentos abre
+        // Pluryprint para revisar (ver envio-pluryprint).
+        if (t.imprimir && resultado && fase === 'listo') void envio.ejecutar(false);
       } catch (e) {
         log.error(`Trabajo interrumpido: ${e instanceof Error ? e.stack ?? e.message : String(e)}`);
         if (!(e instanceof Cancelado)) {
@@ -269,7 +343,7 @@ export default defineContentScript({
 
     browser.runtime.onMessage.addListener((msg: Peticion, _s, responder: (r: unknown) => void) => {
       if (msg?.tipo === 'estado') {
-        responder({ bandeja: bandejaDePagina(document), ruc: ruc(), ocupado } satisfies EstadoPagina);
+        responder({ bandeja: bandejaDePagina(document), ruc: ruc(), ocupado, enMemoria: resultado?.inicio ?? null, imprimiendo: envio.ocupado } satisfies EstadoPagina);
       } else if (msg?.tipo === 'iniciar') {
         if (ocupado) responder({ ok: false, error: 'Ya hay una descarga en curso' });
         else {
@@ -279,6 +353,22 @@ export default defineContentScript({
       } else if (msg?.tipo === 'cancelar') {
         pedirCancelar();
         responder({ ok: true });
+      } else if (msg?.tipo === 'imprimir') {
+        const r = (x: RespuestaImprimir) => responder(x);
+        if (!resultado || resultado.inicio !== msg.inicio) {
+          r({ ok: false, error: 'Esta pestaña ya no tiene esos archivos en memoria. Usa «Imprimir un ZIP…» con el archivo que descargaste.' });
+        } else if (msg.soloResumen) {
+          const archivos = resultado.archivos;
+          void browser.storage.local.get(CLAVE_AJUSTES).then((v) => {
+            const sel = seleccionarParaImprimir(archivos, normalizarAjustes(v[CLAVE_AJUSTES]).pluryprint);
+            r({ ok: true, resumen: { ...textoSeleccion(sel), archivos: sel.archivos.length } });
+          });
+          return true;
+        } else if (envio.ocupado) r({ ok: false, error: 'Ya se está enviando a Pluryprint.' });
+        else {
+          void envio.ejecutar(msg.confirmado);
+          r({ ok: true });
+        }
       } else return false;
       return false;
     });

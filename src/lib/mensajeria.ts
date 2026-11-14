@@ -6,12 +6,35 @@ export type Peticion =
   | { tipo: 'estado' }
   | { tipo: 'iniciar'; trabajo: Trabajo }
   | { tipo: 'cancelar' }
-  | { tipo: 'xml'; clave: string };
+  | { tipo: 'xml'; clave: string }
+  /**
+   * Página → pestaña del SRI: manda a Pluryprint el último resultado que sigue
+   * en memoria. Con `soloResumen` solo responde qué se imprimiría.
+   */
+  | { tipo: 'imprimir'; inicio: number; confirmado: boolean; soloResumen?: boolean };
+
+/** Respuesta a `imprimir`. */
+export type RespuestaImprimir = { ok: true; resumen?: { principal: string; avisos: string[]; archivos: number } } | { ok: false; error: string };
 
 export interface EstadoPagina {
   bandeja: Bandeja | null;
   ruc: string;
   ocupado: boolean;
+  /** `inicio` del último trabajo cuyos archivos siguen en memoria de la pestaña (para imprimirlos), o null. */
+  enMemoria?: number | null;
+  /** true mientras esa pestaña envía archivos a Pluryprint. */
+  imprimiendo?: boolean;
+}
+
+/** Envío a Pluryprint de un trabajo, visible en Descargas. */
+export interface EstadoImpresion {
+  estado: 'enviando' | 'entregado' | 'error';
+  /** Archivos del trabajo de impresión. */
+  archivos: number;
+  /** Archivos ya entregados al host. */
+  enviados: number;
+  mensaje: string;
+  t: number;
 }
 
 export interface EstadoTrabajo extends Progreso {
@@ -25,6 +48,8 @@ export interface EstadoTrabajo extends Progreso {
   trabajo?: Trabajo;
   /** Índices del plan completo que quedaron sin terminar. */
   pendientes?: number[];
+  /** Último envío a Pluryprint de este trabajo, si lo hubo. */
+  impresion?: EstadoImpresion;
 }
 
 export const CLAVE_PROGRESO = 'pluryfact:progreso';

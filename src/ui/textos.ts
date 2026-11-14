@@ -1,5 +1,6 @@
 import type { Paso, Trabajo } from '@/lib/cola';
 import { formatoSri } from '@/lib/periodo';
+import type { CodigoError } from '@/lib/pluryprint';
 import type { TipoComprobante } from '@/lib/types';
 
 /** Vocabulario compartido por el popup y la página. */
@@ -61,3 +62,27 @@ export function duracion(ms: number): string {
 }
 
 export const hora = (t: number) => new Date(t).toLocaleTimeString('es-EC', { hour: '2-digit', minute: '2-digit', hour12: false });
+
+/**
+ * Indicador corto de la barra lateral cuando hablar con Pluryprint falló.
+ * Solo dice «sin respuesta» si de verdad no respondió; el detalle completo va
+ * en el `title` (el mensaje de ErrorPluryprint).
+ */
+export function problemaPluryprintCorto(codigo: CodigoError): string {
+  switch (codigo) {
+    case 'no_instalado':
+      return 'Pluryprint: no instalado';
+    case 'sin_permiso':
+      return 'Pluryprint: sin permiso';
+    case 'desconectado':
+    case 'tiempo_agotado':
+      return 'Pluryprint: sin respuesta';
+    case 'version_incompatible':
+    case 'unsupported_version':
+    case 'unknown_type':
+    case 'respuesta_invalida':
+      return 'Pluryprint: actualízalo';
+    default:
+      return 'Pluryprint: con problemas';
+  }
+}

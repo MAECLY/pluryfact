@@ -9,7 +9,9 @@ import { PREFIJO_REGISTRO, type Entrada } from '@/lib/registro';
 import { pintarFichero } from '@/ui/fichero';
 import { montarFormulario, textoEstimacion } from '@/ui/formulario';
 import { cancelar, conectar, iniciar, irAlSri, type Conexion } from '@/ui/sri';
-import { enMarcha, fraseEstado, pintarTarjeta, refrescarCifras, resumenTexto } from '@/ui/tarjeta';
+import { textoPlanImpresion } from '@/lib/seleccion-impresion';
+import { enMarcha, fraseEstado, lineaImpresion, pintarTarjeta, refrescarCifras, resumenTexto } from '@/ui/tarjeta';
+import { montarPluryprint } from './pluryprint';
 import { hora, miles, tituloTrabajo } from '@/ui/textos';
 
 // Página completa de Pluryfact: Nueva descarga, Descargas (como chrome://downloads),
@@ -82,6 +84,9 @@ function pintarResumen() {
       ? `Lista para consultar Comprobantes ${conexion.pagina.bandeja} con tu sesión del SRI.`
       : (conexion.problema ?? '');
   $('#comprobacion').dataset.ok = String(!!conexion.pagina?.bandeja && !enCurso);
+  const planImpresion = $('#plan-impresion');
+  planImpresion.hidden = !formulario.imprimir();
+  planImpresion.textContent = formulario.imprimir() ? textoPlanImpresion(ajustes.pluryprint) : '';
   $<HTMLButtonElement>('#descargar').disabled = !plan.valido || !conexion.pagina?.bandeja || enCurso;
 }
 
@@ -191,6 +196,14 @@ function filaHistorial(e: EntradaHistorial): HTMLElement {
   ol.className = 'fichero mini';
   pintarFichero(ol, e.pasos ?? []);
 
+  const impresion = lineaImpresion(e);
+  const lineaPp = impresion && document.createElement('p');
+  if (lineaPp && impresion) {
+    lineaPp.className = 'linea-impresion';
+    lineaPp.dataset.estado = impresion.estado;
+    lineaPp.textContent = impresion.texto;
+  }
+
   const estado = document.createElement('p');
   estado.className = 'fila-estado';
   estado.dataset.problemas = String(tieneProblemas(e));
@@ -207,6 +220,18 @@ function filaHistorial(e: EntradaHistorial): HTMLElement {
     r.disabled = !mismaPantalla;
     if (!mismaPantalla) r.title = `Entra a Comprobantes ${e.trabajo.bandeja} en el portal para reanudar`;
     acciones.append(r);
+  }
+  // Pluryprint: directo desde la memoria de la pestaña del SRI, o eligiendo el ZIP.
+  if (ajustes.pluryprint.activado && e.zip) {
+    if (conexion.pagina?.enMemoria === Number(e.id)) {
+      const b = boton('Imprimir con Pluryprint', 'boton boton-secundario boton-chico', () => void pluryprint.abrirPanelMemoria(e));
+      b.disabled = !!conexion.pagina.imprimiendo;
+      acciones.append(b);
+    } else {
+      const b = boton('Imprimir su ZIP…', 'enlace', () => pluryprint.abrirSelectorZip());
+      b.title = `Elige ${e.zip} en tu carpeta de descargas`;
+      acciones.append(b);
+    }
   }
   if (e.trabajo)
     acciones.append(
@@ -239,7 +264,7 @@ function filaHistorial(e: EntradaHistorial): HTMLElement {
   det.append(sum, tarjeta);
   det.addEventListener('toggle', () => det.open && !tarjeta.childElementCount && pintarTarjeta(tarjeta, e, true, 'h3'));
 
-  li.append(cab, ol, estado, acciones, det);
+  li.append(cab, ol, estado, ...(lineaPp ? [lineaPp] : []), acciones, det);
   if (e.fallidos || pendientes.length) li.append(nota);
   return li;
 }
@@ -300,6 +325,12 @@ document.querySelectorAll<HTMLButtonElement>('[data-filtro]').forEach((b) =>
 // ---------------------------------------------------------------- avanzado
 
 let ajustes: Ajustes = AJUSTES_POR_DEFECTO;
+const pluryprint = montarPluryprint({
+  ajustes: () => ajustes,
+  guardar: (cambio) => guardarAjustes({ pluryprint: { ...ajustes.pluryprint, ...cambio } }),
+  conexion: () => conexion,
+  alCambiar: () => pintarHistorial(),
+});
 function montarTemas() {
   const caja = $('#aj-temas');
   for (const t of TEMAS) {
@@ -328,6 +359,8 @@ function pintarAjustes() {
   const dias = $<HTMLSelectElement>('#aj-dias');
   if (![...dias.options].some((o) => o.value === String(ajustes.diasHistorial))) dias.add(new Option(`Guardar ${ajustes.diasHistorial} días`, String(ajustes.diasHistorial)));
   dias.value = String(ajustes.diasHistorial);
+  pluryprint.pintar();
+  formulario.ponerPluryprint(ajustes.pluryprint);
 }
 async function guardarAjustes(cambio: Partial<Ajustes>) {
   ajustes = normalizarAjustes({ ...ajustes, ...cambio });
@@ -406,11 +439,16 @@ browser.storage.onChanged.addListener((cambios, area) => {
     const faseAntes = actual?.fase;
     actual = cambios[CLAVE_PROGRESO].newValue as EstadoTrabajo | undefined;
     pintarActiva();
-    if (actual?.fase !== faseAntes) pintarHistorial();
+    if (actual?.fase !== faseAntes) {
+      pintarHistorial();
+      // Al terminar, la pestaña del SRI guarda el resultado en memoria: se vuelve a preguntar para ofrecer «Imprimir con Pluryprint».
+      if (actual && !enMarcha(actual)) void reconectar();
+    }
   }
   if (cambios[CLAVE_HISTORIAL]) {
     historial = (cambios[CLAVE_HISTORIAL].newValue as EntradaHistorial[] | undefined) ?? [];
     pintarHistorial();
+    pluryprint.alCambiarHistorial(historial);
   }
   if (cambios[CLAVE_AJUSTES]) {
     ajustes = normalizarAjustes(cambios[CLAVE_AJUSTES].newValue);
@@ -432,4 +470,9 @@ void (async () => {
   pintarHistorial();
   await archivarUltima();
   await reconectar();
+  await pluryprint.comprobar();
+  // Desde el popup: pluryfact.html?imprimir=<inicio>#descargas abre el panel de esa descarga.
+  const pedido = new URLSearchParams(location.search).get('imprimir');
+  const fila = pedido && historial.find((h) => h.id === pedido);
+  if (fila) await pluryprint.abrirPanelMemoria(fila);
 })();

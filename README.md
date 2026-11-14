@@ -100,14 +100,24 @@ what is missing.
 and what is still pending, like `chrome://downloads`. Pick one of eight colour
 and type themes; Pluryfact is the default.
 
+**Print with Pluryprint (in development).** Connect
+[Pluryprint](https://pluryprint.maecly.com/), MAECLY's batch printing app for
+Windows and macOS, and send it the RIDEs, the XMLs (Pluryprint renders a
+RIDE-like printout from them) or both, plus the report, right after a download
+or from any past ZIP. Pluryprint opens so you review and confirm before any
+paper is used. It arrives with Pluryfact 0.2 and Pluryprint 0.0.6; see
+[docs/INTEGRACION-PLURYPRINT.md](docs/INTEGRACION-PLURYPRINT.md).
+
 ## How it looks after your account
 
 - **It never asks for your SRI password.** You sign in to SRI en Línea yourself,
   as always. Pluryfact works inside that tab, with that session, and never
   stores it.
-- **It only talks to the SRI.** `srienlinea.sri.gob.ec` with your session, and
-  `cel.sri.gob.ec`, the SRI's public authorisation web service, for the XML.
-  There is no Pluryfact server and no analytics.
+- **On the internet, it only talks to the SRI.** `srienlinea.sri.gob.ec` with
+  your session, and `cel.sri.gob.ec`, the SRI's public authorisation web
+  service, for the XML. There is no Pluryfact server and no analytics. Off the
+  internet, it only talks to Pluryprint on your own computer, and only if you
+  connect it.
 - **It queries at a human pace.** One query at a time, with random pauses.
   If the SRI asks for a reCAPTCHA check, Pluryfact pauses, brings the SRI tab
   to the front and carries on once you solve it. It never solves or bypasses
@@ -120,6 +130,7 @@ and type themes; Pluryfact is the default.
 | `storage` | Keep progress, history and your settings in this browser. |
 | `scripting` | Activate Pluryfact in an SRI tab that was already open. |
 | `notifications` | Tell you when a download finishes or your session expires. |
+| `nativeMessaging` (optional, from 0.2.0) | Only if you connect Pluryprint in Advanced: hand it, on your computer, the RIDEs, XMLs and report you choose to print. Chrome asks for it separately; Disconnect removes it. |
 
 Nothing else: no access to other sites, your tabs, your history or your
 cookies.
@@ -191,6 +202,7 @@ bun run build               # build into .output/chrome-mv3
 bun run zip                 # build the release zip into .output/
 bun run icons               # re-render public/icon/*.png from design/icon/*.svg
 bun run e2e                 # real test against the portal (opens Chromium; you sign in)
+bun run e2e:pluryprint      # "Print a ZIP…" end to end with a native host (fake, or PLURYPRINT_BRIDGE_BIN)
 bun run validar-zip [path]  # validate the latest pluryfact_*.zip in ~/Downloads
 bun run registro [--errores] [--ultimos N]   # read the diagnostic log from your Chrome profiles
 ```
@@ -209,14 +221,16 @@ popup  →  background  →  content script  →  conductor (page's MAIN world)
 |---|---|---|
 | **popup** | `src/entrypoints/popup/` | Inbox, period, types, issuer and formats; progress, pause and resume. |
 | **full page** | `src/entrypoints/pluryfact/` | History, settings and themes; also the options page. |
-| **background** | `src/entrypoints/background.ts`, `src/lib/cola.ts`, `zip.ts`, `sri-ws.ts`, `historial.ts` | Job queue, pace and retries, XML from the public web service, ZIP and `chrome.downloads`, history, badge and notifications. |
-| **content script** | `src/entrypoints/sri.content.ts`, `src/lib/extract.ts`, `jsf.ts`, `reporte.ts` | Reads the portal's tables and ViewState; downloads the RIDE and the TXT report with same-origin POSTs. |
+| **background** | `src/entrypoints/background.ts`, `src/lib/sri-ws.ts`, `puente-pluryprint.ts` | XML from the public web service, badge and notifications, and the only bridge to Pluryprint (`connectNative`). |
+| **content script** | `src/entrypoints/sri.content.ts`, `src/lib/cola.ts`, `extract.ts`, `jsf.ts`, `reporte.ts`, `zip.ts`, `historial.ts` | Job queue, pace and retries; reads the portal's tables and ViewState; downloads the RIDE and the TXT report with same-origin POSTs; builds and saves the ZIP; history. |
+| **Pluryprint** | `src/lib/pluryprint.ts`, `seleccion-impresion.ts`, `envio-pluryprint.ts` | Protocol client, what to print and in which order, and the send with the user's settings. |
 | **conductor** | `src/entrypoints/conductor.content.ts`, `src/lib/conductor.ts` | Fills the portal's own controls and presses its Consultar button, so the ViewState, PrimeFaces updates and reCAPTCHA stay the SRI's. |
 | **core** | `src/lib/clave.ts`, `periodo.ts`, `filtro.ts`, `archivos.ts`, `selectors.ts` | Access key parts and modulo-11 check digit, query plan, filters, folder and file names, and the only place with portal ids. |
 
 More detail:
 
 - [docs/ARQUITECTURA.md](docs/ARQUITECTURA.md): the pieces and the flow per month.
+- [docs/INTEGRACION-PLURYPRINT.md](docs/INTEGRACION-PLURYPRINT.md): printing with Pluryprint, options weighed, protocol, security and the full operations matrix.
 - [docs/REFERENCE.md](docs/REFERENCE.md): anatomy of the SRI screens.
 - [docs/CAPTCHA.md](docs/CAPTCHA.md): how the reCAPTCHA works and why Pluryfact leaves it to you.
 - [docs/design-system.md](docs/design-system.md): colours, type, themes and voice.

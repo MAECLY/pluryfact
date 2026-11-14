@@ -1,3 +1,4 @@
+import type { AjustesPluryprint } from '@/lib/ajustes';
 import type { Trabajo } from '@/lib/cola';
 import { consultasEmitidos, consultasRecibidos, type Periodo } from '@/lib/periodo';
 import type { Bandeja, Fecha, TipoComprobante } from '@/lib/types';
@@ -27,6 +28,14 @@ export interface Formulario {
   ponerBandeja(b: Bandeja): void;
   /** Rellena el formulario con un trabajo anterior ("Repetir con los mismos filtros"). */
   cargar(t: Trabajo): void;
+  /**
+   * Muestra la casilla «Enviar a Pluryprint al terminar» si Pluryprint está
+   * conectado (null la oculta). Al marcarla fija los formatos que hacen falta
+   * para imprimir lo elegido en Avanzado.
+   */
+  ponerPluryprint(a: AjustesPluryprint | null): void;
+  /** true si la casilla de Pluryprint está visible y marcada. */
+  imprimir(): boolean;
 }
 
 const HTML = `
@@ -55,6 +64,7 @@ const HTML = `
       <label><input id="f-pdf" type="checkbox" checked />RIDE en PDF</label>
       <label><input id="f-txt" type="checkbox" />Reporte del SRI</label>
     </div>
+    <label class="casilla-pluryprint" data-ref="pluryprint" hidden><input id="f-pluryprint" type="checkbox" />Enviar a Pluryprint al terminar</label>
   </fieldset>`;
 
 export function montarFormulario(raiz: HTMLElement, alCambiar: () => void): Formulario {
@@ -66,6 +76,33 @@ export function montarFormulario(raiz: HTMLElement, alCambiar: () => void): Form
 
   let bandeja: Bandeja = 'recibidos';
   let tipoPeriodo: TipoPeriodo = 'mes';
+  let pluryprint: AjustesPluryprint | null = null;
+  /** Lo que el usuario había marcado antes de que la casilla de Pluryprint fijara formatos. */
+  const marcadoAntes: Record<'xml' | 'pdf' | 'txt', boolean | null> = { xml: null, pdf: null, txt: null };
+
+  /** Formatos que exige imprimir lo elegido en Avanzado: RIDE si incluye RIDE, XML si es solo XML, TXT si pide el reporte. */
+  function fijarFormatos() {
+    const activa = !!pluryprint && id<HTMLInputElement>('f-pluryprint').checked;
+    const exigidos = {
+      pdf: activa && pluryprint!.contenido !== 'xml',
+      xml: activa && pluryprint!.contenido !== 'ride',
+      txt: activa && pluryprint!.incluirReporte,
+    };
+    for (const f of ['xml', 'pdf', 'txt'] as const) {
+      const c = id<HTMLInputElement>(`f-${f}`);
+      if (exigidos[f] && !c.disabled) {
+        marcadoAntes[f] = c.checked;
+        c.checked = true;
+        c.disabled = true;
+        c.title = 'Lo necesita la impresión con Pluryprint';
+      } else if (!exigidos[f] && c.disabled) {
+        c.disabled = false;
+        c.title = '';
+        if (marcadoAntes[f] !== null) c.checked = marcadoAntes[f]!;
+        marcadoAntes[f] = null;
+      }
+    }
+  }
   const tipos = new Set<TipoComprobante>(['factura']);
 
   function pintarPeriodo(valores?: Periodo) {
@@ -141,6 +178,10 @@ export function montarFormulario(raiz: HTMLElement, alCambiar: () => void): Form
     }),
   );
   raiz.querySelectorAll('#f-xml,#f-pdf,#f-txt,#emisor').forEach((el) => el.addEventListener('change', alCambiar));
+  id('f-pluryprint').addEventListener('change', () => {
+    fijarFormatos();
+    alCambiar();
+  });
 
   const leerPeriodo = (): Periodo => {
     const v = (n: string) => raiz.querySelector<HTMLInputElement | HTMLSelectElement>(`#${n}`)?.value;
@@ -154,7 +195,16 @@ export function montarFormulario(raiz: HTMLElement, alCambiar: () => void): Form
       tipos: [...tipos],
       emisor: bandeja === 'recibidos' ? id<HTMLInputElement>('emisor').value.trim() : '',
       formatos: { xml: id<HTMLInputElement>('f-xml').checked, pdf: id<HTMLInputElement>('f-pdf').checked, txt: id<HTMLInputElement>('f-txt').checked },
+      ...(api.imprimir() ? { imprimir: true } : {}),
     }),
+    imprimir: () => !!pluryprint && id<HTMLInputElement>('f-pluryprint').checked,
+    ponerPluryprint(a) {
+      pluryprint = a?.activado ? a : null;
+      ref('pluryprint').hidden = !pluryprint;
+      if (!pluryprint) id<HTMLInputElement>('f-pluryprint').checked = false;
+      fijarFormatos();
+      alCambiar();
+    },
     plan(): Plan {
       try {
         const p = leerPeriodo();
@@ -192,6 +242,12 @@ export function montarFormulario(raiz: HTMLElement, alCambiar: () => void): Form
       id<HTMLInputElement>('f-xml').checked = t.formatos.xml;
       id<HTMLInputElement>('f-pdf').checked = t.formatos.pdf;
       id<HTMLInputElement>('f-txt').checked = t.formatos.txt;
+      for (const f of ['xml', 'pdf', 'txt'] as const) {
+        id<HTMLInputElement>(`f-${f}`).disabled = false;
+        marcadoAntes[f] = null;
+      }
+      id<HTMLInputElement>('f-pluryprint').checked = !!pluryprint && !!t.imprimir;
+      fijarFormatos();
       pintarTipos();
       alCambiar();
     },

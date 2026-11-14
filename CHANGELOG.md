@@ -4,6 +4,48 @@ All notable changes to Pluryfact are listed here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [Unreleased]
+
+Planned for 0.2.0, after the Chrome Web Store approves 0.1.0. In development:
+it needs Pluryprint 0.0.6, which must ship both the native host
+(MAECLY/pluryprint#104) and XML printing (MAECLY/pluryprint#103).
+
+### Added
+
+- **Print with Pluryprint** (Windows and macOS): send the RIDE PDFs, the
+  authorised XML (Pluryprint renders a RIDE-like printout from it) or both, plus
+  the optional TXT report, to the Pluryprint desktop app over Chrome Native
+  Messaging. Files travel as validated bytes in 8 MiB chunks with a SHA-256
+  each; nothing goes over the network and no paths are shared.
+- Advanced → Pluryprint: connect (asks for the optional permission and greets
+  the host), what to print, XML when a RIDE is missing, report, order (issue
+  date, issuer, type or portal order), what Pluryprint does (open to review and
+  confirm by default, queue, or print directly with a confirmation above 50
+  documents), profile, printer, copies, duplex and colour.
+- New download: "Send to Pluryprint when done", which turns on the formats the
+  chosen printout needs (printing XML only does not require the slower RIDE
+  download).
+- Downloads: "Print a ZIP…" for any past `pluryfact_*.zip` (unzipped inside the
+  extension, hostile paths ignored), "Print with Pluryprint" for the last job
+  while the SRI tab still holds it, and a summary ("3 RIDE + 1 XML + the
+  report") before confirming. Each job shows how its Pluryprint delivery went.
+- Sidebar indicator "Pluryprint: connected / not connected / not installed /
+  no permission / no response / update it / problems" (the full message is in
+  the tooltip).
+- `bun run e2e:pluryprint`: end-to-end test in Chromium with a native host
+  (a fake one, or the real bridge via `PLURYPRINT_BRIDGE_BIN`).
+
+### Changed
+
+- `nativeMessaging` is declared as an **optional** permission, requested only
+  when the user connects Pluryprint, so updating does not disable Pluryfact for
+  anyone else.
+- About: "Everything happens in your browser" and "Only talks to the SRI" now
+  read "Everything happens on your computer" and "On the internet, it only talks
+  to the SRI", and the permissions table lists the optional one.
+
+[Unreleased]: https://github.com/MAECLY/pluryfact/compare/v0.1.0...HEAD
+
 ## [0.1.0] - 2026-11-14
 
 First public version, submitted to the Chrome Web Store.

@@ -16,6 +16,7 @@
     "check": "bun run typecheck && bun run test && bun run build",
     "icons": "bun scripts/icons.ts",
     "e2e": "bun scripts/e2e-sri.ts",
+    "e2e:pluryprint": "bun scripts/e2e-pluryprint.ts",
     "validar-zip": "bun scripts/validar-zip.ts",
     "registro": "bun scripts/registro.ts"
   },

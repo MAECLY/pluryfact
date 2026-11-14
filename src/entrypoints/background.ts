@@ -2,11 +2,14 @@ import { CLAVE_AJUSTES, normalizarAjustes } from '@/lib/ajustes';
 import { insignia, notificacion } from '@/lib/aviso-icono';
 import { CLAVE_PROGRESO, type EstadoTrabajo, type Peticion } from '@/lib/mensajeria';
 import { migrarClavesAntiguas } from '@/lib/migracion';
+import { NOMBRE_HOST, type PuertoNativo } from '@/lib/pluryprint';
+import { atenderPuerto, type PuertoRuntime } from '@/lib/puente-pluryprint';
 import { crearRegistro } from '@/lib/registro';
 import { xmlPorClave } from '@/lib/ws-reintentos';
 
 // El background hace de puente al servicio web del SRI (el content script no
-// puede llamarlo por CORS), mantiene la insignia del icono y avisa con
+// puede llamarlo por CORS) y a Pluryprint (es el único contexto que abre
+// Native Messaging), mantiene la insignia del icono y avisa con
 // notificaciones del sistema cuando el trabajo termina o necesita atención.
 export default defineBackground(() => {
   const log = crearRegistro('background', browser.storage.local);
@@ -25,6 +28,27 @@ export default defineBackground(() => {
         responder({ ok: false, error: e instanceof Error ? e.message : String(e) });
       });
     return true;
+  });
+
+  // Puente a Pluryprint: la página y el content script del SRI abren un
+  // runtime.Port «pluryprint»; aquí se valida quién llama y se reenvía al host.
+  browser.runtime.onConnect.addListener((puerto) => {
+    atenderPuerto(puerto as unknown as PuertoRuntime, {
+      idExtension: browser.runtime.id,
+      urlBase: browser.runtime.getURL('/'),
+      tienePermiso: () => browser.permissions.contains({ permissions: ['nativeMessaging'] }),
+      conectarNativo: (): PuertoNativo => {
+        const p = browser.runtime.connectNative(NOMBRE_HOST);
+        return {
+          postMessage: (m) => p.postMessage(m),
+          onMessage: { addListener: (fn) => p.onMessage.addListener((m: unknown) => fn(m)) },
+          // Chrome deja el motivo (p. ej. «Specified native messaging host not found.») en lastError.
+          onDisconnect: { addListener: (fn) => p.onDisconnect.addListener(() => fn(browser.runtime.lastError?.message)) },
+          disconnect: () => p.disconnect(),
+        };
+      },
+      registro: log,
+    });
   });
 
   const pintarIcono = async (e: EstadoTrabajo | undefined) => {

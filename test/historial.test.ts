@@ -1,5 +1,5 @@
 import { expect, it } from 'vitest';
-import { AJUSTES_POR_DEFECTO, normalizarAjustes } from '../src/lib/ajustes';
+import { AJUSTES_POR_DEFECTO, normalizarAjustes, PLURYPRINT_POR_DEFECTO } from '../src/lib/ajustes';
 import { agregar, agrupar, MAX_HISTORIAL, type EntradaHistorial } from '../src/lib/historial';
 
 const e = (id: string, terminado: number) => ({ id, terminado }) as EntradaHistorial;
@@ -25,6 +25,6 @@ it('agrupa como chrome://downloads', () => {
 
 it('normaliza ajustes inválidos a los valores por defecto', () => {
   expect(normalizarAjustes(undefined)).toEqual(AJUSTES_POR_DEFECTO);
-  expect(normalizarAjustes({ ritmo: 'amable', notificaciones: false, diasHistorial: 7 })).toEqual({ ritmo: 'amable', notificaciones: false, diasHistorial: 7, tema: 'pluryfact' });
+  expect(normalizarAjustes({ ritmo: 'amable', notificaciones: false, diasHistorial: 7 })).toEqual({ ritmo: 'amable', notificaciones: false, diasHistorial: 7, tema: 'pluryfact', pluryprint: PLURYPRINT_POR_DEFECTO });
   expect(normalizarAjustes({ diasHistorial: -5 }).diasHistorial).toBe(90);
 });

@@ -36,6 +36,17 @@ export function lineaCifras(e: EstadoTrabajo, ahora: number): string {
   return partes.join(' ');
 }
 
+/** Estado del envío a Pluryprint de este trabajo, o null si no aplica. */
+export function lineaImpresion(e: EstadoTrabajo): { texto: string; estado: 'enviando' | 'entregado' | 'error' | 'pendiente' } | null {
+  const i = e.impresion;
+  if (i?.estado === 'enviando')
+    return { estado: 'enviando', texto: i.enviados ? `Enviando a Pluryprint: ${miles(i.enviados)} de ${miles(i.archivos)} archivos.` : `Enviando a Pluryprint. ${i.mensaje}` };
+  if (i?.estado === 'entregado') return { estado: 'entregado', texto: i.mensaje };
+  if (i?.estado === 'error') return { estado: 'error', texto: `No se pudo enviar a Pluryprint. ${i.mensaje}` };
+  if (e.trabajo?.imprimir && enMarcha(e)) return { estado: 'pendiente', texto: 'Al terminar se enviará a Pluryprint.' };
+  return null;
+}
+
 function el<K extends keyof HTMLElementTagNameMap>(tag: K, clase: string, texto?: string) {
   const x = document.createElement(tag);
   x.className = clase;
@@ -63,6 +74,13 @@ export function pintarTarjeta(cont: HTMLElement, e: EstadoTrabajo, completa: boo
   const cifras = el('p', 'cifras', lineaCifras(e, Date.now()));
   cifras.dataset.cifras = 'true';
   cont.append(cifras);
+
+  const imp = lineaImpresion(e);
+  if (imp) {
+    const linea = el('p', 'linea-impresion', imp.texto);
+    linea.dataset.estado = imp.estado;
+    cont.append(linea);
+  }
 
   const p = problema(e);
   if (p) {
@@ -121,6 +139,7 @@ export function resumenTexto(e: EstadoTrabajo): string {
     `Estado: ${fraseEstado(e)}`,
     `Archivos: ${e.descargados}${e.fallidos ? `, sin bajar: ${e.fallidos}` : ''}`,
     e.zip ? `ZIP: ${e.zip}` : '',
+    e.impresion ? `Pluryprint: ${lineaImpresion(e)?.texto ?? ''}` : '',
     ...(e.pasos ?? []).map((x) => `  ${capital(x.etiqueta)}: ${x.estado}${x.comprobantes ? `, ${x.comprobantes} comprobantes` : ''}${x.fallidos ? `, ${x.fallidos} sin bajar` : ''}`),
   ];
   return lineas.filter(Boolean).join('\n');
