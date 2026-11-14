@@ -9,20 +9,26 @@
  * etiquetas en mayúsculas ni monoespaciadas.
  */
 
+/*
+ * Fuera de @layer a propósito, como en la página completa: Chrome inyecta en
+ * las páginas de la extensión una hoja sin capa (body al 75 % y system-ui) que
+ * le gana a cualquier regla dentro de @layer.
+ */
+html,
+body {
+  background: var(--pf-surface);
+  color: var(--pf-ink);
+  font-family: var(--pf-font-body);
+  font-size: 13px;
+  line-height: 1.45;
+  margin: 0;
+}
+body {
+  width: 360px;
+  font-variant-numeric: tabular-nums;
+}
+
 @layer base {
-  html,
-  body {
-    background: var(--pf-surface);
-    color: var(--pf-ink);
-    font-family: var(--pf-font-body);
-    font-size: 13px;
-    line-height: 1.45;
-    margin: 0;
-  }
-  body {
-    width: 360px;
-    font-variant-numeric: tabular-nums;
-  }
   :focus-visible {
     outline: 2px solid var(--pf-accent);
     outline-offset: 2px;
@@ -38,7 +44,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 12px 16px 8px;
+  padding: 10px 16px 6px;
 }
 .marca {
   display: flex;
@@ -101,8 +107,20 @@
 .panel {
   display: flex;
   flex-direction: column;
-  gap: 18px;
-  padding: 16px;
+  gap: 10px;
+  padding: 10px 16px;
+}
+.formulario {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+/* El popup de Chrome mide 600 px de alto como máximo: aquí todo va un punto más junto. */
+.formulario .grupo {
+  gap: 6px;
+}
+.formulario .grupo legend {
+  margin-bottom: 6px;
 }
 /* ---- Descargas ---- */
 /* ---- Pie ---- */
@@ -110,13 +128,14 @@
   display: flex;
   flex-direction: column;
   gap: 8px;
-  padding: 12px 16px 14px;
+  padding: 10px 16px 12px;
   border-top: 1px solid var(--pf-line);
 }
 .aviso {
   margin: 0;
   font-size: 12px;
-  color: var(--pf-warn);
+  /* El ámbar del tema con un poco de tinta: pasa 4.5:1 sobre la superficie en todos los temas. */
+  color: color-mix(in srgb, var(--pf-warn) 82%, var(--pf-ink));
 }
 
 .pie-enlaces {
