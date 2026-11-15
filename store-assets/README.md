@@ -55,6 +55,7 @@ python3 -m venv .venv && . .venv/bin/activate
 pip install pillow
 python3 store-assets/scripts/compose.py     # -> store-assets/images/
 bun run zip                                 # -> .output/pluryfact-<versión>-chrome.zip
+bun run verificar-zip                       # manifest de tienda: versión, permisos, sin key
 ```
 
 Las horas del historial de ejemplo («Terminó a las…») salen del reloj del

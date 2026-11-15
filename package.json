@@ -18,6 +18,7 @@
     "e2e": "bun scripts/e2e-sri.ts",
     "e2e:pluryprint": "bun scripts/e2e-pluryprint.ts",
     "validar-zip": "bun scripts/validar-zip.ts",
+    "verificar-zip": "bun scripts/verificar-zip-tienda.ts",
     "registro": "bun scripts/registro.ts"
   },
   "devDependencies": {
