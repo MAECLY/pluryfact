@@ -54,11 +54,12 @@ QUÉ HACE
 • Cierra el popup y la descarga sigue. La insignia del ícono muestra el avance y recibes un aviso al terminar o si la sesión caduca.
 • Si la sesión del SRI caduca (dura unos 20 minutos), Pluryfact guarda lo que ya bajó y te ofrece Reanudar: solo lo que faltó.
 • Historial de descargas, como chrome://downloads, y ocho temas de color y tipografía, en claro y oscuro.
+• Imprime con Pluryprint (opcional): si tienes instalada la app gratuita Pluryprint de MAECLY en Windows o macOS, conéctala en Integraciones y manda a imprimir los RIDE en PDF, los XML (como representación impresa) y el reporte TXT, al terminar la descarga o desde el historial.
 
 CÓMO CUIDA TU CUENTA
 
 • Nunca pide tu clave del SRI. Usa la sesión que ya abriste en tu pestaña y nunca la guarda.
-• Solo habla con el SRI: srienlinea.sri.gob.ec, con tu sesión, y cel.sri.gob.ec, el servicio web público de autorización de comprobantes.
+• En internet, solo habla con el SRI: srienlinea.sri.gob.ec, con tu sesión, y cel.sri.gob.ec, el servicio web público de autorización de comprobantes. Fuera de internet, solo con Pluryprint, en tu equipo, y solo si tú lo conectas.
 • Sin servidores, sin cuentas, sin analítica. Tus comprobantes van del SRI a tu carpeta de descargas.
 • Consulta a ritmo humano, una consulta a la vez. Si el SRI pide verificar el captcha, Pluryfact se pausa y sigue cuando lo resuelves tú; no resuelve ni evita captchas.
 
@@ -69,6 +70,7 @@ PERMISOS
 • Almacenamiento: guardar el avance, el historial y tus ajustes en este navegador.
 • Scripts: activar Pluryfact en una pestaña del SRI que ya estaba abierta.
 • Notificaciones: avisarte cuando termina una descarga o si tu sesión caduca.
+• Opcional, solo si conectas Pluryprint: comunicarse con aplicaciones nativas que cooperan, únicamente con Pluryprint en tu equipo, para entregarle lo que eliges imprimir.
 
 LÍMITES
 

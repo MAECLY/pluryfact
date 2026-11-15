@@ -2,23 +2,23 @@
 
 Respuestas para la pestaña **Privacidad** del panel de la tienda, en español.
 Copia cada bloque en el campo que dice su título. Cada respuesta coincide con
-el manifest de la 0.1.0: `permissions: ['storage', 'scripting', 'notifications']`,
+el manifest de la 0.2.0: `permissions: ['storage', 'scripting', 'notifications']`,
+`optional_permissions: ['nativeMessaging']`,
 `host_permissions` para `cel.sri.gob.ec/*` y
 `srienlinea.sri.gob.ec/comprobantes-electronicos-internet/*`, y dos content
 scripts en esa misma ruta del portal (uno en el MAIN world). Si una versión
 cambia algo de esto, actualiza este archivo antes de enviarla.
 
-> Nota: la 0.2.0 añade el permiso opcional `nativeMessaging` para imprimir con
-> Pluryprint. Sus respuestas están en
-> [PRIVACY-0.2.0-borrador.md](PRIVACY-0.2.0-borrador.md) y se envían junto con
-> la 0.2.0 (la 0.1.0 se aprobó el 2026-11-15).
+> La 0.2.0 añade el permiso **opcional** `nativeMessaging` para imprimir con
+> Pluryprint. No se concede al instalar ni al actualizar: Chrome lo pide solo
+> si el usuario pulsa «Conectar» en Integraciones → Pluryprint.
 
 ## Una sola finalidad
 
 ### Descripción de la finalidad única
 
 ```text
-Pluryfact descarga en lote los comprobantes electrónicos del propio usuario desde SRI en Línea, el portal del Servicio de Rentas Internas de Ecuador: el XML autorizado, el RIDE en PDF y el reporte TXT, ordenados por año y mes en un ZIP. Trabaja dentro de la pestaña del portal que el usuario abrió, con la sesión que el usuario inició, y todo lo que hace sirve a esa única finalidad.
+Pluryfact descarga en lote los comprobantes electrónicos del propio usuario desde SRI en Línea, el portal del Servicio de Rentas Internas de Ecuador: el XML autorizado, el RIDE en PDF y el reporte TXT, ordenados por año y mes en un ZIP, y, si el usuario lo pide, los entrega a su aplicación de escritorio Pluryprint, en su mismo equipo, para imprimirlos. Trabaja dentro de la pestaña del portal que el usuario abrió, con la sesión que el usuario inició, y todo lo que hace sirve a esa única finalidad.
 ```
 
 ## Justificación de permisos
@@ -49,12 +49,20 @@ srienlinea.sri.gob.ec/comprobantes-electronicos-internet/*: es la pantalla de Co
 cel.sri.gob.ec: es el servicio web público de autorización de comprobantes del SRI. La extensión le envía cada clave de acceso para obtener el XML autorizado, que es el documento con validez tributaria. No se contacta ningún otro host.
 ```
 
+### Justificación de nativeMessaging
+
+```text
+Permiso opcional: no se concede al instalar ni al actualizar. Solo si el usuario pulsa «Conectar» en Integraciones → Pluryprint, en la página de Pluryfact, Chrome le pide permiso para comunicarse con aplicaciones nativas que cooperan. Pluryfact lo usa con un único host, com.maecly.pluryprint, que instala la aplicación de escritorio Pluryprint (del mismo desarrollador) y que solo acepta conexiones de esta extensión. Por ese canal local Pluryfact entrega a Pluryprint los RIDE (PDF), los XML y el reporte TXT que el usuario eligió imprimir, para que Pluryprint los imprima en su equipo. No viaja nada por internet, no se manda ningún dato al desarrollador y el usuario puede quitar el permiso en cualquier momento con «Desconectar».
+```
+
 ### ¿Utilizas código remoto?
 
 Elige **No, no estoy usando código remoto**. Todos los scripts van en el
 paquete; no hay `eval()`, ni `<script>` externos, ni módulos remotos. El
 content script del MAIN world es un archivo del paquete que llama a las
-funciones que el propio portal ya tiene cargadas.
+funciones que el propio portal ya tiene cargadas. El host nativo de Pluryprint
+es una aplicación aparte que el usuario instala por su cuenta; la extensión no
+descarga ni ejecuta código.
 
 ## Uso de datos
 
@@ -68,7 +76,7 @@ usuario dentro de su navegador. Respuesta recomendada:
 |---|---|---|
 | Información de identificación personal | **Sí** | Lee y guarda localmente el RUC del usuario (nombra las carpetas y el ZIP, y aparece en el historial). No sale del equipo. |
 | Información sanitaria | No | No la lee ni la guarda. |
-| Datos financieros y de pagos | **Sí** | Los comprobantes electrónicos (facturas, retenciones) son documentos tributarios del usuario: la extensión los baja del SRI a su carpeta de descargas. No los envía a nadie más. |
+| Datos financieros y de pagos | **Sí** | Los comprobantes electrónicos (facturas, retenciones) son documentos tributarios del usuario: la extensión los baja del SRI a su carpeta de descargas y, si el usuario lo pide, los entrega a Pluryprint en su mismo equipo para imprimirlos. No los envía a nadie más. |
 | Información de autenticación | No | Nunca pide, lee ni guarda la clave del SRI. Las peticiones al portal usan la sesión que el navegador ya tiene, sin leer ni copiar sus cookies. |
 | Comunicaciones personales | No | No las lee. |
 | Ubicación | No | No la lee. |

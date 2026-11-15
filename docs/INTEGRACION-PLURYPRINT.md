@@ -194,8 +194,8 @@ error y, si `../pluryprint` existe al lado, que los `.json` son idénticos.
 - Textos que dejaron de ser exactos y se reescribieron: «Todo ocurre en tu
   navegador» → «Todo ocurre en tu equipo»; «Solo habla con el SRI» → «En
   internet, solo habla con el SRI… Fuera de internet, solo con Pluryprint, y
-  solo si tú lo conectas». Borrador de la pestaña de privacidad para la 0.2.0 en
-  `store-assets/PRIVACY-0.2.0-borrador.md`.
+  solo si tú lo conectas». Respuestas de la pestaña de privacidad de la 0.2.0 en
+  `store-assets/PRIVACY.md`.
 
 ## 6. Plataformas y navegadores
 
@@ -457,7 +457,7 @@ verdad. Windows no se puede probar desde esta Mac.
    impresión de XML: las dos ramas (#104 y #103) juntas, ver §9. Sin la segunda,
    lo que Pluryfact mande como XML llega pero Pluryprint no lo imprime.
 3. **Pluryfact 0.2.0** se envía a la tienda con el permiso opcional y la
-   pestaña de privacidad actualizada (`store-assets/PRIVACY-0.2.0-borrador.md`).
+   pestaña de privacidad actualizada (`store-assets/PRIVACY.md`).
    El permiso nuevo puede alargar la revisión.
 4. Las landings dicen «En desarrollo» hasta entonces.
 
