@@ -16,7 +16,6 @@
 <p align="center">
   <a href="https://github.com/MAECLY/pluryfact/releases/latest"><img alt="Latest release" src="https://img.shields.io/github/v/release/MAECLY/pluryfact?style=flat-square&label=release&color=2446A8&labelColor=151C33"></a>
   <a href="https://chromewebstore.google.com/detail/pluryfact/ibgodfpcihlddbbfaoooehfgbmahipbj"><img alt="Chrome Web Store version" src="https://img.shields.io/chrome-web-store/v/ibgodfpcihlddbbfaoooehfgbmahipbj?style=flat-square&label=chrome%20web%20store&color=2446A8&labelColor=151C33"></a>
-  <a href="https://chromewebstore.google.com/detail/pluryfact/ibgodfpcihlddbbfaoooehfgbmahipbj"><img alt="Chrome Web Store users" src="https://img.shields.io/chrome-web-store/users/ibgodfpcihlddbbfaoooehfgbmahipbj?style=flat-square&label=users&color=2446A8&labelColor=151C33"></a>
   <a href="https://github.com/MAECLY/pluryfact/releases"><img alt="Downloads" src="https://img.shields.io/github/downloads/MAECLY/pluryfact/total?style=flat-square&label=downloads&color=2446A8&labelColor=151C33"></a>
   <a href="https://github.com/MAECLY/pluryfact/stargazers"><img alt="GitHub stars" src="https://img.shields.io/github/stars/MAECLY/pluryfact?style=flat-square&color=2446A8&labelColor=151C33"></a>
   <a href="https://hits.sh/github.com/MAECLY/pluryfact/"><img alt="Repository views" src="https://hits.sh/github.com/MAECLY/pluryfact.svg?style=flat-square&label=views&color=2446A8&labelColor=151C33"></a>
