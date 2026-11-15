@@ -10,8 +10,8 @@ cambia algo de esto, actualiza este archivo antes de enviarla.
 
 > Nota: la 0.2.0 añade el permiso opcional `nativeMessaging` para imprimir con
 > Pluryprint. Sus respuestas están en
-> [PRIVACY-0.2.0-borrador.md](PRIVACY-0.2.0-borrador.md); no se envían mientras
-> la 0.1.0 siga en revisión.
+> [PRIVACY-0.2.0-borrador.md](PRIVACY-0.2.0-borrador.md) y se envían junto con
+> la 0.2.0 (la 0.1.0 se aprobó el 2026-11-15).
 
 ## Una sola finalidad
 
