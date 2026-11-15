@@ -34,7 +34,7 @@ Descarga en lote tus comprobantes electrónicos de SRI en Línea: XML, RIDE y re
 ### Descripción
 
 ```text
-Todos tus comprobantes del SRI, de una vez. Pluryfact baja en lote tus comprobantes electrónicos de SRI en Línea, recibidos y emitidos: el XML autorizado, el RIDE en PDF y el reporte TXT, ordenados por año y mes en un solo ZIP. Desde tu propia pestaña, con tu sesión, sin pedir tu clave.
+Todos tus comprobantes del SRI, de una vez. Pluryfact baja en lote tus comprobantes electrónicos de SRI en Línea, recibidos y emitidos: el XML autorizado, el RIDE en PDF y el reporte TXT, ordenados por año y mes en un solo ZIP. Desde tu propia pestaña, con tu sesión, sin pedir tu clave. Y si los necesitas en papel, se los pasa a Pluryprint para imprimirlos todos de una vez.
 
 CÓMO SE USA
 
@@ -54,7 +54,16 @@ QUÉ HACE
 • Cierra el popup y la descarga sigue. La insignia del ícono muestra el avance y recibes un aviso al terminar o si la sesión caduca.
 • Si la sesión del SRI caduca (dura unos 20 minutos), Pluryfact guarda lo que ya bajó y te ofrece Reanudar: solo lo que faltó.
 • Historial de descargas, como chrome://downloads, y ocho temas de color y tipografía, en claro y oscuro.
-• Imprime con Pluryprint (opcional): si tienes instalada la app gratuita Pluryprint de MAECLY en Windows o macOS, conéctala en Integraciones y manda a imprimir los RIDE en PDF, los XML (como representación impresa) y el reporte TXT, al terminar la descarga o desde el historial.
+
+IMPRIME CON PLURYPRINT
+
+Pluryprint es la app de escritorio gratuita y de código abierto de MAECLY para imprimir muchos documentos de una vez, en Windows y macOS: https://pluryprint.maecly.com
+
+• Conéctala en Integraciones → Pluryprint. Es opcional: si no la usas, Pluryfact funciona igual.
+• Elige qué imprimir de cada comprobante: el RIDE en PDF, el XML (Pluryprint lo imprime como una representación tipo RIDE) o ambos, y el reporte TXT si lo quieres.
+• Ordénalos por fecha de emisión, emisor o tipo, y decide qué hace Pluryprint: abrir el trabajo para revisarlo, ponerlo en cola o imprimir directo. También eliges la impresora, las copias, la doble cara y el color.
+• Mándalos al terminar la descarga o después, desde Descargas, con cualquier ZIP de Pluryfact.
+• Todo pasa en tu computadora: los archivos van de Pluryfact a Pluryprint por el canal local de Chrome, sin internet y sin servidores.
 
 CÓMO CUIDA TU CUENTA
 
