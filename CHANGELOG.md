@@ -6,9 +6,10 @@ All notable changes to Pluryfact are listed here. The format follows
 
 ## [Unreleased]
 
-Planned for 0.2.0, after the Chrome Web Store approves 0.1.0. In development:
-it needs Pluryprint 0.0.6, which must ship both the native host
-(MAECLY/pluryprint#104) and XML printing (MAECLY/pluryprint#103).
+## [0.2.0] - 2026-11-15
+
+Printing with Pluryprint. Needs Pluryprint 0.0.6 or later, which ships the
+native host (`pluryprint-bridge`) and XML printing.
 
 ### Added
 
@@ -44,8 +45,6 @@ it needs Pluryprint 0.0.6, which must ship both the native host
 - About: "Everything happens in your browser" and "Only talks to the SRI" now
   read "Everything happens on your computer" and "On the internet, it only talks
   to the SRI", and the permissions table lists the optional one.
-
-[Unreleased]: https://github.com/MAECLY/pluryfact/compare/v0.1.0...HEAD
 
 ## [0.1.0] - 2026-11-14
 
@@ -83,4 +82,6 @@ on 2026-11-15.
 - No servers, no accounts, no analytics: everything happens between the
   browser and the SRI.
 
+[Unreleased]: https://github.com/MAECLY/pluryfact/compare/v0.2.0...HEAD
+[0.2.0]: https://github.com/MAECLY/pluryfact/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/MAECLY/pluryfact/releases/tag/v0.1.0

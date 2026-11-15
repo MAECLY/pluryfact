@@ -48,10 +48,12 @@
 </p>
 
 > [!NOTE]
-> **Version 0.1.0, said plainly.** This is the first public version: the core
+> **Version 0.2.0, said plainly.** It adds optional printing with
+> [Pluryprint](https://pluryprint.maecly.com) 0.0.6 or later. The core
 > (reading the portal's tables, access keys, the query plan and the filters)
 > has automated tests, and the XML, RIDE and TXT downloads were validated with
-> real portal sessions. It is **on the
+> real portal sessions; the Pluryprint handoff has end-to-end tests with a
+> native host. It is **on the
 > [Chrome Web Store](https://chromewebstore.google.com/detail/pluryfact/ibgodfpcihlddbbfaoooehfgbmahipbj)**, and every version is also a ZIP in the
 > [releases](https://github.com/MAECLY/pluryfact/releases). If
 > something breaks, an [issue](https://github.com/MAECLY/pluryfact/issues/new)
@@ -177,7 +179,7 @@ date.
 
 **Manually, from GitHub:**
 
-1. Download `pluryfact-0.1.0-chrome.zip` from the
+1. Download `pluryfact-0.2.0-chrome.zip` from the
    [latest release](https://github.com/MAECLY/pluryfact/releases/latest) and
    unzip it into a folder you will keep.
 2. Open `chrome://extensions` and turn on **Developer mode**.
