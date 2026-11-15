@@ -133,3 +133,19 @@ calendarios, y no encaja.
   con usuarios reales antes de abrirla.
 - **Regiones:** todas. El público es Ecuador, pero restringirla no aporta nada.
 - **Precio:** gratis.
+
+## Instrucciones de prueba
+
+Pestaña **Instrucciones de prueba** del panel. Desde la 0.2.0 el revisor no
+tiene Pluryprint instalado y «Conectar» le dirá «No instalado»; esto le explica
+que es opcional y cómo probarlo. No hace falta usuario ni contraseña: Pluryfact
+no tiene cuentas, y la del SRI es del contribuyente.
+
+### Instrucciones adicionales
+
+Máximo 500 caracteres (este bloque tiene 461; lo vigila
+`test/store-assets.test.ts`):
+
+```text
+Imprimir es opcional y requiere la app gratuita Pluryprint 0.0.6+ (Windows/macOS): https://pluryprint.maecly.com. Su host nativo com.maecly.pluryprint solo acepta esta extensión. Prueba: instala Pluryprint; en Pluryfact abre Integraciones → Pluryprint → Conectar y luego Descargas → «Imprimir un ZIP…» con un ZIP de Pluryfact. Sin Pluryprint el estado dice «No instalado» y lo demás funciona igual. Bajar del SRI requiere una cuenta de contribuyente de Ecuador.
+```

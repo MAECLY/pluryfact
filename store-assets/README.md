@@ -1,7 +1,8 @@
 # Recursos para Chrome Web Store
 
 Imágenes de la ficha de la tienda y los scripts que las generan. El texto de la
-ficha (resumen, descripción, categoría) está en [LISTING.md](LISTING.md), y las
+ficha (resumen, descripción, categoría, instrucciones de prueba) está en
+[LISTING.md](LISTING.md), y las
 respuestas de la pestaña de privacidad en [PRIVACY.md](PRIVACY.md).
 
 ## Qué archivo va en cada campo de la tienda
