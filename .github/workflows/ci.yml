@@ -1,0 +1,61 @@
+# What a pull request must pass before it is merged:
+#   check: typecheck, unit tests and the production build; then the store ZIP
+#          (`bun run zip`) and a guard on its manifest, so a package that
+#          would ask for nativeMessaging up front, carry a `key` or ship the
+#          E2E build never reaches the Chrome Web Store. The ZIP is uploaded
+#          as an artifact so a reviewer can load exactly what was built.
+#   e2e-pluryprint: «Imprimir un ZIP…» end to end in headless Chromium with
+#          the fake native host (scripts/pluryprint-host-falso.ts). No SRI,
+#          no real data; the real-bridge variant stays local
+#          (PLURYPRINT_BRIDGE_BIN).
+# The SRI end-to-end test (`bun run e2e`) needs a human login and is never run
+# here. Nothing in this workflow reads a secret or publishes anything.
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0
+        with:
+          bun-version: 1.4.4
+      - run: bun install --frozen-lockfile
+      - run: bun run typecheck
+      - run: bun run test
+      - run: bun run build
+      - run: bun run zip
+      - name: Store ZIP manifest guard
+        run: bun run verificar-zip
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: pluryfact-chrome-zip
+          path: .output/pluryfact-*-chrome.zip
+          if-no-files-found: error
+          retention-days: 14
+
+  e2e-pluryprint:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0
+        with:
+          bun-version: 1.4.4
+      - run: bun install --frozen-lockfile
+      - run: bunx playwright install --with-deps chromium
+      - run: bun run e2e:pluryprint
