@@ -53,9 +53,11 @@
 > (lectura de las tablas del portal, clave de acceso, plan de consultas y
 > filtros) tiene pruebas automáticas, y las descargas de XML, RIDE y TXT se
 > validaron con sesiones reales del portal; la entrega a Pluryprint tiene pruebas
-> de punta a punta con un host nativo. Está **en
-> [Chrome Web Store](https://chromewebstore.google.com/detail/pluryfact/ibgodfpcihlddbbfaoooehfgbmahipbj)**, y cada versión también está como ZIP en
-> [versiones](https://github.com/MAECLY/pluryfact/releases). Si
+> de punta a punta con un host nativo. La **0.1.0 está en
+> [Chrome Web Store](https://chromewebstore.google.com/detail/pluryfact/ibgodfpcihlddbbfaoooehfgbmahipbj)**; la 0.2.0 ya está en
+> [versiones](https://github.com/MAECLY/pluryfact/releases) como ZIP y aún debe pasar la revisión de la tienda. La
+> impresión con Pluryprint solo se activa con la Pluryfact instalada desde la
+> tienda: el ZIP no la activa. Si
 > algo falla, un [issue](https://github.com/MAECLY/pluryfact/issues/new) con el
 > registro de diagnóstico (Avanzado → Copiar registro) ayuda mucho.
 
