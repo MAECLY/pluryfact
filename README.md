@@ -1,263 +1,260 @@
 <p align="center">
-  <a href="https://pluryfact.maecly.com/en/"><img src="design/icon/app.svg" width="96" height="96" alt="Pluryfact"></a>
+  <a href="https://pluryfact.maecly.com/"><img src="design/icon/app.svg" width="96" height="96" alt="Pluryfact"></a>
 </p>
 
-<h1 align="center">All your SRI documents, in one go.</h1>
+<h1 align="center">Todos tus comprobantes del SRI, de una vez.</h1>
 
 <p align="center">
-  <b>Pluryfact</b> is a Chrome extension that bulk-downloads your electronic tax documents from Ecuador's SRI en Línea:<br>
-  authorised XML, RIDE (PDF) and the TXT report, sorted by year and month in a single ZIP.
-</p>
-
-<p align="center">
-  <b>Free</b> · <b>No account</b> · <b>No password asked</b> · <b>Open source</b>
+  <b>Pluryfact</b> es una extensión de Chrome que descarga en lote tus comprobantes electrónicos de SRI en Línea:<br>
+  XML autorizado, RIDE (PDF) y reporte TXT, ordenados por año y mes en un solo ZIP.
 </p>
 
 <p align="center">
-  <a href="https://github.com/MAECLY/pluryfact/releases/latest"><img alt="Latest release" src="https://img.shields.io/github/v/release/MAECLY/pluryfact?style=flat-square&label=release&color=2446A8&labelColor=151C33"></a>
-  <a href="https://chromewebstore.google.com/detail/pluryfact/ibgodfpcihlddbbfaoooehfgbmahipbj"><img alt="Chrome Web Store version" src="https://img.shields.io/chrome-web-store/v/ibgodfpcihlddbbfaoooehfgbmahipbj?style=flat-square&label=chrome%20web%20store&color=2446A8&labelColor=151C33"></a>
-  <a href="https://github.com/MAECLY/pluryfact/releases"><img alt="Downloads" src="https://img.shields.io/github/downloads/MAECLY/pluryfact/total?style=flat-square&label=downloads&color=2446A8&labelColor=151C33"></a>
-  <a href="https://github.com/MAECLY/pluryfact/stargazers"><img alt="GitHub stars" src="https://img.shields.io/github/stars/MAECLY/pluryfact?style=flat-square&color=2446A8&labelColor=151C33"></a>
-  <a href="https://hits.sh/github.com/MAECLY/pluryfact/"><img alt="Repository views" src="https://hits.sh/github.com/MAECLY/pluryfact.svg?style=flat-square&label=views&color=2446A8&labelColor=151C33"></a>
-  <a href="https://github.com/MAECLY/pluryfact/commits/main"><img alt="Last commit" src="https://img.shields.io/github/last-commit/MAECLY/pluryfact?style=flat-square&color=2446A8&labelColor=151C33"></a>
-  <a href="LICENSE"><img alt="License: AGPL-3.0-only" src="https://img.shields.io/badge/license-AGPL--3.0--only-2446A8?style=flat-square&labelColor=151C33"></a>
-  <a href="#install"><img alt="Chrome, Manifest V3" src="https://img.shields.io/badge/Chrome-MV3-2446A8?style=flat-square&labelColor=151C33"></a>
-  <a href="#how-it-looks-after-your-account"><img alt="No telemetry" src="https://img.shields.io/badge/telemetry-none-2446A8?style=flat-square&labelColor=151C33"></a>
-  <a href="#how-it-looks-after-your-account"><img alt="No servers" src="https://img.shields.io/badge/servers-none-2446A8?style=flat-square&labelColor=151C33"></a>
-  <a href="#development"><img alt="Built with WXT" src="https://img.shields.io/badge/built%20with-WXT-2446A8?style=flat-square&labelColor=151C33"></a>
+  <b>Gratis</b> · <b>Sin cuenta</b> · <b>No pide tu clave</b> · <b>Código abierto</b>
 </p>
 
 <p align="center">
-  <a href="https://pluryfact.maecly.com/en/"><b>Website</b></a> ·
-  <a href="https://chromewebstore.google.com/detail/pluryfact/ibgodfpcihlddbbfaoooehfgbmahipbj"><b>Add to Chrome</b></a> ·
-  <a href="#install">Install</a> ·
-  <a href="#how-it-looks-after-your-account">Privacy</a> ·
-  <a href="#limits">Limits</a> ·
-  <a href="#development">Development</a> ·
-  <a href="https://github.com/MAECLY/pluryfact/releases/latest">Download</a> ·
-  <a href="CHANGELOG.md">Changelog</a> ·
-  <a href="https://github.com/MAECLY/pluryfact/issues/new">Report a bug</a> ·
-  <b>English</b> · <a href="README.es.md">Español</a>
+  <a href="https://github.com/MAECLY/pluryfact/releases/latest"><img alt="Última versión" src="https://img.shields.io/github/v/release/MAECLY/pluryfact?style=flat-square&label=versión&color=2446A8&labelColor=151C33"></a>
+  <a href="https://chromewebstore.google.com/detail/pluryfact/ibgodfpcihlddbbfaoooehfgbmahipbj"><img alt="Versión en Chrome Web Store" src="https://img.shields.io/chrome-web-store/v/ibgodfpcihlddbbfaoooehfgbmahipbj?style=flat-square&label=chrome%20web%20store&color=2446A8&labelColor=151C33"></a>
+  <a href="https://github.com/MAECLY/pluryfact/releases"><img alt="Descargas" src="https://img.shields.io/github/downloads/MAECLY/pluryfact/total?style=flat-square&label=descargas&color=2446A8&labelColor=151C33"></a>
+  <a href="https://github.com/MAECLY/pluryfact/stargazers"><img alt="Estrellas" src="https://img.shields.io/github/stars/MAECLY/pluryfact?style=flat-square&color=2446A8&labelColor=151C33"></a>
+  <a href="https://hits.sh/github.com/MAECLY/pluryfact/"><img alt="Visitas" src="https://hits.sh/github.com/MAECLY/pluryfact.svg?style=flat-square&label=visitas&color=2446A8&labelColor=151C33"></a>
+  <a href="https://github.com/MAECLY/pluryfact/commits/main"><img alt="Último commit" src="https://img.shields.io/github/last-commit/MAECLY/pluryfact?style=flat-square&color=2446A8&labelColor=151C33"></a>
+  <a href="LICENSE"><img alt="Licencia: AGPL-3.0-only" src="https://img.shields.io/badge/licencia-AGPL--3.0--only-2446A8?style=flat-square&labelColor=151C33"></a>
+  <a href="#instalar"><img alt="Chrome, Manifest V3" src="https://img.shields.io/badge/Chrome-MV3-2446A8?style=flat-square&labelColor=151C33"></a>
+  <a href="#cómo-cuida-tu-cuenta"><img alt="Sin telemetría" src="https://img.shields.io/badge/telemetr%C3%ADa-ninguna-2446A8?style=flat-square&labelColor=151C33"></a>
+  <a href="#cómo-cuida-tu-cuenta"><img alt="Sin servidores" src="https://img.shields.io/badge/servidores-ninguno-2446A8?style=flat-square&labelColor=151C33"></a>
+  <a href="#desarrollo"><img alt="Hecha con WXT" src="https://img.shields.io/badge/hecha%20con-WXT-2446A8?style=flat-square&labelColor=151C33"></a>
+</p>
+
+<p align="center">
+  <a href="https://pluryfact.maecly.com/"><b>Sitio web</b></a> ·
+  <a href="https://chromewebstore.google.com/detail/pluryfact/ibgodfpcihlddbbfaoooehfgbmahipbj"><b>Añadir a Chrome</b></a> ·
+  <a href="#instalar">Instalar</a> ·
+  <a href="#cómo-cuida-tu-cuenta">Privacidad</a> ·
+  <a href="#límites">Límites</a> ·
+  <a href="#desarrollo">Desarrollo</a> ·
+  <a href="https://github.com/MAECLY/pluryfact/releases/latest">Descargar</a> ·
+  <a href="CHANGELOG.md">Cambios</a> ·
+  <a href="https://github.com/MAECLY/pluryfact/issues/new">Reportar un problema</a> ·
+  <a href="README.en.md">English</a> · <b>Español</b>
 </p>
 
 <p align="center">
   <picture>
-    <source media="(prefers-color-scheme: dark)" srcset=".github/assets/readme/hero-en-1440-dark.webp">
-    <img src=".github/assets/readme/hero-en-1440-light.webp" width="100%" alt="The Pluryfact website hero: the headline “All your SRI documents, in one go.” next to a drawing of the SRI en Línea documents page with the Pluryfact popup open. Twelve month tabs fill one by one, and a dark ZIP card lists the XML, RIDE and report files sorted by month.">
+    <source media="(prefers-color-scheme: dark)" srcset=".github/assets/readme/hero-es-1440-dark.webp">
+    <img src=".github/assets/readme/hero-es-1440-light.webp" width="100%" alt="La portada del sitio de Pluryfact: el titular «Todos tus comprobantes del SRI, de una vez.» junto a un dibujo de la pantalla de comprobantes de SRI en Línea con el popup de Pluryfact abierto. Doce fichas de meses se llenan una a una y una tarjeta oscura del ZIP lista los XML, RIDE y reporte ordenados por mes.">
   </picture>
 </p>
 
 > [!NOTE]
-> **Version 0.1.0, said plainly.** This is the first public version: the core
-> (reading the portal's tables, access keys, the query plan and the filters)
-> has automated tests, and the XML, RIDE and TXT downloads were validated with
-> real portal sessions. It is **on the
-> [Chrome Web Store](https://chromewebstore.google.com/detail/pluryfact/ibgodfpcihlddbbfaoooehfgbmahipbj)**, and every version is also a ZIP in the
-> [releases](https://github.com/MAECLY/pluryfact/releases). If
-> something breaks, an [issue](https://github.com/MAECLY/pluryfact/issues/new)
-> with the diagnostic log (Avanzado → Copiar registro) helps a lot.
+> **Versión 0.1.0, dicho claro.** Es la primera versión pública: el núcleo
+> (lectura de las tablas del portal, clave de acceso, plan de consultas y
+> filtros) tiene pruebas automáticas, y las descargas de XML, RIDE y TXT se
+> validaron con sesiones reales del portal. Está **en
+> [Chrome Web Store](https://chromewebstore.google.com/detail/pluryfact/ibgodfpcihlddbbfaoooehfgbmahipbj)**, y cada versión también está como ZIP en
+> [versiones](https://github.com/MAECLY/pluryfact/releases). Si
+> algo falla, un [issue](https://github.com/MAECLY/pluryfact/issues/new) con el
+> registro de diagnóstico (Avanzado → Copiar registro) ayuda mucho.
 
 ---
 
-## What it does
+## Qué hace
 
-**Received and issued.** It works on both SRI en Línea screens,
-*Comprobantes electrónicos recibidos* and *emitidos*, each with its own query
-plan.
+**Recibidos y emitidos.** Funciona en las dos pantallas de SRI en Línea,
+*Comprobantes electrónicos recibidos* y *emitidos*, cada una con su propio plan
+de consultas.
 
-**The period you need.** One day, a date range, a month or a whole year.
-Issued documents go up to yesterday; received ones, up to today.
+**El periodo que necesites.** Un día, un rango de fechas, un mes o un año
+completo. Emitidos llega hasta ayer; recibidos, hasta hoy.
 
-**Filter by issuer.** On received documents, keep only one supplier by RUC or
-business name, ignoring accents and capitals.
+**Filtro por emisor.** En recibidos, quédate solo con un proveedor por su RUC o
+su razón social, sin importar tildes ni mayúsculas.
 
-**XML, RIDE and report.** The authorised XML, which is the document with tax
-validity; the RIDE, its printed representation as a PDF; and the TXT report of
-the listing.
+**XML, RIDE y reporte.** El XML autorizado, que es el documento con validez
+tributaria; el RIDE, su representación impresa en PDF; y el reporte TXT del
+listado.
 
-**One sorted ZIP.**
+**Un solo ZIP ordenado.**
 
 ```text
 pluryfact_<RUC>_recibidos_2025.zip
 └── pluryfact/<RUC>/recibidos/2025/
-    ├── 01/  <type>_<series>_<issuer RUC>_<access key>.xml / .pdf
+    ├── 01/  <tipo>_<serie>_<RUC emisor>_<clave>.xml / .pdf
     ├── 02/
     └── …
 ```
 
-**Few queries, on purpose.** Received documents are queried one month at a
-time: a year of invoices is 12 queries, not 365. Issued documents go day by day
-because that SRI screen does not accept ranges.
+**Pocas consultas, a propósito.** Recibidos se consulta un mes por vez: un año
+de facturas son 12 consultas, no 365. Emitidos va día por día porque esa
+pantalla del SRI no admite rangos.
 
-**Close the popup, keep downloading.** The toolbar badge shows the progress.
-You get a notification when the job ends, when the session expires or on an
-error; never one per month.
+**Cierra el popup, sigue bajando.** La insignia del ícono muestra el avance.
+Recibes una notificación al terminar, si la sesión caduca o ante un error;
+nunca una por mes.
 
-**Resume after an expired session.** An SRI session lasts about 20 minutes.
-Pluryfact notices, keeps what it already fetched and offers **Resume**: only
-what is missing.
+**Reanuda tras una sesión caducada.** La sesión del SRI dura unos 20 minutos.
+Pluryfact lo nota, guarda lo bajado y te ofrece **Reanudar**: solo lo que faltó.
 
-**History and eight themes.** A page of its own lists your jobs, their state
-and what is still pending, like `chrome://downloads`. Pick one of eight colour
-and type themes; Pluryfact is the default.
+**Historial y ocho temas.** Una página propia con tus trabajos, su estado y lo
+que quedó pendiente, como `chrome://downloads`. Elige uno de ocho temas de color
+y tipografía; Pluryfact es el predeterminado.
 
-**Print with Pluryprint (in development).** Connect
-[Pluryprint](https://pluryprint.maecly.com/), MAECLY's batch printing app for
-Windows and macOS, and send it the RIDEs, the XMLs (Pluryprint renders a
-RIDE-like printout from them) or both, plus the report, right after a download
-or from any past ZIP. Pluryprint opens so you review and confirm before any
-paper is used. It arrives with Pluryfact 0.2 and Pluryprint 0.0.6; see
-[docs/INTEGRACION-PLURYPRINT.md](docs/INTEGRACION-PLURYPRINT.md).
+**Imprime con Pluryprint (en desarrollo).** Conecta
+[Pluryprint](https://pluryprint.maecly.com/), la app de impresión en lote de
+MAECLY para Windows y macOS, y mándale los RIDE, los XML (Pluryprint arma una
+representación impresa tipo RIDE) o ambos, más el reporte, apenas termina una
+descarga o desde cualquier ZIP anterior. Pluryprint se abre para que revises y
+confirmes antes de gastar papel. Llega con Pluryfact 0.2 y Pluryprint 0.0.6;
+ver [docs/INTEGRACION-PLURYPRINT.md](docs/INTEGRACION-PLURYPRINT.md).
 
-## How it looks after your account
+## Cómo cuida tu cuenta
 
-- **It never asks for your SRI password.** You sign in to SRI en Línea yourself,
-  as always. Pluryfact works inside that tab, with that session, and never
-  stores it.
-- **On the internet, it only talks to the SRI.** `srienlinea.sri.gob.ec` with
-  your session, and `cel.sri.gob.ec`, the SRI's public authorisation web
-  service, for the XML. There is no Pluryfact server and no analytics. Off the
-  internet, it only talks to Pluryprint on your own computer, and only if you
-  connect it.
-- **It queries at a human pace.** One query at a time, with random pauses.
-  If the SRI asks for a reCAPTCHA check, Pluryfact pauses, brings the SRI tab
-  to the front and carries on once you solve it. It never solves or bypasses
-  captchas: see [docs/CAPTCHA.md](docs/CAPTCHA.md).
+- **Nunca pide tu clave del SRI.** Entras tú a SRI en Línea, como siempre.
+  Pluryfact trabaja dentro de esa pestaña, con esa sesión, y nunca la guarda.
+- **En internet, solo habla con el SRI.** `srienlinea.sri.gob.ec` con tu
+  sesión, y `cel.sri.gob.ec`, el servicio web público de autorización del SRI,
+  para el XML. No hay servidor de Pluryfact ni analítica. Fuera de internet,
+  solo habla con Pluryprint en tu propio equipo, y solo si lo conectas.
+- **Consulta a ritmo humano.** Una consulta a la vez, con pausas al azar. Si el
+  SRI pide verificar el reCAPTCHA, Pluryfact se pausa, trae al frente la pestaña
+  del SRI y sigue cuando lo resuelves. Nunca resuelve ni evita captchas: ver
+  [docs/CAPTCHA.md](docs/CAPTCHA.md).
 
-| Permission | Why |
+| Permiso | Para qué |
 |---|---|
-| `srienlinea.sri.gob.ec/comprobantes-electronicos-internet/*` | Press Consultar and download the files on the documents screen, with your session. |
-| `cel.sri.gob.ec/*` | Request the authorised XML of each access key from the SRI's public service. |
-| `storage` | Keep progress, history and your settings in this browser. |
-| `scripting` | Activate Pluryfact in an SRI tab that was already open. |
-| `notifications` | Tell you when a download finishes or your session expires. |
-| `nativeMessaging` (optional, from 0.2.0) | Only if you connect Pluryprint in Integrations: hand it, on your computer, the RIDEs, XMLs and report you choose to print. Chrome asks for it separately; Disconnect removes it. |
+| `srienlinea.sri.gob.ec/comprobantes-electronicos-internet/*` | Pulsar Consultar y bajar los archivos en la pantalla de comprobantes, con tu sesión. |
+| `cel.sri.gob.ec/*` | Pedir el XML autorizado de cada clave de acceso al servicio público del SRI. |
+| `storage` | Guardar el avance, el historial y tus ajustes en este navegador. |
+| `scripting` | Activar Pluryfact en una pestaña del SRI que ya estaba abierta. |
+| `notifications` | Avisarte cuando termina una descarga o si tu sesión caduca. |
+| `nativeMessaging` (opcional, desde la 0.2.0) | Solo si conectas Pluryprint en Integraciones: entregarle, en tu equipo, los RIDE, XML y reporte que eliges imprimir. Chrome lo pide aparte; Desconectar lo quita. |
 
-Nothing else: no access to other sites, your tabs, your history or your
-cookies.
+Y nada más: no pide acceso a otros sitios, a tus pestañas, a tu historial ni a
+tus cookies.
 
-## Limits
+## Límites
 
-- **It is not an official SRI tool.** Pluryfact is not affiliated with the
+- **No es una herramienta oficial del SRI.** Pluryfact no está afiliado al
   Servicio de Rentas Internas.
-- **It does not sign in for you.** It only works in a tab with a signed-in
-  session.
-- **A full year may need resuming** two or three times, because of the
-  20-minute session.
-- **Old issued documents may come without XML.** The SRI web service rejects
-  some issue dates; Pluryfact tries the portal instead and tells you what it
-  could not get.
-- **Chrome only.** It does not export Excel, ledgers or the ATS: it delivers
-  the files as the SRI hands them out. Its interface is in Spanish.
+- **No inicia sesión por ti.** Solo trabaja en una pestaña con la sesión
+  iniciada.
+- **Un año completo puede pedir reanudar** dos o tres veces, por la sesión de
+  20 minutos.
+- **Emitidos antiguos pueden llegar sin XML.** El servicio web del SRI rechaza
+  algunas fechas de emisión; Pluryfact lo intenta desde el portal y te dice qué
+  no pudo bajar.
+- **Solo Chrome.** No exporta Excel, libros contables ni ATS: entrega los
+  archivos tal como los da el SRI.
 
-## How it compares
+## Cómo se compara
 
-Based on each product's public listing in November 2026. Products were not
-installed or tested.
+Según la ficha pública de cada producto en noviembre de 2026. No se instalaron
+ni se probaron.
 
 | | Pluryfact | XML Manager | Descargador Masivo (docu.ec) | Comprobantes SRI (CUENCOR) | recibo.ec |
 |---|---|---|---|---|---|
-| Price | Free, no paid tier | Not stated | Recent periods free; one-off payment for long periods | Paid, per computer (7-day trial) | Free up to 200 a month, then paid plans |
-| Password and session | Never asked, never leave the browser | Not stated | Sends your session cookie to its servers | Automatic mode keeps your password encrypted on your computer | Optional: you connect your SRI password |
-| Formats | XML + RIDE PDF + TXT report in one ZIP | XML of received, TXT and PDF reports | XML and PDF (Excel in the paid mode) | XML, RIDE PDF, Excel and ATS | XML, PDF, XLSX and CSV |
-| After an error | Resumes only what was missing, also after the session expires | Not stated | Not stated | Not stated | Not stated |
-| Open source | AGPL-3.0 | Not stated | Not stated | Not stated | Not stated |
+| Precio | Gratis, sin versión de pago | No consta | Periodos recientes gratis; pago único para periodos largos | De pago, por equipo (7 días de prueba) | Gratis hasta 200 al mes, luego planes de pago |
+| Tu clave y tu sesión | Ni la pide ni salen del navegador | No consta | Envía tu cookie de sesión a sus servidores | El modo automático guarda tu clave cifrada en tu equipo | Opcional: conectas tu clave del SRI |
+| Formatos | XML + RIDE PDF + reporte TXT en un ZIP | XML de recibidos, reportes TXT y PDF | XML y PDF (Excel en el modo de pago) | XML, RIDE PDF, Excel y ATS | XML, PDF, XLSX y CSV |
+| Si algo se corta | Reanuda solo lo que faltó, también si caduca la sesión | No consta | No consta | No consta | No consta |
+| Código abierto | AGPL-3.0 | No consta | No consta | No consta | No consta |
 
-**Where others are ahead:** accounting reports (purchase and sales ledgers,
-ATS, Excel), unattended sync and track record. **The difference:** free and
-AGPL, neither your password nor your session cookie leaves your browser, and
-it resumes after an expired session. The full comparison, with sources, is on
-the [website](https://pluryfact.maecly.com/en/#comparar).
+**Donde otros van por delante:** reportes contables (libros de compras y
+ventas, ATS, Excel), sincronización desatendida y trayectoria. **La diferencia:**
+gratis y AGPL, ni tu clave ni tu cookie de sesión salen de tu navegador, y
+reanuda tras una sesión caducada. La comparativa completa, con fuentes, está en
+el [sitio](https://pluryfact.maecly.com/#comparar).
 
-## Install
+## Instalar
 
-**Chrome Web Store (recommended):** open the
-[Pluryfact listing](https://chromewebstore.google.com/detail/pluryfact/ibgodfpcihlddbbfaoooehfgbmahipbj) and click **Add to Chrome**. Chrome keeps it up to
-date.
+**Chrome Web Store (recomendado):** abre la
+[ficha de Pluryfact](https://chromewebstore.google.com/detail/pluryfact/ibgodfpcihlddbbfaoooehfgbmahipbj) y pulsa **Añadir a Chrome**. Chrome la mantiene al
+día.
 
-**Manually, from GitHub:**
+**A mano, desde GitHub:**
 
-1. Download `pluryfact-0.1.0-chrome.zip` from the
-   [latest release](https://github.com/MAECLY/pluryfact/releases/latest) and
-   unzip it into a folder you will keep.
-2. Open `chrome://extensions` and turn on **Developer mode**.
-3. Click **Load unpacked** and pick that folder.
-4. Sign in to [SRI en Línea](https://srienlinea.sri.gob.ec/), open
-   **Facturación electrónica → Comprobantes electrónicos recibidos** (or
-   *emitidos*) from the menu, and click the Pluryfact icon.
+1. Descarga `pluryfact-0.1.0-chrome.zip` de la
+   [última versión](https://github.com/MAECLY/pluryfact/releases/latest) y
+   descomprímelo en una carpeta que no vayas a borrar.
+2. Abre `chrome://extensions` y activa el **Modo de desarrollador**.
+3. Pulsa **Cargar descomprimida** y elige esa carpeta.
+4. Entra a [SRI en Línea](https://srienlinea.sri.gob.ec/), abre desde el menú
+   **Facturación electrónica → Comprobantes electrónicos recibidos** (o
+   *emitidos*) y pulsa el ícono de Pluryfact.
 
-To update a manual install, unzip the new version over the same folder and
-press the reload button on the extension's card. The ID of an unpacked
-extension depends on the folder path, so loading it from another folder starts
-with an empty history. To build it from source, see
-[Development](#development).
+Para actualizar una instalación manual, descomprime la nueva versión sobre la
+misma carpeta y pulsa el botón de recarga en la tarjeta de la extensión. El ID
+de una extensión descomprimida depende de la ruta de la carpeta: si la cargas
+desde otra carpeta, empieza con el historial vacío. Para compilarla desde el
+código, ver [Desarrollo](#desarrollo).
 
-## Development
+## Desarrollo
 
-You need [Bun](https://bun.sh/) 1.4 or newer and Chrome.
+Requiere [Bun](https://bun.sh/) 1.4 o posterior y Chrome.
 
 ```sh
-bun install                 # install dependencies (also runs `wxt prepare`)
-bun run dev                 # Chrome with the extension loaded and live reload
-bun run check               # typecheck, unit tests (Vitest) and a production build
-bun run build               # build into .output/chrome-mv3
-bun run zip                 # build the release zip into .output/
-bun run icons               # re-render public/icon/*.png from design/icon/*.svg
-bun run e2e                 # real test against the portal (opens Chromium; you sign in)
-bun run e2e:pluryprint      # "Print a ZIP…" end to end with a native host (fake, or PLURYPRINT_BRIDGE_BIN)
-bun run validar-zip [path]  # validate the latest pluryfact_*.zip in ~/Downloads
-bun run registro [--errores] [--ultimos N]   # read the diagnostic log from your Chrome profiles
+bun install                 # instala dependencias (también corre `wxt prepare`)
+bun run dev                 # Chrome con la extensión cargada y recarga en caliente
+bun run check               # typecheck, tests unitarios (Vitest) y build de producción
+bun run build               # compila en .output/chrome-mv3
+bun run zip                 # arma el zip de la versión en .output/
+bun run icons               # regenera public/icon/*.png desde design/icon/*.svg
+bun run e2e                 # prueba real con el portal (abre Chromium; el login lo haces tú)
+bun run e2e:pluryprint      # «Imprimir un ZIP…» de punta a punta con un host nativo (falso, o PLURYPRINT_BRIDGE_BIN)
+bun run validar-zip [ruta]  # valida el último pluryfact_*.zip de ~/Downloads
+bun run registro [--errores] [--ultimos N]   # lee el registro de diagnóstico de tus perfiles de Chrome
 ```
 
-The diagnostic log lives in `chrome.storage.local` (on disk:
-`<Chrome profile>/Local Extension Settings/<id>/`). It keeps up to 2000
-entries per part of the extension, with RUCs and access keys masked.
+El registro de diagnóstico vive en `chrome.storage.local` (en disco:
+`<perfil de Chrome>/Local Extension Settings/<id>/`). Guarda hasta 2000
+entradas por parte de la extensión, con RUC y claves enmascarados.
 
-### Architecture
+### Arquitectura
 
 ```text
-popup  →  background  →  content script  →  conductor (page's MAIN world)
+popup  →  background  →  content script  →  conductor (MAIN world de la página)
 ```
 
-| Piece | Files | What it does |
+| Pieza | Archivos | Qué hace |
 |---|---|---|
-| **popup** | `src/entrypoints/popup/` | Inbox, period, types, issuer and formats; progress, pause and resume. |
-| **full page** | `src/entrypoints/pluryfact/` | History, settings and themes; also the options page. |
-| **background** | `src/entrypoints/background.ts`, `src/lib/sri-ws.ts`, `puente-pluryprint.ts` | XML from the public web service, badge and notifications, and the only bridge to Pluryprint (`connectNative`). |
-| **content script** | `src/entrypoints/sri.content.ts`, `src/lib/cola.ts`, `extract.ts`, `jsf.ts`, `reporte.ts`, `zip.ts`, `historial.ts` | Job queue, pace and retries; reads the portal's tables and ViewState; downloads the RIDE and the TXT report with same-origin POSTs; builds and saves the ZIP; history. |
-| **Pluryprint** | `src/lib/pluryprint.ts`, `seleccion-impresion.ts`, `envio-pluryprint.ts` | Protocol client, what to print and in which order, and the send with the user's settings. |
-| **conductor** | `src/entrypoints/conductor.content.ts`, `src/lib/conductor.ts` | Fills the portal's own controls and presses its Consultar button, so the ViewState, PrimeFaces updates and reCAPTCHA stay the SRI's. |
-| **core** | `src/lib/clave.ts`, `periodo.ts`, `filtro.ts`, `archivos.ts`, `selectors.ts` | Access key parts and modulo-11 check digit, query plan, filters, folder and file names, and the only place with portal ids. |
+| **popup** | `src/entrypoints/popup/` | Bandeja, periodo, tipos, emisor y formatos; avance, pausa y reanudar. |
+| **página completa** | `src/entrypoints/pluryfact/` | Historial, ajustes y temas; también es la página de opciones. |
+| **background** | `src/entrypoints/background.ts`, `src/lib/sri-ws.ts`, `puente-pluryprint.ts` | XML del servicio web público, insignia y notificaciones, y el único puente a Pluryprint (`connectNative`). |
+| **content script** | `src/entrypoints/sri.content.ts`, `src/lib/cola.ts`, `extract.ts`, `jsf.ts`, `reporte.ts`, `zip.ts`, `historial.ts` | Cola de trabajos, ritmo y reintentos; lee las tablas y el ViewState del portal; baja el RIDE y el reporte TXT con POST del mismo origen; arma y guarda el ZIP; historial. |
+| **Pluryprint** | `src/lib/pluryprint.ts`, `seleccion-impresion.ts`, `envio-pluryprint.ts` | Cliente del protocolo, qué se imprime y en qué orden, y el envío con los ajustes del usuario. |
+| **conductor** | `src/entrypoints/conductor.content.ts`, `src/lib/conductor.ts` | Rellena los controles del propio portal y pulsa su botón Consultar, así el ViewState, las actualizaciones de PrimeFaces y el reCAPTCHA siguen siendo los del SRI. |
+| **núcleo** | `src/lib/clave.ts`, `periodo.ts`, `filtro.ts`, `archivos.ts`, `selectors.ts` | Partes de la clave de acceso y dígito verificador módulo 11, plan de consultas, filtros, carpetas y nombres de archivo, y el único lugar con ids del portal. |
 
-More detail:
+Más detalle:
 
-- [docs/ARQUITECTURA.md](docs/ARQUITECTURA.md): the pieces and the flow per month.
-- [docs/INTEGRACION-PLURYPRINT.md](docs/INTEGRACION-PLURYPRINT.md): printing with Pluryprint, options weighed, protocol, security and the full operations matrix.
-- [docs/REFERENCE.md](docs/REFERENCE.md): anatomy of the SRI screens.
-- [docs/CAPTCHA.md](docs/CAPTCHA.md): how the reCAPTCHA works and why Pluryfact leaves it to you.
-- [docs/design-system.md](docs/design-system.md): colours, type, themes and voice.
+- [docs/ARQUITECTURA.md](docs/ARQUITECTURA.md): las piezas y el flujo por mes.
+- [docs/INTEGRACION-PLURYPRINT.md](docs/INTEGRACION-PLURYPRINT.md): imprimir con Pluryprint, opciones evaluadas, protocolo, seguridad y la matriz completa de operaciones.
+- [docs/REFERENCE.md](docs/REFERENCE.md): anatomía de las pantallas del SRI.
+- [docs/CAPTCHA.md](docs/CAPTCHA.md): cómo funciona el reCAPTCHA y por qué Pluryfact te lo deja a ti.
+- [docs/design-system.md](docs/design-system.md): colores, tipografía, temas y voz.
 
-The website, [pluryfact.maecly.com](https://pluryfact.maecly.com/), is built from a private repository.
+El sitio web, [pluryfact.maecly.com](https://pluryfact.maecly.com/), se publica desde un repositorio privado.
 
-## Credits
+## Créditos
 
 - [WXT](https://wxt.dev/), [Tailwind CSS](https://tailwindcss.com/),
-  [Vitest](https://vitest.dev/) and [Playwright](https://playwright.dev/).
-- Fonts from [Fontsource](https://fontsource.org/): IBM Plex, Bricolage
-  Grotesque and the faces of the eight themes, under the SIL Open Font License.
+  [Vitest](https://vitest.dev/) y [Playwright](https://playwright.dev/).
+- Fuentes de [Fontsource](https://fontsource.org/): IBM Plex, Bricolage
+  Grotesque y las tipografías de los ocho temas, bajo la SIL Open Font License.
 
-Pluryfact is not affiliated with the Servicio de Rentas Internas (SRI). RIDEs
-are printed representations; the document with tax validity is the authorised
-XML.
+Pluryfact no está afiliado al Servicio de Rentas Internas (SRI). Los RIDE son
+representaciones impresas; el documento con validez tributaria es el XML
+autorizado.
 
-## Licence
+## Licencia
 
-Pluryfact is free software, licensed under the
+Pluryfact es software libre, bajo la
 [GNU Affero General Public License v3.0 only](LICENSE) (`AGPL-3.0-only`).
 Copyright © 2026 Miguel Angel Esparza Calero (MAECLY).
 
 ---
 
 <p align="center">
-  <sub>Made by Miguel Angel Esparza Calero · <a href="https://pluryfact.maecly.com/en/">pluryfact.maecly.com</a> · part of <a href="https://www.maecly.com">MAECLY</a></sub>
+  <sub>Hecho por Miguel Angel Esparza Calero · <a href="https://pluryfact.maecly.com/">pluryfact.maecly.com</a> · parte de <a href="https://www.maecly.com">MAECLY</a></sub>
 </p>
