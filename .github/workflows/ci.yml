@@ -46,6 +46,7 @@ jobs:
           name: pluryfact-chrome-zip
           path: .output/pluryfact-*-chrome.zip
           if-no-files-found: error
+          include-hidden-files: true
           retention-days: 14
 
   e2e-pluryprint:
