@@ -53,9 +53,11 @@
 > (reading the portal's tables, access keys, the query plan and the filters)
 > has automated tests, and the XML, RIDE and TXT downloads were validated with
 > real portal sessions; the Pluryprint handoff has end-to-end tests with a
-> native host. It is **on the
-> [Chrome Web Store](https://chromewebstore.google.com/detail/pluryfact/ibgodfpcihlddbbfaoooehfgbmahipbj)**, and every version is also a ZIP in the
-> [releases](https://github.com/MAECLY/pluryfact/releases). If
+> native host. Version **0.1.0 is on the
+> [Chrome Web Store](https://chromewebstore.google.com/detail/pluryfact/ibgodfpcihlddbbfaoooehfgbmahipbj)**; 0.2.0 is already a ZIP in the
+> [releases](https://github.com/MAECLY/pluryfact/releases) and still has to pass the store review. Printing with
+> Pluryprint only switches on with the Pluryfact installed from the store: the
+> ZIP does not activate it. If
 > something breaks, an [issue](https://github.com/MAECLY/pluryfact/issues/new)
 > with the diagnostic log (Avanzado → Copiar registro) helps a lot.
 
