@@ -15,7 +15,8 @@
 
 <p align="center">
   <a href="https://github.com/MAECLY/pluryfact/releases/latest"><img alt="Última versión" src="https://img.shields.io/github/v/release/MAECLY/pluryfact?style=flat-square&label=versión&color=2446A8&labelColor=151C33"></a>
-  <a href="#instalar"><img alt="Chrome Web Store: en revisión" src="https://img.shields.io/badge/chrome%20web%20store-en%20revisi%C3%B3n-A8701A?style=flat-square&labelColor=151C33"></a>
+  <a href="https://chromewebstore.google.com/detail/pluryfact/ibgodfpcihlddbbfaoooehfgbmahipbj"><img alt="Versión en Chrome Web Store" src="https://img.shields.io/chrome-web-store/v/ibgodfpcihlddbbfaoooehfgbmahipbj?style=flat-square&label=chrome%20web%20store&color=2446A8&labelColor=151C33"></a>
+  <a href="https://chromewebstore.google.com/detail/pluryfact/ibgodfpcihlddbbfaoooehfgbmahipbj"><img alt="Usuarios en Chrome Web Store" src="https://img.shields.io/chrome-web-store/users/ibgodfpcihlddbbfaoooehfgbmahipbj?style=flat-square&label=usuarios&color=2446A8&labelColor=151C33"></a>
   <a href="https://github.com/MAECLY/pluryfact/releases"><img alt="Descargas" src="https://img.shields.io/github/downloads/MAECLY/pluryfact/total?style=flat-square&label=descargas&color=2446A8&labelColor=151C33"></a>
   <a href="https://github.com/MAECLY/pluryfact/stargazers"><img alt="Estrellas" src="https://img.shields.io/github/stars/MAECLY/pluryfact?style=flat-square&color=2446A8&labelColor=151C33"></a>
   <a href="https://hits.sh/github.com/MAECLY/pluryfact/"><img alt="Visitas" src="https://hits.sh/github.com/MAECLY/pluryfact.svg?style=flat-square&label=visitas&color=2446A8&labelColor=151C33"></a>
@@ -29,6 +30,7 @@
 
 <p align="center">
   <a href="https://pluryfact.maecly.com/"><b>Sitio web</b></a> ·
+  <a href="https://chromewebstore.google.com/detail/pluryfact/ibgodfpcihlddbbfaoooehfgbmahipbj"><b>Añadir a Chrome</b></a> ·
   <a href="#instalar">Instalar</a> ·
   <a href="#cómo-cuida-tu-cuenta">Privacidad</a> ·
   <a href="#límites">Límites</a> ·
@@ -50,9 +52,9 @@
 > **Versión 0.1.0, dicho claro.** Es la primera versión pública: el núcleo
 > (lectura de las tablas del portal, clave de acceso, plan de consultas y
 > filtros) tiene pruebas automáticas, y las descargas de XML, RIDE y TXT se
-> validaron con sesiones reales del portal. Está **en revisión en Chrome Web
-> Store**; mientras tanto se instala a mano desde la
-> [última versión](https://github.com/MAECLY/pluryfact/releases/latest). Si
+> validaron con sesiones reales del portal. Está **en
+> [Chrome Web Store](https://chromewebstore.google.com/detail/pluryfact/ibgodfpcihlddbbfaoooehfgbmahipbj)**, y cada versión también está como ZIP en
+> [versiones](https://github.com/MAECLY/pluryfact/releases). Si
 > algo falla, un [issue](https://github.com/MAECLY/pluryfact/issues/new) con el
 > registro de diagnóstico (Avanzado → Copiar registro) ayuda mucho.
 
@@ -167,10 +169,11 @@ el [sitio](https://pluryfact.maecly.com/#comparar).
 
 ## Instalar
 
-**Chrome Web Store:** la versión 0.1.0 está en revisión. Cuando la tienda la
-apruebe, se instala con un clic desde su ficha.
+**Chrome Web Store (recomendado):** abre la
+[ficha de Pluryfact](https://chromewebstore.google.com/detail/pluryfact/ibgodfpcihlddbbfaoooehfgbmahipbj) y pulsa **Añadir a Chrome**. Chrome la mantiene al
+día.
 
-**A mano, desde GitHub (mientras tanto):**
+**A mano, desde GitHub:**
 
 1. Descarga `pluryfact-0.1.0-chrome.zip` de la
    [última versión](https://github.com/MAECLY/pluryfact/releases/latest) y
