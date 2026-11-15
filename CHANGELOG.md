@@ -49,7 +49,9 @@ it needs Pluryprint 0.0.6, which must ship both the native host
 
 ## [0.1.0] - 2026-11-14
 
-First public version, submitted to the Chrome Web Store.
+First public version. Approved and published on the
+[Chrome Web Store](https://chromewebstore.google.com/detail/pluryfact/ibgodfpcihlddbbfaoooehfgbmahipbj)
+on 2026-11-15.
 
 ### Added
 

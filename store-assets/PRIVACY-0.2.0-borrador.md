@@ -1,7 +1,7 @@
 # Pestaña de privacidad: borrador para la 0.2.0 (NO ENVIAR TODAVÍA)
 
-> **Borrador.** La 0.1.0 sigue en revisión en Chrome Web Store con las
-> respuestas de [PRIVACY.md](PRIVACY.md), que no se tocan. Este archivo prepara
+> **Borrador.** La 0.1.0 está aprobada y publicada en Chrome Web Store
+> (2026-11-15) con las respuestas de [PRIVACY.md](PRIVACY.md). Este archivo prepara
 > lo que cambia en la **0.2.0**, que trae la impresión con Pluryprint
 > ([docs/INTEGRACION-PLURYPRINT.md](../docs/INTEGRACION-PLURYPRINT.md)). Se
 > envía solo cuando la 0.1.0 esté aprobada y Pluryprint 0.0.6 publicado.
@@ -59,8 +59,8 @@ local, que el permiso es opcional y cómo quitarlo.
 
 ## Lista de comprobación antes de enviar la 0.2.0
 
-- [ ] La 0.1.0 está aprobada (no subir nada mientras esté «pendiente»).
-- [ ] Pluryprint 0.0.6 publicado con `pluryprint-bridge` y el registro del host.
+- [x] La 0.1.0 está aprobada (2026-11-15).
+- [x] Pluryprint 0.0.6 publicado con `pluryprint-bridge` y el registro del host (2026-11-14).
 - [ ] `wxt.config.ts`: `nativeMessaging` solo en `optional_permissions` (el build E2E no se sube).
 - [ ] Copiar este borrador a [PRIVACY.md](PRIVACY.md) y borrar este archivo.
 - [ ] Actualizar [LISTING.md](LISTING.md), que hoy describe la 0.1.0:

@@ -452,7 +452,7 @@ verdad. Windows no se puede probar desde esta Mac.
 
 ## 10. Versiones y publicación
 
-1. Chrome Web Store aprueba **Pluryfact 0.1.0** (en revisión; no se toca).
+1. Chrome Web Store aprueba **Pluryfact 0.1.0**: hecho, publicada el 2026-11-15.
 2. **Pluryprint 0.0.6** sale con `pluryprint-bridge`, el registro del host y la
    impresión de XML: las dos ramas (#104 y #103) juntas, ver §9. Sin la segunda,
    lo que Pluryfact mande como XML llega pero Pluryprint no lo imprime.
